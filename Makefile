@@ -2,6 +2,6 @@ default:
 	mdbook serve
 
 build:
-	mdbook build
+	mdbook build -d docs
 
 clean:
