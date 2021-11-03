@@ -2,6 +2,9 @@ default:
 	mdbook serve
 
 build:
-	mdbook build -d docs
+	-rm docs
+	mdbook build
+	-rm docs/.gitignore
+	-rm docs/.nojekyll
 
 clean:
