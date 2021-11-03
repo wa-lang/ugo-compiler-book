@@ -6,5 +6,6 @@ build:
 	mdbook build
 	-rm docs/.gitignore
 	-rm docs/.nojekyll
+	-rm -rf docs/.git
 
 clean:
