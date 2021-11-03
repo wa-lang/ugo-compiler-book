@@ -1,0 +1,10 @@
+[book]
+title = "从头开发一个迷你Go语言编译器"
+authors = ["chai2010"]
+description = "从头开发一个迷你Go语言编译器"
+language = "zh"
+multilingual = false
+src = "."
+
+[build]
+build-dir = "docs"
