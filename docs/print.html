@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="ch1/index.html"><strong aria-hidden="true">1.</strong> 最小编译器</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="ch1/index.html"><strong aria-hidden="true">1.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="ch2/index.html"><strong aria-hidden="true">2.</strong> 可加减的表达式语言</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -191,6 +191,110 @@ $ echo $?
 123
 </code></pre>
 <p>这样我们就实现了一个只能编译整数到本地可执行程序的最小编译器。</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="可加减的表达式语言"><a class="header" href="#可加减的表达式语言">可加减的表达式语言</a></h1>
+<p>在前一节我们通过最小编译器将一个整数编译为可以返回相同状态码的程序。现在我们尝试将加法和减法的表达式编译为同样的程序。</p>
+<p>比如有 <code>1+3-2</code> 表达式，手工编写对应的汇编程序如下：</p>
+<pre><code class="language-s">.intel_syntax noprefix
+.globl _main
+
+_main:
+	// 1 + 3 - 2
+	mov rax, 1 // rax = 1
+	add rax, 3 // rax = rax + 3
+	sub rax, 2 // rax = rax - 2
+	ret
+</code></pre>
+<p>如果将输入的<code>1+3-2</code>转化为<code>[]string{&quot;1&quot;, &quot;+&quot;, &quot;3&quot;, &quot;-&quot;, &quot;2&quot;}</code> 形式，我们则可以通过以下代码输出对应的汇编程序：</p>
+<pre><code class="language-go">func gen_asm(tokens []string) string {
+	var buf bytes.Buffer
+
+	fmt.Fprintln(&amp;buf, `.intel_syntax noprefix`)
+	fmt.Fprintln(&amp;buf, `.globl _main`)
+	fmt.Fprintln(&amp;buf)
+
+	fmt.Fprintln(&amp;buf, `_main:`)
+	for i, tok := range tokens {
+		if i == 0 {
+			fmt.Fprintln(&amp;buf, `    mov rax,`, tokens[i])
+		}
+		switch tok {
+		case &quot;+&quot;:
+			fmt.Fprintln(&amp;buf, `    add rax,`, tokens[i+1])
+		case &quot;-&quot;:
+			fmt.Fprintln(&amp;buf, `    sub rax,`, tokens[i+1])
+		}
+	}
+	fmt.Fprintln(&amp;buf, `    ret`)
+
+	return buf.String()
+}
+</code></pre>
+<p>而如何将输入的字符串拆分为记号数组本质上属于词法分析的问题。我们先以最简单的方式实现：</p>
+<pre><code class="language-go">func parse_tokens(code string) (tokens []string) {
+	for code != &quot;&quot; {
+		if idx := strings.IndexAny(code, &quot;+-&quot;); idx &gt;= 0 {
+			if idx &gt; 0 {
+				tokens = append(tokens, strings.TrimSpace(code[:idx]))
+			}
+			tokens = append(tokens, code[idx:][:1])
+			code = code[idx+1:]
+			continue
+		}
+
+		tokens = append(tokens, strings.TrimSpace(code))
+		return
+	}
+	return
+}
+</code></pre>
+<p>基本思路是通过 <code>strings.IndexAny(code, &quot;+-&quot;)</code> 函数调用根据 <code>+-</code> 符号拆分，最终返回拆分后的词法列表。</p>
+<p>然后对上个版本的compile函数稍加改造以支持加法和减法的运算表达式编译：</p>
+<pre><code class="language-go">func compile(code string) {
+	tokens := parse_tokens(code)
+	output := gen_asm(tokens)
+
+	os.WriteFile(&quot;_output_amd64.s&quot;, []byte(output), 0666)
+	exec.Command(&quot;gcc&quot;, &quot;-o&quot;, &quot;a.out&quot;, &quot;_output_amd64.s&quot;).Run()
+}
+</code></pre>
+<p>为了便于测试，我们再包装一个run函数：</p>
+<pre><code class="language-go">func run(code string) int {
+	compile(code)
+	if err := exec.Command(&quot;./a.out&quot;).Run(); err != nil {
+		return err.(*exec.ExitError).ExitCode()
+	}
+	return 0
+}
+</code></pre>
+<p>run函数将输入的表达式程序编译并运行、最后返回状态码。然后构造单元测试：</p>
+<pre><code class="language-go">func TestRun(t *testing.T) {
+	for i, tt := range tests {
+		if got := run(tt.code); got != tt.value {
+			t.Fatalf(&quot;%d: expect = %v, got = %v&quot;, i, tt.value, got)
+		}
+	}
+}
+
+var tests = []struct {
+	code  string
+	value int
+}{
+	{code: &quot;1&quot;, value: 1},
+	{code: &quot;1+1&quot;, value: 2},
+	{code: &quot;1 + 3 - 2  &quot;, value: 2},
+	{code: &quot;1+2+3+4&quot;, value: 10},
+}
+</code></pre>
+<p>确认单元测试没有问题后，更新main函数：</p>
+<pre><code class="language-go">func main() {
+	code, _ := io.ReadAll(os.Stdin)
+	fmt.Println(run(string(code)))
+}
+</code></pre>
+<p>通过以下命令执行：</p>
+<pre><code>$ echo &quot;1+2+3&quot; | go run main.go 
+6
+</code></pre>
 
                     </main>
 
