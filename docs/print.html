@@ -216,6 +216,7 @@ _main:
 	for i, tok := range tokens {
 		if i == 0 {
 			fmt.Fprintln(&amp;buf, `    mov rax,`, tokens[i])
+			continue
 		}
 		switch tok {
 		case &quot;+&quot;:

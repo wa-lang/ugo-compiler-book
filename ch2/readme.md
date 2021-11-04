@@ -30,6 +30,7 @@ func gen_asm(tokens []string) string {
 	for i, tok := range tokens {
 		if i == 0 {
 			fmt.Fprintln(&buf, `    mov rax,`, tokens[i])
+			continue
 		}
 		switch tok {
 		case "+":
