@@ -1,5 +1,5 @@
 [book]
-title = "从头开发一个迷你Go语言编译器"
+title = "从头实现µGo语言"
 authors = ["chai2010"]
 description = "从头开发一个迷你Go语言编译器"
 language = "zh"
@@ -8,3 +8,7 @@ src = "."
 
 [build]
 build-dir = "docs"
+
+[output.html]
+git-repository-url = "https://github.com/chai2010/ugo-compiler-book"
+git-repository-icon = "fa-github"
