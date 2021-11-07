@@ -20,4 +20,5 @@
 - [异常](./ch13-panic/readme.md)
 - [CGO](./ch14-cgo/readme.md)
 - [WASM](./ch15-wasm/readme.md)
+- [类型系统](./ch16-type-system/readme.md)
 - [附录](./ch16/readme.md)
