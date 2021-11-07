@@ -1,0 +1,4 @@
+default:
+	go run .
+
+clean:
