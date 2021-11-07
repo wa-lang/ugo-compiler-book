@@ -1,0 +1,7 @@
+func main() {
+	var sum int
+	for i := 0; i <= 100; i = i+1 {
+		sum = sum+1
+	}
+	println(sum)
+}

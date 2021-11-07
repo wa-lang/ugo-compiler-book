@@ -5,7 +5,7 @@
   - [最小编译器](./ch1-basic/mini-compiler.md)
   - [LLVM汇编简介](./ch1-basic/llvm-ir.md)
 - [表达式](./ch2-expr/readme.md)
-  - [可加减的表达式](./ch2-expr/expr-add-sub.md)
+  - [加减法表达式](./ch2-expr/expr-add-sub.md)
   - [可乘除的表达式](./ch2-expr/expr-mul-div.md)
 - [if分支](./ch3-if/readme.md)
 - [for循环](./ch4-for/readme.md)

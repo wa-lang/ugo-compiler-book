@@ -1,19 +1,17 @@
-# 可加减的表达式
+# 加减法表达式
 
 在前一节我们通过最小编译器将一个整数编译为可以返回相同状态码的程序。现在我们尝试将加法和减法的表达式编译为同样的程序。
 
-比如有 `1+3-2` 表达式，手工编写对应的汇编程序如下：
+比如有 `1+3-2` 表达式，手工编写对应的LLVM汇编程序如下：
 
-```s
-.intel_syntax noprefix
-.globl _main
-
-_main:
-	// 1 + 3 - 2
-	mov rax, 1 // rax = 1
-	add rax, 3 // rax = rax + 3
-	sub rax, 2 // rax = rax - 2
-	ret
+```ll
+define i32 @main() {
+	; 1 + 3 - 2
+	%t0 = add i32 0, 1   ; t0 = 1
+	%t1 = add i32 %t0, 3 ; t1 = t0 + 3
+	%t2 = sub i32 %t1, 2 ; t2 = t1 - 2
+	ret i32 %t2
+}
 ```
 
 如果将输入的`1+3-2`转化为`[]string{"1", "+", "3", "-", "2"}` 形式，我们则可以通过以下代码输出对应的汇编程序：
@@ -21,25 +19,31 @@ _main:
 ```go
 func gen_asm(tokens []string) string {
 	var buf bytes.Buffer
+	fmt.Fprintln(&buf, `define i32 @main() {`)
 
-	fmt.Fprintln(&buf, `.intel_syntax noprefix`)
-	fmt.Fprintln(&buf, `.globl _main`)
-	fmt.Fprintln(&buf)
-
-	fmt.Fprintln(&buf, `_main:`)
+	var idx int
 	for i, tok := range tokens {
 		if i == 0 {
-			fmt.Fprintln(&buf, `    mov rax,`, tokens[i])
+			fmt.Fprintf(&buf, "\t%%t%d = add i32 0, %v\n",
+				idx, tokens[i],
+			)
 			continue
 		}
 		switch tok {
 		case "+":
-			fmt.Fprintln(&buf, `    add rax,`, tokens[i+1])
+			idx++
+			fmt.Fprintf(&buf, "\t%%t%d = add i32 %%t%d, %v\n",
+				idx, idx-1, tokens[i+1],
+			)
 		case "-":
-			fmt.Fprintln(&buf, `    sub rax,`, tokens[i+1])
+			idx++
+			fmt.Fprintf(&buf, "\t%%t%d = sub i32 %%t%d, %v\n",
+				idx, idx-1, tokens[i+1],
+			)
 		}
 	}
-	fmt.Fprintln(&buf, `    ret`)
+	fmt.Fprintf(&buf, "\tret i32 %%t%d\n", idx)
+	fmt.Fprintln(&buf, `}`)
 
 	return buf.String()
 }
@@ -75,8 +79,8 @@ func compile(code string) {
 	tokens := parse_tokens(code)
 	output := gen_asm(tokens)
 
-	os.WriteFile("_output_amd64.s", []byte(output), 0666)
-	exec.Command("gcc", "-o", "a.out", "_output_amd64.s").Run()
+	os.WriteFile("a.out.ll", []byte(output), 0666)
+	exec.Command("clang", "-Wno-override-module", "-o", "a.out", "a.out.ll").Run()
 }
 ```
 
