@@ -12,7 +12,7 @@ func TestLex(t *testing.T) {
 	}{
 		{"1", []string{"1"}},
 		{"1+22*333", []string{"1", "+", "22", "*", "333"}},
-		{"1+22*(3+4)", []string{"1", "+", "22", "*", "(", "3", "+", "4", ")"}},
+		{"1+2*(3+4)", []string{"1", "+", "2", "*", "(", "3", "+", "4", ")"}},
 	}
 	for i, tt := range tests {
 		if got := Lex(tt.input); !reflect.DeepEqual(got, tt.tokens) {
