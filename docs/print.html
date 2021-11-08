@@ -671,7 +671,79 @@ func JSONString(x interface{}) string {
 </code></pre>
 <p>然后结合前一节的AST到LLVM的编译函数就可以实现表达式到可执行程序的翻译了。</p>
 <h2 id="基于-goyacc-构造解析器"><a class="header" href="#基于-goyacc-构造解析器">基于 goyacc 构造解析器</a></h2>
-<p>TODO</p>
+<p>goyacc 是Go语言版本的 yacc 工具，Go1.5之前用于Go自身编译器的构建。我们现在尝试基于 goyacc 构造语法解析器。</p>
+<p>将EBNF语法改成 goyacc 支持 BNF 语法：</p>
+<pre><code class="language-yacc">%{
+package main
+%}
+
+%union {
+	node *ExprNode
+}
+
+%token &lt;node&gt; NUM
+%token '+' '-' '*' '/' '(' ')'
+
+%type &lt;node&gt; expr mul primary
+
+%%
+
+top: expr { yyrcvr.lval.node = $1 }
+
+expr: mul { $$ = $1 }
+	| expr '+' mul { $$ = NewExprNode(&quot;+&quot;, $1, $3) }
+	| expr '-' mul { $$ = NewExprNode(&quot;-&quot;, $1, $3) }
+
+mul: primary { $$ = $1 }
+	| mul '*' primary { $$ = NewExprNode(&quot;*&quot;, $1, $3) }
+	| mul '/' primary { $$ = NewExprNode(&quot;/&quot;, $1, $3) }
+
+primary: NUM { $$ = $1 }
+	| '(' expr ')' { $$ = $2 }
+
+%%
+</code></pre>
+<p>使用 <code>goyacc expr.y</code> 生成 y.go 语法解析代码。</p>
+<p>然后构建适配的词法解析器：</p>
+<pre><code class="language-go">type exprLex struct {
+	tokens []string
+	pos    int
+}
+
+func (p *exprLex) read() (tok string) {
+	if p.pos &gt;= len(p.tokens) {
+		return &quot;&quot;
+	}
+	tok = p.tokens[p.pos]
+	p.pos++
+	return
+}
+
+func (p *exprLex) Lex(yylval *yySymType) int {
+	switch s := p.read(); s {
+	case &quot;+&quot;, &quot;-&quot;, &quot;*&quot;, &quot;/&quot;, &quot;(&quot;, &quot;)&quot;:
+		return int(s[0])
+	default:
+		if s != &quot;&quot; {
+			yylval.node = NewExprNode(s, nil, nil)
+			return NUM
+		}
+		return 0
+	}
+}
+
+func (x *exprLex) Error(s string) {
+	panic(s)
+}
+</code></pre>
+<p>最后包装 ParseExpr 函数：</p>
+<pre><code class="language-go">func ParseExpr(tokens []string) *ExprNode {
+	parser := yyNewParser().(*yyParserImpl)
+	parser.Parse(&amp;exprLex{tokens:tokens})
+	return parser.lval.node
+}
+</code></pre>
+<p>这样我们就得到了另一种语法解析器的实现。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="if分支"><a class="header" href="#if分支">if分支</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="for循环"><a class="header" href="#for循环">for循环</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="函数"><a class="header" href="#函数">函数</a></h1>

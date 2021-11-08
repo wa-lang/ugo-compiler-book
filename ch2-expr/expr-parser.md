@@ -208,4 +208,87 @@ func JSONString(x interface{}) string {
 
 ## 基于 goyacc 构造解析器
 
-TODO
+goyacc 是Go语言版本的 yacc 工具，Go1.5之前用于Go自身编译器的构建。我们现在尝试基于 goyacc 构造语法解析器。
+
+将EBNF语法改成 goyacc 支持 BNF 语法：
+
+```yacc
+%{
+package main
+%}
+
+%union {
+	node *ExprNode
+}
+
+%token <node> NUM
+%token '+' '-' '*' '/' '(' ')'
+
+%type <node> expr mul primary
+
+%%
+
+top: expr { yyrcvr.lval.node = $1 }
+
+expr: mul { $$ = $1 }
+	| expr '+' mul { $$ = NewExprNode("+", $1, $3) }
+	| expr '-' mul { $$ = NewExprNode("-", $1, $3) }
+
+mul: primary { $$ = $1 }
+	| mul '*' primary { $$ = NewExprNode("*", $1, $3) }
+	| mul '/' primary { $$ = NewExprNode("/", $1, $3) }
+
+primary: NUM { $$ = $1 }
+	| '(' expr ')' { $$ = $2 }
+
+%%
+```
+
+使用 `goyacc expr.y` 生成 y.go 语法解析代码。
+
+然后构建适配的词法解析器：
+
+```go
+type exprLex struct {
+	tokens []string
+	pos    int
+}
+
+func (p *exprLex) read() (tok string) {
+	if p.pos >= len(p.tokens) {
+		return ""
+	}
+	tok = p.tokens[p.pos]
+	p.pos++
+	return
+}
+
+func (p *exprLex) Lex(yylval *yySymType) int {
+	switch s := p.read(); s {
+	case "+", "-", "*", "/", "(", ")":
+		return int(s[0])
+	default:
+		if s != "" {
+			yylval.node = NewExprNode(s, nil, nil)
+			return NUM
+		}
+		return 0
+	}
+}
+
+func (x *exprLex) Error(s string) {
+	panic(s)
+}
+```
+
+最后包装 ParseExpr 函数：
+
+```go
+func ParseExpr(tokens []string) *ExprNode {
+	parser := yyNewParser().(*yyParserImpl)
+	parser.Parse(&exprLex{tokens:tokens})
+	return parser.lval.node
+}
+```
+
+这样我们就得到了另一种语法解析器的实现。
