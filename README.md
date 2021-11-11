@@ -2,6 +2,9 @@
 
 本书尝试以实现 µGo 编译器为线索，尝试以边学习边完善的自举方式开发一个玩具语言。
 
+- 在线阅读: https://chai2010.cn/ugo-compiler-book/
+- µGo 输出C语言: https://github.com/3dgen/ugo-c-book
+
 ## µGo 介绍
 
 µGo 是迷你Go语言玩具版本，只保留最基本的int数据类型、变量定义和函数、分支和循环等最基本的特性。µGo 有以下的关键字：`var`、`func`、`if`、`for`、`return`。此外有一个`int`内置的数据类型，`func input() int` 函数读取一个整数，`println(...)` 打印函数。
