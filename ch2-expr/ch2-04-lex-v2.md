@@ -122,4 +122,70 @@ func Lex(code string) (tokens []Token) {
 
 ## 2.4.4 同步调整其他部分
 
-词法定义从string变化为Token，AST、goyacc语法文件和编译器都需要做相应的调整（程序结构可以不用变化）。这样我们就实现了相对完整的四则运算的编译器。
+词法定义从string变化为Token，AST、goyacc语法文件和编译器都需要做相应的调整（程序结构可以不用变化）。
+
+首先是语法树的值变成了Token：
+
+```go
+type ExprNode struct {
+	Token           // +, -, *, /, 123
+	Left  *ExprNode `json:",omitempty"`
+	Right *ExprNode `json:",omitempty"`
+}
+
+func NewExprNode(token Token, left, right *ExprNode) *ExprNode {
+	return &ExprNode{
+		Token: token,
+		Left:  left,
+		Right: right,
+	}
+}
+```
+
+现在的Token包含了完整的信息，对应每个终结字符。我们在表示节点状态的结构体中增加tok字段：
+
+```yacc
+// expr.y
+%union {
+	node *ExprNode
+	tok  Token
+}
+```
+
+而用于和goyacc适配的词法解析函数针对每个终结字符填充tok字段：
+
+```go
+const EOF = 0 // EOF 必须为 0 (类似C语言字符串的'\0'结尾), 表示结束
+
+func (p *exprLex) Lex(yylval *yySymType) int {
+	if p.pos >= len(p.tokens) {
+		return EOF
+	}
+	
+	yylval.tok = p.tokens[p.pos]
+	p.pos++
+
+	return int(yylval.tok.Type)
+}
+```
+
+词法分析器产生的都是终结记号、或者类似解析树的叶子结点，非叶子结点则对应BNF中定义的规则。终结记号的信息通过`exprLex.Lex`方法填充到`yylval.tok`（就是`%union`新添加到字段）。而BNF定义的规则对应中间的节点依然是node字段，通过以下代码生成：
+
+```yacc
+top: expr { yyrcvr.lval.node = $1 }
+
+expr: mul { $$ = $1 }
+	| expr ADD mul { $$ = NewExprNode($2, $1, $3) }
+	| expr SUB mul { $$ = NewExprNode($2, $1, $3) }
+
+mul: primary { $$ = $1 }
+	| mul MUL primary { $$ = NewExprNode($2, $1, $3) }
+	| mul DIV primary { $$ = NewExprNode($2, $1, $3) }
+
+primary: NUMBER { $$ = NewExprNode($1, nil, nil) }
+	| '(' expr ')' { $$ = $2 }
+```
+
+比如 primary 对应 NUMBER 时，`$$ = NewExprNode($1, nil, nil)` 代码中 `$$` 表示 primary 对应的节点内字段（就是 node），而 `$1` 则对应 NUMBER 终结记号对应的字段（对应新加的 tok 字段）。然后通过 NewExprNode 递归从底往上构造语法树。在最顶层的 top 规则，直接通过 `yyrcvr.lval.node = $1` 将构造的语法树记录到 `parser.lval.node` 中。
+
+最后将 compiler 相关部分也响应的调整即可，这样我们就实现了相对完整的四则运算的编译器。

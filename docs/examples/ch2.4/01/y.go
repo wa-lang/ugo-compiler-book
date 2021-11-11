@@ -101,11 +101,11 @@ var yyPact = [...]int{
 }
 
 var yyPgo = [...]int{
-	0, 12, 8, 3, 6,
+	0, 6, 12, 8, 3,
 }
 
 var yyR1 = [...]int{
-	0, 4, 1, 1, 1, 2, 2, 2, 3, 3,
+	0, 1, 2, 2, 2, 3, 3, 3, 4, 4,
 }
 
 var yyR2 = [...]int{
@@ -113,8 +113,8 @@ var yyR2 = [...]int{
 }
 
 var yyChk = [...]int{
-	-1000, -4, -1, -2, -3, 5, 12, 6, 7, 8,
-	9, -1, -2, -2, -3, -3, 13,
+	-1000, -1, -2, -3, -4, 5, 12, 6, 7, 8,
+	9, -2, -3, -3, -4, -4, 13,
 }
 
 var yyDef = [...]int{
@@ -515,7 +515,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line expr.y:34
 		{
-			yyrcvr.lval.node = yyDollar[1].node
+			yyVAL.node = yyDollar[1].node
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
