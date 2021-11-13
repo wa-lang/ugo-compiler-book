@@ -59,7 +59,7 @@ func main() {
 
 		fmt.Println("lex:")
 		for i, x := range app.GetTokens() {
-			fmt.Printf("\t%03d: %-20v # %v\n", i, x, token.PosString(filename, []byte(code), x.Pos))
+			fmt.Printf("%6d  %-20v # %v\n", i, x, token.PosString(filename, []byte(code), x.Pos))
 		}
 	}
 	if *flagAst {
