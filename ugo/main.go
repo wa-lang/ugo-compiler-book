@@ -15,6 +15,7 @@ import (
 var (
 	flagFile = flag.String("file", "", "set ugo file")
 	flagCode = flag.String("code", "", "set ugo code")
+	flagMode = flag.String("mode", "expr", "set ugo code mode(expr|file)")
 
 	flagLex  = flag.Bool("lex", false, "show lex tokens")
 	flagAst  = flag.Bool("ast", false, "show ast")
@@ -52,7 +53,7 @@ func main() {
 		filename = "_a.out.ugo"
 	}
 
-	app := runner.NewApp(filename, code)
+	app := runner.NewApp(filename, code, runner.CodeMode(*flagMode))
 
 	if *flagLex {
 		if _, err := os.Lstat(filename); err != nil {
@@ -76,5 +77,8 @@ func main() {
 		fmt.Println(llir)
 	}
 
-	app.Run()
+	if err := app.Run(); err != nil {
+		fmt.Println("ERR:", err)
+		os.Exit(1)
+	}
 }

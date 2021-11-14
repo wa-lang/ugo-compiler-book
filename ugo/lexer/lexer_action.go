@@ -242,6 +242,7 @@ func (l *lexer) lexMultiLineComment() {
 }
 
 func (l *lexer) lexIdentifier() {
+	l.start = l.pos
 	for {
 		if r := l.next(); !isAlphaNumeric(r) {
 			l.backup()

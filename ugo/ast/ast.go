@@ -6,24 +6,22 @@ import (
 
 // File 表示 µGo 文件对应的语法树.
 type File struct {
-	Name     string          // 文件名
-	Data     []byte          // 源文件
-	Doc      *CommentGroup   // 文档注释
-	List     []Stmt          // 语句列表
-	Comments []*CommentGroup // 文件中的全部注释
+	Name string // 文件名
+	Data []byte // 源文件
+
+	Pkg     *PackageSpec  // 包信息
+	Imports []*ImportSpec // 导入包信息
+	Types   []*TypeSpec   // 类型信息
+	Consts  []*ConstSpec  // 常量信息
+	Globals []*VarSpec    // 全局变量
+	Funcs   []*Func       // 函数列表
 }
 
 func (p *File) Pos() token.Pos {
-	if len(p.List) > 0 {
-		return p.List[0].Pos()
-	}
-	return token.NoPos
+	return token.Pos(1)
 }
 func (p *File) End() token.Pos {
-	if n := len(p.List); n > 0 {
-		return p.List[n-1].End()
-	}
-	return token.NoPos
+	return token.Pos(1 + len(p.Data))
 }
 
 // Node 表示一个语法树节点.
@@ -44,6 +42,109 @@ type Stmt interface {
 type Expr interface {
 	Node
 	expr_private()
+}
+
+// 包信息
+type PackageSpec struct {
+	Doc     *CommentGroup
+	Pkg     token.Token // packaage 位置
+	PkgName *Ident      // 包名
+}
+
+func (p *PackageSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *PackageSpec) End() token.Pos {
+	return token.NoPos
+}
+
+// TypeSpec 表示一个类型信息
+type TypeSpec struct {
+	TypePos token.Pos
+	Assign  token.Pos // =
+	Name    *Ident
+	Type    Expr
+}
+
+func (p *TypeSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *TypeSpec) End() token.Pos {
+	return token.NoPos
+}
+
+// ImportSpec 表示一个导入包
+type ImportSpec struct {
+	ImportPos token.Pos
+	Name      *Ident
+	Path      *Ident
+}
+
+func (p *ImportSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *ImportSpec) End() token.Pos {
+	return token.NoPos
+}
+
+// 常量信息
+type ConstSpec struct {
+	ConstPos token.Pos // const 关键字位置
+	Name     *Ident    // 常量名字
+	Type     *Ident    // 常量类型, 可省略
+	Value    Expr      // 常量表达式
+}
+
+func (p *ConstSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *ConstSpec) End() token.Pos {
+	return token.NoPos
+}
+
+// 变量信息
+type VarSpec struct {
+	VarPos token.Pos // var 关键字位置
+	Name   *Ident    // 变量名字
+	Type   *Ident    // 变量类型, 可省略
+	Value  Expr      // 变量表达式
+}
+
+func (p *VarSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *VarSpec) End() token.Pos {
+	return token.NoPos
+}
+
+// 函数对象
+type Func struct {
+	FuncPos token.Pos  // var 关键字位置
+	Self    *Field     // 方法所属类型
+	Name    *Ident     // 变量名字
+	Args    []*Field   // 函数参数
+	Returns []*Field   // 返回值列表
+	Body    *BlockStmt // 函数体
+}
+
+func (p *Func) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *Func) End() token.Pos {
+	return token.NoPos
+}
+
+// 字段信息, 用于函数参数
+type Field struct {
+	Name *Ident
+	Type Expr
+}
+
+func (p *Field) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *Field) End() token.Pos {
+	return token.NoPos
 }
 
 // BlockStmt 表示一个语句块节点.
@@ -112,20 +213,29 @@ func (p *Ident) End() token.Pos { return p.NamePos + token.Pos(len(p.Name)) }
 
 // Number 表示一个数值.
 type Number struct {
-	ValuePos token.Pos // 数值的开始位置
-	ValueEnd token.Pos // 数值的结束位置
-	Value    int       // 数值
+	ValuePos token.Pos   // 数值的开始位置
+	ValueEnd token.Pos   // 数值的结束位置
+	Value    interface{} // 数值: int/float64/str
 }
 
 func (p *Number) Pos() token.Pos { return p.ValuePos }
 func (p *Number) End() token.Pos { return p.ValueEnd }
 
+func (p *Number) IntValue() int {
+	v, _ := p.Value.(int)
+	return v
+}
+
+func (p *Number) FloatValue() float64 {
+	v, _ := p.Value.(float64)
+	return v
+}
+
 // BinaryExpr 表示一个二元表达式.
 type BinaryExpr struct {
-	X     Expr        // 左边的运算对象
-	OpPos token.Pos   // 运算符的位置
-	Op    token.Token // 运算符
-	Y     Expr        // 右边的运算对象
+	Op token.Token // 运算符
+	X  Expr        // 左边的运算对象
+	Y  Expr        // 右边的运算对象
 }
 
 func (p *BinaryExpr) Pos() token.Pos { return p.X.Pos() }

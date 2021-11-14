@@ -1,9 +1,8 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/chai2010/ugo/ast"
+	"github.com/chai2010/ugo/errors"
 	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
@@ -14,41 +13,13 @@ type Option struct {
 }
 
 func ParseFile(filename, src string, opt Option) (*ast.File, error) {
-	logger.Debugln("ParseFile:", string(src))
-
-	p := &parser{
-		filename: filename,
-		src:      src,
-		opt:      opt,
-	}
-	p.parseFile()
-	return p.file, p.err
-}
-
-func ParseBlock(filename, src string, opt Option) (*ast.BlockStmt, error) {
-	logger.Debugln("ParseBlock:", string(src))
-
-	p := &parser{
-		filename: filename,
-		src:      src,
-		opt:      opt,
-		input:    lexer.Lex(filename, string(src), lexer.Option{}),
-	}
-	p.block = p.parseBlock()
-	return p.block, p.err
+	p := newParser(filename, src, opt)
+	return p.ParseFile()
 }
 
 func ParseExpr(filename, src string, opt Option) (ast.Expr, error) {
-	logger.Debugln("ParseExpr:", string(src))
-
-	p := &parser{
-		filename: filename,
-		src:      src,
-		opt:      opt,
-		input:    lexer.Lex(filename, string(src), lexer.Option{}),
-	}
-	p.expr = p.parseExpr()
-	return p.expr, p.err
+	p := newParser(filename, src, opt)
+	return p.ParseExpr()
 }
 
 type parser struct {
@@ -61,13 +32,54 @@ type parser struct {
 	pos   int           // current position in the input.
 	width int           // width of last rune read from input.
 
-	file  *ast.File
-	block *ast.BlockStmt
-	expr  ast.Expr
-	err   error
+	file *ast.File
+	expr ast.Expr
+	err  error
 }
 
-func (p *parser) next() token.Token {
+func newParser(filename, src string, opt Option) *parser {
+	p := &parser{
+		filename: filename,
+		src:      src,
+		opt:      opt,
+		input:    lexer.Lex(filename, string(src), lexer.Option{}),
+	}
+	return p
+}
+
+func (p *parser) ParseFile() (file *ast.File, err error) {
+	logger.Debugln(string(p.src))
+
+	defer func() {
+		if r := recover(); r != nil {
+			if errx, ok := r.(*errors.Error); !ok {
+				panic(errx)
+			}
+		}
+		file, err = p.file, p.err
+	}()
+
+	p.parseFile()
+	return
+}
+
+func (p *parser) ParseExpr() (expr ast.Expr, err error) {
+	logger.Debugln(string(p.src))
+
+	defer func() {
+		if r := recover(); r != nil {
+			if errx, ok := r.(*errors.Error); !ok {
+				panic(errx)
+			}
+		}
+		expr, err = p.expr, p.err
+	}()
+
+	p.expr = p.parseExpr()
+	return
+}
+
+func (p *parser) nextToken() token.Token {
 	if p.pos >= len(p.input) {
 		p.width = 0
 		return token.Token{Type: token.EOF}
@@ -78,41 +90,46 @@ func (p *parser) next() token.Token {
 	return tok
 }
 
-func (p *parser) peek() token.Token {
-	tok := p.next()
-	p.backup()
+func (p *parser) peekToken() token.Token {
+	tok := p.nextToken()
+	p.backupToken()
 	return tok
 }
 
 func (p *parser) peekTokenType() token.TokenType {
-	return p.peek().Type
+	return p.peekToken().Type
 }
 
-func (p *parser) backup() {
+func (p *parser) backupToken() {
 	p.pos -= p.width
 }
 
-func (p *parser) ignore() {
+func (p *parser) ignoreToken() {
 	p.start = p.pos
 }
 
-func (p *parser) accept(validTokens ...token.TokenType) bool {
-	tok := p.next()
+func (p *parser) acceptToken(validTokens ...token.TokenType) (token.Token, bool) {
+	tok := p.nextToken()
 	for _, x := range validTokens {
 		if tok.Type == x {
-			return true
+			return tok, true
 		}
 	}
-	p.backup()
-	return false
+	p.backupToken()
+	return token.Token{}, false
 }
 
-func (p *parser) acceptRun(validTokens ...token.TokenType) {
-	for p.accept(validTokens...) {
+func (p *parser) acceptTokenRun(validTokens ...token.TokenType) {
+	for {
+		if _, ok := p.acceptToken(validTokens...); !ok {
+			break
+		}
 	}
-	p.backup()
+	p.backupToken()
 }
 
 func (p *parser) errorf(format string, args ...interface{}) {
-	p.err = fmt.Errorf(format, args...)
+	pos := token.PosString(p.filename, []byte(p.src), token.Pos(p.start+1))
+	p.err = errors.Newf(pos, format, args...)
+	panic(p.err)
 }

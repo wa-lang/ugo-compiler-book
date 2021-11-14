@@ -11,9 +11,9 @@ func walk(n Node, fn func(n Node) bool) {
 	}
 	switch n := n.(type) {
 	case *File:
-		for _, stmt := range n.List {
-			walk(stmt, fn)
-		}
+		//for _, stmt := range n.List {
+		//	walk(stmt, fn)
+		//}
 
 	case *IfStmt:
 		walk(n.Cond, fn)

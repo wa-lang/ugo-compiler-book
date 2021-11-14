@@ -13,6 +13,13 @@ type Token struct {
 	Value   interface{}
 }
 
+func (i Token) EndPos() Pos {
+	if i.Pos != NoPos {
+		return i.Pos + Pos(len(i.Literal))
+	}
+	return NoPos
+}
+
 func (i Token) IdentName() string {
 	return i.Literal
 }

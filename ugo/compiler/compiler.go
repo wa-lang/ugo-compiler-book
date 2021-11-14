@@ -14,11 +14,16 @@ type Compiler struct {
 }
 
 func (p *Compiler) CompileFile(f *ast.File) string {
-	panic("todo")
-}
+	var buf bytes.Buffer
 
-func (p *Compiler) CompileBlock(blk *ast.BlockStmt) string {
-	panic("todo")
+	fmt.Fprintln(&buf, builtin_llir)
+	fmt.Fprintln(&buf)
+
+	fmt.Fprintf(&buf, "define i32 @main() {\n")
+	fmt.Fprintf(&buf, "\tret i32 0; TODO\n")
+	fmt.Fprintf(&buf, "}\n")
+
+	return buf.String()
 }
 
 func (p *Compiler) CompileExpr(node ast.Expr) string {

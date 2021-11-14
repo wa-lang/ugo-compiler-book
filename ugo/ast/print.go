@@ -17,7 +17,7 @@ func Print(node Node) {
 func Fprint(w io.Writer, node Node) {
 	fset := gotoken.NewFileSet()
 
-	if f, ok := node.(*File); ok {
+	if f, _ := node.(*File); f != nil {
 		file := *f
 		if len(file.Data) > 0 {
 			fset.AddFile(f.Name, 1, len(f.Data)).SetLinesForContent(f.Data)
