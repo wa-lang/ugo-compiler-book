@@ -15,7 +15,7 @@ type Option struct {
 	DontInsertSemi bool
 }
 
-func Lex(name, input string, opt Option) []Item {
+func Lex(name, input string, opt Option) []token.Token {
 	l := &lexer{
 		name:  name,
 		input: input,
@@ -28,12 +28,12 @@ func Lex(name, input string, opt Option) []Item {
 // lexer holds the state of the scanner.
 type lexer struct {
 	opt   Option
-	name  string // used only for error reports.
-	input string // the string being scanned.
-	start int    // start position of this item.
-	pos   int    // current position in the input.
-	width int    // width of last rune read from input.
-	items []Item // channel of scanned items.
+	name  string        // used only for error reports.
+	input string        // the string being scanned.
+	start int           // start position of this item.
+	pos   int           // current position in the input.
+	width int           // width of last rune read from input.
+	items []token.Token // channel of scanned items.
 }
 
 // next returns the next rune in the input.
@@ -63,9 +63,9 @@ func (l *lexer) backup() {
 }
 
 // emit passes an item back to the client.
-func (l *lexer) emit(tok token.Token) {
-	l.items = append(l.items, Item{
-		Token:   tok,
+func (l *lexer) emit(tok token.TokenType) {
+	l.items = append(l.items, token.Token{
+		Type:    tok,
 		Literal: l.input[l.start:l.pos],
 		Pos:     token.Pos(l.pos + 1),
 	})
@@ -103,8 +103,8 @@ func (l *lexer) lineNumber() int {
 // error returns an error token and terminates the scan by passing
 // back a nil pointer that will be the next state, terminating l.run.
 func (l *lexer) errorf(format string, args ...interface{}) {
-	l.items = append(l.items, Item{
-		Token:   token.ILLEGAL,
+	l.items = append(l.items, token.Token{
+		Type:    token.ILLEGAL,
 		Literal: fmt.Sprintf(format, args...),
 		Pos:     token.Pos(l.start + 1),
 	})

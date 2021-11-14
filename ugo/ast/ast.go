@@ -131,6 +131,16 @@ type BinaryExpr struct {
 func (p *BinaryExpr) Pos() token.Pos { return p.X.Pos() }
 func (p *BinaryExpr) End() token.Pos { return p.Y.End() }
 
+// UnaryExpr 表示一个一元表达式.
+type UnaryExpr struct {
+	OpPos token.Pos   // 运算符的位置
+	Op    token.Token // 运算符
+	X     Expr        // 运算对象
+}
+
+func (p *UnaryExpr) Pos() token.Pos { return p.OpPos }
+func (p *UnaryExpr) End() token.Pos { return p.X.End() }
+
 // ParenExpr 表示一个圆括弧表达式.
 type ParenExpr struct {
 	Lparen token.Pos // "(" 的位置
@@ -140,6 +150,17 @@ type ParenExpr struct {
 
 func (p *ParenExpr) Pos() token.Pos { return p.Lparen }
 func (p *ParenExpr) End() token.Pos { return p.Rparen }
+
+// CallExpr 表示一个函数调用
+type CallExpr struct {
+	Fun    *Ident    // 函数名字
+	Lparen token.Pos //  "(" 的位置
+	Args   []Expr    // 调用参数列表
+	Rparen token.Pos // ")" 的位置
+}
+
+func (p *CallExpr) Pos() token.Pos { return p.Fun.Pos() }
+func (p *CallExpr) End() token.Pos { return p.Rparen }
 
 // Comment 表示一个注释
 type Comment struct {

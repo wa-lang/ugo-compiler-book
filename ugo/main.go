@@ -13,11 +13,13 @@ import (
 )
 
 var (
-	flagFile  = flag.String("file", "", "set ugo file")
-	flagCode  = flag.String("code", "", "set ugo code")
-	flagLex   = flag.Bool("lex", false, "show lex tokens")
-	flagAst   = flag.Bool("ast", false, "show ast")
-	flagLLIR  = flag.Bool("llir", false, "show llvm ir")
+	flagFile = flag.String("file", "", "set ugo file")
+	flagCode = flag.String("code", "", "set ugo code")
+
+	flagLex  = flag.Bool("lex", false, "show lex tokens")
+	flagAst  = flag.Bool("ast", false, "show ast")
+	flagLLIR = flag.Bool("llir", false, "show llvm ir")
+
 	flagDebug = flag.Bool("debug", false, "set debug mode")
 )
 
@@ -59,7 +61,7 @@ func main() {
 
 		fmt.Println("lex:")
 		for i, x := range app.GetTokens() {
-			fmt.Printf("%6d  %-20v # %v\n", i, x, token.PosString(filename, []byte(code), x.Pos))
+			fmt.Printf("\t%03d: %-20v # %v\n", i, x, token.PosString(filename, []byte(code), x.Pos))
 		}
 	}
 	if *flagAst {

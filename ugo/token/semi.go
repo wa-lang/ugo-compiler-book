@@ -1,7 +1,7 @@
 package token
 
 // https://golang.google.cn/ref/spec#Semicolons
-func (tok Token) IsShouldInsertSemi() bool {
+func (tok TokenType) IsShouldInsertSemi() bool {
 	// an identifier
 	// an integer, floating-point, imaginary, rune, or string literal
 	// one of the keywords break, continue, fallthrough, or return
