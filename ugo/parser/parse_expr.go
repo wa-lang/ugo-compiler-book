@@ -8,6 +8,19 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
+// x, y :=
+func (p *parser) parseExprList() (exprs []ast.Expr) {
+	for {
+		exprs = append(exprs, p.parseExpr())
+		if p.peekTokenType() != token.COMMA {
+			break
+		}
+	}
+
+	p.acceptTokenRun(token.SEMICOLON)
+	return
+}
+
 func (p *parser) parseExpr() ast.Expr {
 	logger.Debugln("peek =", p.peekToken())
 
@@ -15,8 +28,6 @@ func (p *parser) parseExpr() ast.Expr {
 
 	for {
 		switch p.peekTokenType() {
-		case token.SEMICOLON:
-			return expr
 		case token.ADD, token.SUB:
 			tok := p.nextToken()
 			expr = &ast.BinaryExpr{
@@ -70,8 +81,6 @@ func (p *parser) parseExpr_primary() ast.Expr {
 
 	peek := p.peekToken()
 
-	logger.Debugf("peek = %v\n", peek)
-
 	switch peek.Type {
 	case token.IDENT:
 		ident := p.nextToken()
@@ -122,7 +131,6 @@ func (p *parser) parseExpr_primary() ast.Expr {
 		p.nextToken()
 		return expr
 	default:
-		p.errorf("todo: peek=%v", peek)
-		panic(p.err)
+		panic(fmt.Errorf("expr: %v", p.peekToken()))
 	}
 }

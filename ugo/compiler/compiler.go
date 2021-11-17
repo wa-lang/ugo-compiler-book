@@ -20,10 +20,26 @@ func (p *Compiler) CompileFile(f *ast.File) string {
 	fmt.Fprintln(&buf)
 
 	fmt.Fprintf(&buf, "define i32 @main() {\n")
-	fmt.Fprintf(&buf, "\tret i32 0; TODO\n")
+	fmt.Fprintf(&buf, "\tret i32 %s\n", p.genMainFunc(&buf, f))
 	fmt.Fprintf(&buf, "}\n")
 
 	return buf.String()
+}
+
+func (p *Compiler) genMainFunc(w io.Writer, f *ast.File) string {
+	for _, fn := range f.Funcs {
+		if fn.Name.Name == "main" {
+			if fn.Body != nil {
+				for _, stmt := range fn.Body.List {
+					switch stmt := stmt.(type) {
+					case *ast.AssignStmt:
+						return p.genValue(w, stmt.Value)
+					}
+				}
+			}
+		}
+	}
+	return "0"
 }
 
 func (p *Compiler) CompileExpr(node ast.Expr) string {

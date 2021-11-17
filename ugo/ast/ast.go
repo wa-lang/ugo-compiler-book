@@ -194,7 +194,7 @@ func (p *ForStmt) End() token.Pos { return p.Body.End() }
 
 // AssignStmt 表示一个赋值语句节点.
 type AssignStmt struct {
-	Target *Ident    // 要赋值的目标
+	Target Expr      // 要赋值的目标
 	TokPos token.Pos // ':=' 的位置
 	Value  Expr      // 值
 }

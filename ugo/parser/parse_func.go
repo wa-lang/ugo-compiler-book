@@ -11,39 +11,39 @@ import (
 // func (p *Type) method() int
 // func() (int, int) {}
 
-func (p *parser) parseFunc() {
-	logger.Debugln("peek =", p.peekToken())
+func (p *parser) parseFunc() *ast.Func {
+	tokFunc := p.mustAcceptToken(token.FUNC)
 
-	tokFunc, ok := p.acceptToken(token.FUNC)
-	if !ok {
-		return
-	}
-
-	var funcSpec = ast.Func{
+	var funcSpec = &ast.Func{
 		FuncPos: tokFunc.Pos,
 	}
 
 	switch p.peekTokenType() {
 	case token.IDENT:
-		p.parseFunc_func(&funcSpec)
+		p.backupToken()
+		p.parseFunc_func(funcSpec)
 	case token.LPAREN:
-		p.parseFunc_method(&funcSpec)
+		p.parseFunc_method(funcSpec)
 	default:
 		p.errorf("invalid token = %v", token.IDENT, p.peekToken())
 	}
 
-	p.file.Funcs = append(p.file.Funcs, &funcSpec)
+	return funcSpec
 }
 
 func (p *parser) parseFunc_func(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
+	p.mustAcceptToken(token.FUNC)
 
 	p.parseFunc_sig_name(fn)
 	p.parseFunc_sig_args(fn)
 	p.parseFunc_sig_returns(fn)
-	p.parseFunc_body(fn)
 
-	p.acceptToken(token.SEMICOLON)
+	// 函数声明
+	if p.peekTokenType() == token.LBRACE {
+		fn.Body = p.parseStmt_block()
+	}
+
+	p.acceptTokenRun(token.SEMICOLON)
 }
 
 func (p *parser) parseFunc_method(fn *ast.Func) {
@@ -53,9 +53,13 @@ func (p *parser) parseFunc_method(fn *ast.Func) {
 	p.parseFunc_sig_name(fn)
 	p.parseFunc_sig_args(fn)
 	p.parseFunc_sig_returns(fn)
-	p.parseFunc_body(fn)
 
-	p.acceptToken(token.SEMICOLON)
+	// 函数声明
+	if p.peekTokenType() == token.LBRACE {
+		fn.Body = p.parseStmt_block()
+	}
+
+	p.acceptTokenRun(token.SEMICOLON)
 }
 
 func (p *parser) parseFunc_closure(fn *ast.Func) {
@@ -63,9 +67,10 @@ func (p *parser) parseFunc_closure(fn *ast.Func) {
 
 	p.parseFunc_sig_args(fn)
 	p.parseFunc_sig_returns(fn)
-	p.parseFunc_body(fn)
 
-	p.acceptToken(token.SEMICOLON)
+	fn.Body = p.parseStmt_block()
+
+	p.acceptTokenRun(token.SEMICOLON)
 }
 
 func (p *parser) parseFunc_sig_self(fn *ast.Func) {
@@ -75,12 +80,7 @@ func (p *parser) parseFunc_sig_self(fn *ast.Func) {
 }
 
 func (p *parser) parseFunc_sig_name(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
-
-	tokIdent, ok := p.acceptToken(token.IDENT)
-	if !ok {
-		p.errorf("invalid token = %v", token.IDENT, p.peekToken())
-	}
+	tokIdent := p.mustAcceptToken(token.IDENT)
 
 	fn.Name = &ast.Ident{
 		NamePos: tokIdent.Pos,
@@ -163,12 +163,4 @@ func (p *parser) parseFunc_sig_field() (field *ast.Field) {
 
 	field.Type = p.parseExpr()
 	return field
-}
-
-func (p *parser) parseFunc_body(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
-
-	if _, ok := p.acceptToken(token.LBRACE); ok {
-		fn.Body = p.parseBlock()
-	}
 }

@@ -51,9 +51,11 @@ func (p *parser) ParseFile() (file *ast.File, err error) {
 	logger.Debugln(string(p.src))
 
 	defer func() {
-		if r := recover(); r != nil {
-			if errx, ok := r.(*errors.Error); !ok {
-				panic(errx)
+		if !logger.DebugMode {
+			if r := recover(); r != nil {
+				if errx, ok := r.(*errors.Error); !ok {
+					panic(errx)
+				}
 			}
 		}
 		file, err = p.file, p.err
@@ -108,6 +110,14 @@ func (p *parser) ignoreToken() {
 	p.start = p.pos
 }
 
+func (p *parser) mustAcceptToken(validTokens ...token.TokenType) token.Token {
+	if tok, ok := p.acceptToken(validTokens...); ok {
+		return tok
+	}
+	logger.Assert(false, "valid =", validTokens, ", peek =", p.peekToken())
+	return token.Token{}
+}
+
 func (p *parser) acceptToken(validTokens ...token.TokenType) (token.Token, bool) {
 	tok := p.nextToken()
 	for _, x := range validTokens {
@@ -116,7 +126,7 @@ func (p *parser) acceptToken(validTokens ...token.TokenType) (token.Token, bool)
 		}
 	}
 	p.backupToken()
-	return token.Token{}, false
+	return tok, false
 }
 
 func (p *parser) acceptTokenRun(validTokens ...token.TokenType) {
@@ -125,7 +135,6 @@ func (p *parser) acceptTokenRun(validTokens ...token.TokenType) {
 			break
 		}
 	}
-	p.backupToken()
 }
 
 func (p *parser) errorf(format string, args ...interface{}) {

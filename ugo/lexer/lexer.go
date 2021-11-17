@@ -31,10 +31,13 @@ func Lex(name, input string, opt Option) []token.Token {
 		l.items = append(l.items, token.Token{Type: token.EOF})
 	}
 
-	// return multi ';'
-	items := l.items[:1]
-	for _, x := range l.items[1:] {
-		if x.Type == token.SEMICOLON {
+	// remove multi ';'
+	items := l.items[:0]
+	for _, x := range l.items[:] {
+		if x.Type == token.COMMENT {
+			continue
+		}
+		if x.Type == token.SEMICOLON && len(items) > 0 {
 			if items[len(items)-1].Type == token.SEMICOLON {
 				continue
 			}

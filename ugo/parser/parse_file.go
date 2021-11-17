@@ -22,11 +22,14 @@ LoopImport:
 		switch tok := p.peekToken(); tok.Type {
 		case token.EOF:
 			return
+		case token.ILLEGAL:
+			panic(tok)
 		case token.SEMICOLON:
-			p.nextToken()
-			continue
+			p.acceptTokenRun(token.SEMICOLON)
+
 		case token.IMPORT:
-			p.parseImport()
+			p.file.Imports = append(p.file.Imports, p.parseImport())
+
 		default:
 			break LoopImport
 		}
@@ -36,17 +39,20 @@ LoopImport:
 		switch tok := p.peekToken(); tok.Type {
 		case token.EOF:
 			return
+		case token.ILLEGAL:
+			panic(tok)
 		case token.SEMICOLON:
-			p.nextToken()
-			continue
+			p.acceptTokenRun(token.SEMICOLON)
+
 		case token.CONST:
-			p.parseConst()
+			p.file.Consts = append(p.file.Consts, p.parseConst())
 		case token.TYPE:
-			p.parseType()
+			p.file.Types = append(p.file.Types, p.parseType())
 		case token.VAR:
-			p.parseVar()
+			p.file.Globals = append(p.file.Globals, p.parseVar())
 		case token.FUNC:
-			p.parseFunc()
+			p.file.Funcs = append(p.file.Funcs, p.parseFunc())
+
 		default:
 			p.errorf("unknown token: %v", tok)
 		}
@@ -54,17 +60,8 @@ LoopImport:
 }
 
 func (p *parser) parsePackage() {
-	logger.Debugln("peek =", p.peekToken())
-
-	pkg, ok := p.acceptToken(token.PACKAGE)
-	if !ok {
-		p.errorf("missing package")
-	}
-
-	ident, ok := p.acceptToken(token.IDENT)
-	if !ok {
-		p.errorf("missing package name")
-	}
+	pkg := p.mustAcceptToken(token.PACKAGE)
+	ident := p.mustAcceptToken(token.IDENT)
 
 	p.file.Pkg = &ast.PackageSpec{}
 

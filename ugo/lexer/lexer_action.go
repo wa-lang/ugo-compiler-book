@@ -16,7 +16,7 @@ func (l *lexer) run() {
 		case r == '\n':
 			if len(l.items) > 0 {
 				lastTok := l.items[len(l.items)-1].Type
-				if lastTok.IsShouldInsertSemi() && !l.opt.DontInsertSemi {
+				if lastTok.IsShouldAppendSemi() && !l.opt.DontInsertSemi {
 					l.emit(token.SEMICOLON)
 				}
 			}

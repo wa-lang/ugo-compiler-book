@@ -2,22 +2,16 @@ package parser
 
 import (
 	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
 // import "path/to/pkg"
 // import name "path/to/pkg"
-func (p *parser) parseImport() {
-	logger.Debugln("peek =", p.peekToken())
+func (p *parser) parseImport() *ast.ImportSpec {
+	tokImport := p.mustAcceptToken(token.IMPORT)
 
-	tok, ok := p.acceptToken(token.IMPORT)
-	if !ok {
-		return
-	}
-
-	var importSpec = ast.ImportSpec{
-		ImportPos: tok.Pos,
+	var importSpec = &ast.ImportSpec{
+		ImportPos: tokImport.Pos,
 	}
 
 	asName, ok := p.acceptToken(token.IDENT)
@@ -28,14 +22,12 @@ func (p *parser) parseImport() {
 		}
 	}
 
-	pkgPath, ok := p.acceptToken(token.STRING)
-	if !ok {
-		return
-	}
-	importSpec.Path = &ast.Ident{
-		NamePos: pkgPath.Pos,
-		Name:    pkgPath.StringValue(),
+	if pkgPath, ok := p.acceptToken(token.STRING); ok {
+		importSpec.Path = &ast.Ident{
+			NamePos: pkgPath.Pos,
+			Name:    pkgPath.StringValue(),
+		}
 	}
 
-	p.file.Imports = append(p.file.Imports, &importSpec)
+	return importSpec
 }

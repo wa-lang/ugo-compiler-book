@@ -24,6 +24,40 @@ func callerInfo(skip int) (fn, filename string, line int) {
 	return
 }
 
+func Assert(ok bool, a ...interface{}) {
+	if ok {
+		return
+	}
+	fn, filename, line := callerInfo(1)
+	msg := fmt.Sprint(a...)
+	if msg != "" {
+		panic(fmt.Sprintf("%s:%d: %s: assert failed: %v", filename, line, fn, msg))
+	} else {
+		panic(fmt.Sprintf("%s:%d: %s: assert failed", filename, line, fn))
+	}
+}
+
+func Assertf(ok bool, format string, a ...interface{}) {
+	if ok {
+		return
+	}
+	fn, filename, line := callerInfo(1)
+	msg := fmt.Sprintf(format, a...)
+	if msg != "" {
+		panic(fmt.Sprintf("%s:%d: %s: assert failed: %v", filename, line, fn, msg))
+	} else {
+		panic(fmt.Sprintf("%s:%d: %s: assert failed", filename, line, fn))
+	}
+}
+
+func AssertEQ(a, b interface{}) {
+	if a == b {
+		return
+	}
+	fn, filename, line := callerInfo(1)
+	panic(fmt.Sprintf("%s:%d: %s: AssertEQ: %v != %v", filename, line, fn, a, b))
+}
+
 func Debug(a ...interface{}) {
 	if DebugMode {
 		fn, filename, line := callerInfo(1)

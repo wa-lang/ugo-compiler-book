@@ -9,8 +9,10 @@ const Pi_2 = Pi * 2
 type MyInt int
 type MyInt2 = int
 
-var x = println(1 + 2*(3+4) + -10 + double(50))
+var x = 100 + 1
 
 func println() int
 
-func main() int {}
+func main() int {
+	println(1 + 2*(3+4) + -10 + double(50))
+}

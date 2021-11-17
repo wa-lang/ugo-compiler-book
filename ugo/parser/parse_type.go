@@ -2,7 +2,6 @@ package parser
 
 import (
 	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
@@ -11,25 +10,17 @@ import (
 // type Point struct { ... }
 // type Reader interface { ... }
 
-func (p *parser) parseType() {
-	logger.Debugln("peek =", p.peekToken())
+func (p *parser) parseType() *ast.TypeSpec {
+	tokType := p.mustAcceptToken(token.TYPE)
+	tokIdent := p.mustAcceptToken(token.IDENT)
 
-	tok, ok := p.acceptToken(token.TYPE)
-	if !ok {
-		return
+	var typeSpec = &ast.TypeSpec{
+		TypePos: tokType.Pos,
 	}
 
-	var typeSpec = ast.TypeSpec{
-		TypePos: tok.Pos,
-	}
-
-	name, ok := p.acceptToken(token.IDENT)
-	if !ok {
-		p.errorf("export %v, got = %v", token.IDENT, name)
-	}
 	typeSpec.Name = &ast.Ident{
-		NamePos: name.Pos,
-		Name:    name.IdentName(),
+		NamePos: tokIdent.Pos,
+		Name:    tokIdent.IdentName(),
 	}
 
 	if tok, ok := p.acceptToken(token.ASSIGN); ok {
@@ -52,7 +43,6 @@ func (p *parser) parseType() {
 		p.errorf("invalid token = %v", token.IDENT, p.peekToken())
 	}
 
-	p.acceptToken(token.SEMICOLON)
-
-	p.file.Types = append(p.file.Types, &typeSpec)
+	p.acceptTokenRun(token.SEMICOLON)
+	return typeSpec
 }
