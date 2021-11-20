@@ -21,7 +21,8 @@ func main() {
 
 func run(node *ExprNode) int {
 	compile(node)
-	if err := exec.Command("./a.out").Run(); err != nil {
+	if data, err := exec.Command("./a.out").CombinedOutput(); err != nil {
+		fmt.Print(string(data))
 		return err.(*exec.ExitError).ExitCode()
 	}
 	return 0
@@ -31,7 +32,11 @@ func compile(node *ExprNode) {
 	output := new(Compiler).GenLLIR(node)
 
 	os.WriteFile("a.out.ll", []byte(output), 0666)
-	exec.Command("clang", "-Wno-override-module", "-o", "a.out", "a.out.ll").Run()
+	data, err := exec.Command("clang", "-Wno-override-module", "-o", "a.out", "a.out.ll").CombinedOutput()
+	if err != nil {
+		fmt.Print(string(data))
+		os.Exit(1)
+	}
 }
 
 func JSONString(x interface{}) string {

@@ -16,7 +16,7 @@ func main() {
 
 对应以下的LLVM-IR代码:
 
-```llvm
+```ll
 define i32 @main() {
 	ret i32 0
 }
@@ -55,7 +55,7 @@ define i32 @main() {
 
 通过以下命令将输入的状态码编译为一个对应的可执行程序：
 
-```
+```shell
 $ echo 123 | go run main.go
 $ ./a.out
 $ echo $?

@@ -1,6 +1,6 @@
 package main
 
-func (t lexType) String() string {
+func (t TokenType) String() string {
 	switch t {
 	case EOF:
 		return "EOF"

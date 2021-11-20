@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>重构词法解析器 - 从头实现µGo语言</title>
+        <title>重构解析器 - 从头实现µGo语言</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="从头开发一个迷你Go语言编译器">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-lex-v2.html" class="active"><strong aria-hidden="true">2.4.</strong> 重构词法解析器</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-05-ast-and-error.html"><strong aria-hidden="true">2.5.</strong> 错误处理和语法树打印</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-06-cmd.html"><strong aria-hidden="true">2.6.</strong> 命令行界面</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/index.html"><strong aria-hidden="true">3.</strong> 语句、变量和词法域</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-01.html"><strong aria-hidden="true">3.1.</strong> 函数调用表达式</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-02.html"><strong aria-hidden="true">3.2.</strong> 变量左值和右值</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 嵌套的词法域</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-if-for/index.html"><strong aria-hidden="true">4.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch5-func/index.html"><strong aria-hidden="true">5.</strong> 函数</a></li><li class="chapter-item expanded "><a href="../ch6-string/index.html"><strong aria-hidden="true">6.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch7-array/index.html"><strong aria-hidden="true">7.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch8-map/index.html"><strong aria-hidden="true">8.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch9-struct/index.html"><strong aria-hidden="true">9.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch10-method/index.html"><strong aria-hidden="true">10.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch11-closure/index.html"><strong aria-hidden="true">11.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch12-interface/index.html"><strong aria-hidden="true">12.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch13-panic/index.html"><strong aria-hidden="true">13.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch14-cgo/index.html"><strong aria-hidden="true">14.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch15-wasm/index.html"><strong aria-hidden="true">15.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch16-type-system/index.html"><strong aria-hidden="true">16.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch17/index.html"><strong aria-hidden="true">17.</strong> 附录</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-parser-v2.html" class="active"><strong aria-hidden="true">2.4.</strong> 重构解析器</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/index.html"><strong aria-hidden="true">3.</strong> 语句、变量和词法域</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-01.html"><strong aria-hidden="true">3.1.</strong> 函数调用表达式</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-02.html"><strong aria-hidden="true">3.2.</strong> 变量左值和右值</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 嵌套的词法域</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-if-for/index.html"><strong aria-hidden="true">4.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch5-func/index.html"><strong aria-hidden="true">5.</strong> 函数</a></li><li class="chapter-item expanded "><a href="../ch6-string/index.html"><strong aria-hidden="true">6.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch7-array/index.html"><strong aria-hidden="true">7.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch8-map/index.html"><strong aria-hidden="true">8.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch9-struct/index.html"><strong aria-hidden="true">9.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch10-method/index.html"><strong aria-hidden="true">10.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch11-closure/index.html"><strong aria-hidden="true">11.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch12-interface/index.html"><strong aria-hidden="true">12.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch13-panic/index.html"><strong aria-hidden="true">13.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch14-cgo/index.html"><strong aria-hidden="true">14.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch15-wasm/index.html"><strong aria-hidden="true">15.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch16-type-system/index.html"><strong aria-hidden="true">16.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch17/index.html"><strong aria-hidden="true">17.</strong> 附录</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -137,21 +137,44 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="24-重构词法解析器"><a class="header" href="#24-重构词法解析器">2.4. 重构词法解析器</a></h1>
+                        <h1 id="24-重构解析器"><a class="header" href="#24-重构解析器">2.4. 重构解析器</a></h1>
 <p>在前面的例子中，我们直接用string表示了词法记号。但是这样有一些问题：比如关键字“if”和“abc”变量名的类型就不好区分，同时词法记号的位置信息也丢失了。常见做法是将词法记号定义为一个int区分的类别，同时词法记号还携带一个原始字符串表示的面值（比如一个相同值到整数可能有不同的写法），同时再辅助一些位置信息。</p>
 <h2 id="241-定义词法结构"><a class="header" href="#241-定义词法结构">2.4.1 定义词法结构</a></h2>
 <p>重新定义词法结构如下：</p>
 <pre><code class="language-go">// 词法记号类型
-type lexType int
+type TokenType int
 
 // 记号值
 type Token struct {
-	Type lexType // 记号类型
+	Type TokenType // 记号类型
 	Val  string  // 记号原始字面值
 	Pos  int     // 开始位置
 }
+
+// 记号类型
+const (
+	EOF TokenType = iota
+	ADD // +
+	SUB // -
+	MUL // *
+	DIV // /
+
+	LPAREN // (
+	RPAREN // )
+)
 </code></pre>
-<p>我们基于int定义了一个内部的 lexType 类型，这样方便提供一些辅助函数：</p>
+<p>每个记号类型配有一个二元表达式的优先级(其中0表示不是二元运算符)：</p>
+<pre><code class="language-go">func (op TokenType) Precedence() int {
+	switch op {
+	case ADD, SUB:
+		return 1
+	case MUL, DIV:
+		return 2
+	}
+	return 0
+}
+</code></pre>
+<p>同时提供一些辅助函数：</p>
 <pre><code class="language-go">func (t lexType) String() string {
 	switch t {
 	case EOF:
@@ -166,32 +189,23 @@ func (t Token) String() string {
 	return fmt.Sprintf(&quot;Token(%v:%v)&quot;, t.Type, t.Val)
 }
 </code></pre>
-<h2 id="242-定义词法记号值"><a class="header" href="#242-定义词法记号值">2.4.2 定义词法记号值</a></h2>
-<p>记号类别的具体值可以通过 goyacc 自动生成（生成的是int类型常量），也可以手工定义。比如在goyacc文件定义以下记号：</p>
-<pre><code class="language-yacc">%token ILLEGAL
+<h2 id="242-定义语法树结构"><a class="header" href="#242-定义语法树结构">2.4.2 定义语法树结构</a></h2>
+<p>词法定义从string变化为Token，AST结构调整如下：</p>
+<pre><code class="language-go">type ExprNode struct {
+	Token           // +, -, *, /, 123
+	Left  *ExprNode `json:&quot;,omitempty&quot;`
+	Right *ExprNode `json:&quot;,omitempty&quot;`
+}
 
-%token &lt;tok&gt; NUMBER
-
-%token &lt;tok&gt; ADD // +
-%token &lt;tok&gt; SUB // -
-%token &lt;tok&gt; MUL // *
-%token &lt;tok&gt; DIV // /
-
-%token LPAREN // (
-%token RPAREN // )
+func NewExprNode(token Token, left, right *ExprNode) *ExprNode {
+	return &amp;ExprNode{
+		Token: token,
+		Left:  left,
+		Right: right,
+	}
+}
 </code></pre>
-<p>最终会生成对应无类型的常量（值避开了ASCII值部分，因此单个ASCII字符的值也可以用作记号值）：</p>
-<pre><code class="language-go">const ILLEGAL = 57346
-const NUMBER = 57347
-const ADD = 57348
-const SUB = 57349
-const MUL = 57350
-const DIV = 57351
-const LPAREN = 57352
-const RPAREN = 57353
-</code></pre>
-<p>生成的记号常量和lexType类型的关联需要在产生Token对象时手工转换。</p>
-<p>需要注意到是程序中的注释是作为一种Token，但是在进行语法解析时或提前过滤掉注释，然后在最终的AST中再重新为每个节点组装对应的注释（如果在BNF添加注释，将会带来大量的噪声，得不偿失）。</p>
+<p>现在的Token包含了完整的信息，对应每个终结字符。</p>
 <h2 id="243-词法解析器重构"><a class="header" href="#243-词法解析器重构">2.4.3 词法解析器重构</a></h2>
 <p>有了Token结构之后，我们只需要将输入到代码字符串解析为Token序列即可。之前的词法是通过<code>strings.IndexAny</code>做分词，现在我们改用<code>text/scanner</code>包来辅助解析：</p>
 <pre><code class="language-go">func Lex(code string) (tokens []Token) {
@@ -235,60 +249,141 @@ const RPAREN = 57353
 </code></pre>
 <p><code>scanner.Scanner</code>可以解析常见的词法，我们只提取表达式需要的整数、四则运算和小括弧，其他类型记号用<code>ILLEGAL</code>表示无效值。</p>
 <p><code>scanner.Scanner</code>对于解析真正的Go代码是稍显不足的。不过词法解析是相对容易实现的工作，大家可以选择自己喜欢的方式实现，甚至直接参考Go的<code>go/token</code>和<code>go/scanner</code>包也可以。</p>
-<h2 id="244-同步调整其他部分"><a class="header" href="#244-同步调整其他部分">2.4.4 同步调整其他部分</a></h2>
-<p>词法定义从string变化为Token，AST、goyacc语法文件和编译器都需要做相应的调整（程序结构可以不用变化）。</p>
-<p>首先是语法树的值变成了Token：</p>
-<pre><code class="language-go">type ExprNode struct {
-	Token           // +, -, *, /, 123
-	Left  *ExprNode `json:&quot;,omitempty&quot;`
-	Right *ExprNode `json:&quot;,omitempty&quot;`
+<h2 id="244-token流读取器"><a class="header" href="#244-token流读取器">2.4.4 Token流读取器</a></h2>
+<p>有了<code>Lex</code>函数之后我们就可以将代码转换为扁平的<code>Token</code>序列，然后在此基础之上通过语法解析器构造结构化的语法树。为了简化解析器的工作，我们再包装一个Token流读取器。</p>
+<pre><code class="language-go">type TokenReader struct {
+	tokens []Token
+	pos    int
+	width  int
 }
 
-func NewExprNode(token Token, left, right *ExprNode) *ExprNode {
-	return &amp;ExprNode{
-		Token: token,
-		Left:  left,
-		Right: right,
-	}
+func NewTokenReader(input []Token) *TokenReader {
+	return &amp;TokenReader{tokens: input}
 }
 </code></pre>
-<p>现在的Token包含了完整的信息，对应每个终结字符。我们在表示节点状态的结构体中增加tok字段：</p>
-<pre><code class="language-yacc">// expr.y
-%union {
-	node *ExprNode
-	tok  Token
+<p>NewTokenReader 函数构造Token流读取器。</p>
+<p>然后提供最常用的Peek、Read、Unread等类似的方法：</p>
+<pre><code class="language-go">func (p *TokenReader) PeekToken() Token {
+	tok := p.ReadToken()
+	p.UnreadToken()
+	return tok
 }
-</code></pre>
-<p>而用于和goyacc适配的词法解析函数针对每个终结字符填充tok字段：</p>
-<pre><code class="language-go">const EOF = 0 // EOF 必须为 0 (类似C语言字符串的'\0'结尾), 表示结束
 
-func (p *exprLex) Lex(yylval *yySymType) int {
+func (p *TokenReader) ReadToken() Token {
 	if p.pos &gt;= len(p.tokens) {
-		return EOF
+		p.width = 0
+		return Token{Type: EOF}
 	}
-	
-	yylval.tok = p.tokens[p.pos]
-	p.pos++
+	tok := p.tokens[p.pos]
+	p.width = 1
+	p.pos += p.width
+	return tok
+}
 
-	return int(yylval.tok.Type)
+func (p *TokenReader) UnreadToken() {
+	p.pos -= p.width
+	return
 }
 </code></pre>
-<p>词法分析器产生的都是终结记号、或者类似解析树的叶子结点，非叶子结点则对应BNF中定义的规则。终结记号的信息通过<code>exprLex.Lex</code>方法填充到<code>yylval.tok</code>（就是<code>%union</code>新添加到字段）。而BNF定义的规则对应中间的节点依然是node字段，通过以下代码生成：</p>
-<pre><code class="language-yacc">top: expr { yyrcvr.lval.node = $1 }
+<p>为了方便解析器工作，再定义 AcceptToken、MustAcceptToken两个方法：</p>
+<pre><code class="language-go">func (p *TokenReader) AcceptToken(expectTypes ...TokenType) (tok Token, ok bool) {
+	tok = p.ReadToken()
+	for _, x := range expectTypes {
+		if tok.Type == x {
+			return tok, true
+		}
+	}
+	p.UnreadToken()
+	return tok, false
+}
 
-expr: mul { $$ = $1 }
-	| expr ADD mul { $$ = NewExprNode($2, $1, $3) }
-	| expr SUB mul { $$ = NewExprNode($2, $1, $3) }
-
-mul: primary { $$ = $1 }
-	| mul MUL primary { $$ = NewExprNode($2, $1, $3) }
-	| mul DIV primary { $$ = NewExprNode($2, $1, $3) }
-
-primary: NUMBER { $$ = NewExprNode($1, nil, nil) }
-	| '(' expr ')' { $$ = $2 }
+func (p *TokenReader) MustAcceptToken(expectTypes ...TokenType) (tok Token) {
+	tok, ok := p.AcceptToken(expectTypes...)
+	if !ok {
+		panic(fmt.Errorf(&quot;token.Reader.MustAcceptToken(%v) failed&quot;, expectTypes))
+	}
+	return tok
+}
 </code></pre>
-<p>比如 primary 对应 NUMBER 时，<code>$$ = NewExprNode($1, nil, nil)</code> 代码中 <code>$$</code> 表示 primary 对应的节点内字段（就是 node），而 <code>$1</code> 则对应 NUMBER 终结记号对应的字段（对应新加的 tok 字段）。然后通过 NewExprNode 递归从底往上构造语法树。在最顶层的 top 规则，直接通过 <code>yyrcvr.lval.node = $1</code> 将构造的语法树记录到 <code>parser.lval.node</code> 中。</p>
-<p>最后将 compiler 相关部分也响应的调整即可，这样我们就实现了相对完整的四则运算的编译器。</p>
+<p>AcceptToken方法可以用于适配可选的Token符号，比如if之后可选的else可以用<code>if _, ok := r.AcceptToken(token.ELSE); ok { ... }</code>方式处理。而MustAcceptToken则必须匹配相应的Token，比如<code>t.MustAcceptToken(token.RPAREN)</code>强制匹配右小括弧。</p>
+<h2 id="245-二元表达式解析简化"><a class="header" href="#245-二元表达式解析简化">2.4.5 二元表达式解析简化</a></h2>
+<p>BNF语法可以实现表达式的多优先级支持，比如前面支持加减乘除四则运算的EBNF如下：</p>
+<pre><code class="language-bnf">expr    = mul (&quot;+&quot; mul | &quot;-&quot; mul)*
+mul     = primary (&quot;*&quot; primary | &quot;/&quot; primary)*
+primary = num | &quot;(&quot; expr &quot;)&quot;
+</code></pre>
+<p>其中通过引入mul和primary规则来表示2个不同的优先级。而Go语言的二元表达式有<code>||</code>、<code>&amp;&amp;</code>、<code>==</code>、<code>+</code>和<code>*</code>等5中不同的优先级。如果完全通过EBNF来表示优先级则需要构造更为复杂的规则：</p>
+<pre><code class="language-bnf">expr       = logic_or
+logic_or   = logic_and (&quot;||&quot; logic_and)*
+logic_and  = equality (&quot;&amp;&amp;&quot; relational)*
+equality   = relational (&quot;==&quot; relational | &quot;!=&quot; relational)*
+add        = mul (&quot;+&quot; mul | &quot;-&quot; mul)*
+mul        = unary (&quot;*&quot; unary | &quot;/&quot; unary)*
+unary      = (&quot;+&quot; | &quot;-&quot;)? primary
+primary    = num | &quot;(&quot; expr &quot;)&quot;
+</code></pre>
+<p>这种复杂性和Go语言推崇的少即是多的哲学是相悖的！其实Go语言在设计表达式时有意无意地忽略了对右结合二元表达式的支持，如果配合运算符的优先级可以实现更简单的二元表达式解析。</p>
+<p>下面我们看看如何简化二元表达式解析。四则运算表达式简化的ENBNF语法如下：</p>
+<pre><code class="language-bnf">expr  = unary (&quot;+&quot; | &quot;-&quot; | &quot;*&quot; | &quot;/&quot;) unary)*
+unary = (&quot;+&quot; | &quot;-&quot;)? primary
+</code></pre>
+<p>不在区分优先级，只有二元和一元表达式之分。因为二元表达式只有左结合一种，配合运算符优先级可以控制剩余表达式左结合的时机。</p>
+<p>下面重新实现ParseExpr函数：</p>
+<pre><code class="language-go">func ParseExpr(input []Token) *ExprNode {
+	r := NewTokenReader(input)
+	return parseExpr(r)
+}
+
+func parseExpr(r *TokenReader) *ExprNode {
+	return parseExpr_binary(r, 1)
+}
+</code></pre>
+<p>内部将Token列表转换为TokenReader，然后调用内部parseExpr函数。parseExpr函数以优先级1为参数调用parseExpr_binary解析二元表达式。</p>
+<p>parseExpr_binary实现如下：</p>
+<pre><code class="language-go">func parseExpr_binary(r *TokenReader, prec int) *ExprNode {
+	x := parseExpr_unary(r)
+	for {
+		op := r.PeekToken()
+		if op.Type.Precedence() &lt; prec {
+			return x
+		}
+
+		r.MustAcceptToken(op.Type)
+		y := parseExpr_binary(r, op.Type.Precedence()+1)
+		x = &amp;ExprNode{Token: op, Left: x, Right: y}
+	}
+	return nil
+}
+</code></pre>
+<p>首先是parseExpr_unary产生一个一元的表达式，然后根据运算符op优先级和当前处理的优先级大小控制剩余表达式的递归时机。如果op比当前函数处理的优先级更高，则继续将下一个表达式递归左结合到x中，否则结束当前左结合。</p>
+<p>一元表达式的解析如下：</p>
+<pre><code class="language-go">func parseExpr_unary(r *TokenReader) *ExprNode {
+	if _, ok := r.AcceptToken(ADD); ok {
+		return parseExpr_primary(r)
+	}
+	if _, ok := r.AcceptToken(SUB); ok {
+		return &amp;ExprNode{
+			Token: Token{Type: SUB},
+			Left:  &amp;ExprNode{Token: Token{Type: NUMBER, Val: &quot;0&quot;}},
+			Right: parseExpr_primary(r),
+		}
+	}
+	return parseExpr_primary(r)
+}
+</code></pre>
+<p>如果是<code>+x</code>则用<code>x</code>表示，如果是<code>-x</code>则用<code>0-x</code>表示。parseExpr_primary 则表示一个数值或小括弧包含的表达式，实现如下：</p>
+<pre><code class="language-go">func parseExpr_primary(r *TokenReader) *ExprNode {
+	if _, ok := r.AcceptToken(LPAREN); ok {
+		expr := parseExpr(r)
+		r.MustAcceptToken(RPAREN)
+		return expr
+	}
+	return &amp;ExprNode{
+		Token: r.MustAcceptToken(NUMBER),
+	}
+}
+</code></pre>
+<p>现在我们得到了一个更加简洁的支持多优先级只有左结合二元表达式的解析器。以后如果要支持相等更多的优先级运算符，则需要更新Token类型的优先级即可，解析器部分的代码不用变化。</p>
 
                     </main>
 
@@ -297,7 +392,7 @@ primary: NUMBER { $$ = NewExprNode($1, nil, nil) }
                             <a rel="prev" href="../ch2-expr/ch2-03-parser.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                            <a rel="next" href="../ch2-expr/ch2-05-ast-and-error.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../ch3-block-stmt/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -309,7 +404,7 @@ primary: NUMBER { $$ = NewExprNode($1, nil, nil) }
                     <a rel="prev" href="../ch2-expr/ch2-03-parser.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                    <a rel="next" href="../ch2-expr/ch2-05-ast-and-error.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../ch3-block-stmt/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

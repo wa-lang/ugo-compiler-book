@@ -38,7 +38,7 @@ func (p *Compiler) genValue(w io.Writer, node *ExprNode) (id string) {
 			id, p.genValue(w, node.Left), p.genValue(w, node.Right),
 		)
 	case DIV:
-		fmt.Fprintf(w, "\t%s = div i32 %s, %s\n",
+		fmt.Fprintf(w, "\t%s = sdiv i32 %s, %s\n",
 			id, p.genValue(w, node.Left), p.genValue(w, node.Right),
 		)
 	default:
