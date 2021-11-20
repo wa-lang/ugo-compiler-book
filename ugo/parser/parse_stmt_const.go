@@ -29,7 +29,7 @@ func (p *parser) parseStmt_const() *ast.ConstSpec {
 	}
 
 	if _, ok := p.r.AcceptToken(token.ASSIGN); ok {
-		constSpec.Value = p.parseExpr()
+		constSpec.Value = p.parseConstExpr()
 	}
 
 	p.r.AcceptTokenList(token.SEMICOLON)
