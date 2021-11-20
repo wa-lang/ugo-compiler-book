@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +10,22 @@ import (
 )
 
 var DebugMode = false
+
+func CallerInfo(skip int) (fn, filename string, line int) {
+	return callerInfo(skip + 1)
+}
+
+func CallStack() string {
+	var buf bytes.Buffer
+	for skip := 1; ; skip += 1 {
+		fn, filename, line := callerInfo(skip)
+		if filename == "" {
+			break
+		}
+		fmt.Fprintf(&buf, "%s:%d: %s", filename, line, fn)
+	}
+	return buf.String()
+}
 
 func callerInfo(skip int) (fn, filename string, line int) {
 	pc, filename, line, _ := runtime.Caller(skip + 1)

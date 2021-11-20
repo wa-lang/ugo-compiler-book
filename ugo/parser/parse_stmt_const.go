@@ -8,9 +8,9 @@ import (
 // const x = 1+2
 // const x int = 1+2
 
-func (p *parser) parseConst() *ast.ConstSpec {
-	tokConst := p.mustAcceptToken(token.CONST)
-	tokIdent := p.mustAcceptToken(token.IDENT)
+func (p *parser) parseStmt_const() *ast.ConstSpec {
+	tokConst := p.r.MustAcceptToken(token.CONST)
+	tokIdent := p.r.MustAcceptToken(token.IDENT)
 
 	var constSpec = &ast.ConstSpec{
 		ConstPos: tokConst.Pos,
@@ -21,17 +21,17 @@ func (p *parser) parseConst() *ast.ConstSpec {
 		Name:    tokIdent.IdentName(),
 	}
 
-	if typ, ok := p.acceptToken(token.IDENT); ok {
+	if typ, ok := p.r.AcceptToken(token.IDENT); ok {
 		constSpec.Type = &ast.Ident{
 			NamePos: typ.Pos,
 			Name:    typ.IdentName(),
 		}
 	}
 
-	if _, ok := p.acceptToken(token.ASSIGN); ok {
+	if _, ok := p.r.AcceptToken(token.ASSIGN); ok {
 		constSpec.Value = p.parseExpr()
 	}
 
-	p.acceptTokenRun(token.SEMICOLON)
+	p.r.AcceptTokenList(token.SEMICOLON)
 	return constSpec
 }

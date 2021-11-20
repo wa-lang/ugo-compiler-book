@@ -26,11 +26,7 @@ type parser struct {
 	opt      Option
 	filename string
 	src      string
-
-	input []token.Token // the tokens being parsed.
-	start int           // start position of this item.
-	pos   int           // current position in the input.
-	width int           // width of last rune read from input.
+	r        *token.Reader
 
 	file *ast.File
 	expr ast.Expr
@@ -42,7 +38,7 @@ func newParser(filename, src string, opt Option) *parser {
 		filename: filename,
 		src:      src,
 		opt:      opt,
-		input:    lexer.Lex(filename, string(src), lexer.Option{}),
+		r:        token.NewReader(lexer.Lex(filename, string(src), lexer.Option{})),
 	}
 	return p
 }
@@ -81,64 +77,10 @@ func (p *parser) ParseExpr() (expr ast.Expr, err error) {
 	return
 }
 
-func (p *parser) nextToken() token.Token {
-	if p.pos >= len(p.input) {
-		p.width = 0
-		return token.Token{Type: token.EOF}
-	}
-	tok := p.input[p.pos]
-	p.width = 1
-	p.pos += p.width
-	return tok
-}
-
-func (p *parser) peekToken() token.Token {
-	tok := p.nextToken()
-	p.backupToken()
-	return tok
-}
-
-func (p *parser) peekTokenType() token.TokenType {
-	return p.peekToken().Type
-}
-
-func (p *parser) backupToken() {
-	p.pos -= p.width
-}
-
-func (p *parser) ignoreToken() {
-	p.start = p.pos
-}
-
-func (p *parser) mustAcceptToken(validTokens ...token.TokenType) token.Token {
-	if tok, ok := p.acceptToken(validTokens...); ok {
-		return tok
-	}
-	logger.Assert(false, "valid =", validTokens, ", peek =", p.peekToken())
-	return token.Token{}
-}
-
-func (p *parser) acceptToken(validTokens ...token.TokenType) (token.Token, bool) {
-	tok := p.nextToken()
-	for _, x := range validTokens {
-		if tok.Type == x {
-			return tok, true
-		}
-	}
-	p.backupToken()
-	return tok, false
-}
-
-func (p *parser) acceptTokenRun(validTokens ...token.TokenType) {
-	for {
-		if _, ok := p.acceptToken(validTokens...); !ok {
-			break
-		}
-	}
-}
-
-func (p *parser) errorf(format string, args ...interface{}) {
-	pos := token.PosString(p.filename, []byte(p.src), token.Pos(p.start+1))
-	p.err = errors.Newf(pos, format, args...)
+func (p *parser) errorf(pos token.Pos, format string, args ...interface{}) {
+	p.err = errors.Newf(
+		token.PosString(p.filename, []byte(p.src), pos),
+		format, args...,
+	)
 	panic(p.err)
 }

@@ -18,61 +18,47 @@ import (
 // return expr?
 
 func (p *parser) parseStmt_block() (block *ast.BlockStmt) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	block = new(ast.BlockStmt)
-	p.mustAcceptToken(token.LBRACE)
+	p.r.MustAcceptToken(token.LBRACE)
 
 Loop:
 	for {
-		switch tok := p.peekToken(); tok.Type {
+		switch tok := p.r.PeekToken(); tok.Type {
 		case token.EOF:
 			break Loop
 		case token.ILLEGAL:
 			panic(tok)
 		case token.SEMICOLON:
-			p.acceptTokenRun(token.SEMICOLON)
+			p.r.AcceptTokenList(token.SEMICOLON)
 
 		case token.RBRACE:
 			break Loop
 
 		case token.CONST:
-			_ = p.parseConst()
+			block.List = append(block.List, p.parseStmt_const())
 		case token.TYPE:
-			_ = p.parseType()
+			block.List = append(block.List, p.parseStmt_type())
 		case token.VAR:
-			_ = p.parseVar()
+			block.List = append(block.List, p.parseStmt_var())
+
+		case token.DEFER:
+			block.List = append(block.List, p.parseStmt_defer())
+		case token.IF:
+			block.List = append(block.List, p.parseStmt_if())
+		case token.FOR:
+			block.List = append(block.List, p.parseStmt_for())
+		case token.RETURN:
+			block.List = append(block.List, p.parseStmt_return())
 
 		default:
-			exprs := p.parseExprList()
-			if len(exprs) > 1 {
-				p.mustAcceptToken(token.ASSIGN, token.DEFINE)
-				exprsRight := p.parseExprList()
-
-				block.List = append(block.List, &ast.AssignStmt{
-					Target: exprs[0],
-					Value:  exprsRight[0],
-				})
-			} else {
-				if _, ok := p.acceptToken(token.ASSIGN, token.DEFINE); ok {
-					exprsRight := p.parseExprList()
-					block.List = append(block.List, &ast.AssignStmt{
-						Target: exprs[0],
-						Value:  exprsRight[0],
-					})
-				} else {
-					block.List = append(block.List, &ast.AssignStmt{
-						Value: exprs[0],
-					})
-				}
-			}
-
-			logger.Debugln("peek =", p.peekTokenType())
+			p.parseStmt_assign(block)
 		}
 	}
 
 	// parse stmt list
 
-	p.acceptToken(token.RBRACE)
+	p.r.AcceptToken(token.RBRACE)
 	return
 }

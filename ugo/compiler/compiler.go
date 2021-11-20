@@ -34,6 +34,8 @@ func (p *Compiler) genMainFunc(w io.Writer, f *ast.File) string {
 					switch stmt := stmt.(type) {
 					case *ast.AssignStmt:
 						return p.genValue(w, stmt.Value)
+					case *ast.ExprStmt:
+						return p.genValue(w, stmt.X)
 					}
 				}
 			}

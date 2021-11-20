@@ -12,24 +12,24 @@ import (
 func (p *parser) parseExprList() (exprs []ast.Expr) {
 	for {
 		exprs = append(exprs, p.parseExpr())
-		if p.peekTokenType() != token.COMMA {
+		if p.r.PeekToken().Type != token.COMMA {
 			break
 		}
 	}
 
-	p.acceptTokenRun(token.SEMICOLON)
+	p.r.AcceptTokenList(token.SEMICOLON)
 	return
 }
 
 func (p *parser) parseExpr() ast.Expr {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	expr := p.parseExpr_mul()
 
 	for {
-		switch p.peekTokenType() {
+		switch p.r.PeekToken().Type {
 		case token.ADD, token.SUB:
-			tok := p.nextToken()
+			tok := p.r.ReadToken()
 			expr = &ast.BinaryExpr{
 				X:  expr,
 				Op: tok,
@@ -42,15 +42,15 @@ func (p *parser) parseExpr() ast.Expr {
 }
 
 func (p *parser) parseExpr_mul() ast.Expr {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	expr := p.parseExpr_unary()
 	for {
-		switch p.peekTokenType() {
+		switch p.r.PeekToken().Type {
 		case token.SEMICOLON:
 			return expr
 		case token.MUL, token.QUO:
-			tok := p.nextToken()
+			tok := p.r.ReadToken()
 			expr = &ast.BinaryExpr{
 				X:  expr,
 				Op: tok,
@@ -63,12 +63,12 @@ func (p *parser) parseExpr_mul() ast.Expr {
 }
 
 func (p *parser) parseExpr_unary() ast.Expr {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
-	if _, ok := p.acceptToken(token.ADD); ok {
+	if _, ok := p.r.AcceptToken(token.ADD); ok {
 		return p.parseExpr_primary()
 	}
-	if _, ok := p.acceptToken(token.SUB); ok {
+	if _, ok := p.r.AcceptToken(token.SUB); ok {
 		return &ast.UnaryExpr{
 			X: p.parseExpr_primary(),
 		}
@@ -77,17 +77,17 @@ func (p *parser) parseExpr_unary() ast.Expr {
 }
 
 func (p *parser) parseExpr_primary() ast.Expr {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
-	peek := p.peekToken()
+	peek := p.r.PeekToken()
 
 	switch peek.Type {
 	case token.IDENT:
-		ident := p.nextToken()
-		if lparen, ok := p.acceptToken(token.LPAREN); ok {
+		ident := p.r.ReadToken()
+		if lparen, ok := p.r.AcceptToken(token.LPAREN); ok {
 			var args []ast.Expr
 			for {
-				if rparen, ok := p.acceptToken(token.RPAREN); ok {
+				if rparen, ok := p.r.AcceptToken(token.RPAREN); ok {
 					return &ast.CallExpr{
 						Fun: &ast.Ident{
 							NamePos: ident.Pos,
@@ -99,7 +99,7 @@ func (p *parser) parseExpr_primary() ast.Expr {
 					}
 				}
 				args = append(args, p.parseExpr())
-				p.acceptToken(token.COMMA)
+				p.r.AcceptToken(token.COMMA)
 			}
 		}
 		return &ast.Ident{
@@ -107,14 +107,14 @@ func (p *parser) parseExpr_primary() ast.Expr {
 			Name:    ident.IdentName(),
 		}
 	case token.INT:
-		tok := p.nextToken()
+		tok := p.r.ReadToken()
 		return &ast.Number{
 			ValuePos: tok.Pos,
 			Value:    tok.IntValue(),
 			ValueEnd: tok.EndPos(),
 		}
 	case token.FLOAT:
-		tok := p.nextToken()
+		tok := p.r.ReadToken()
 		return &ast.Number{
 			ValuePos: tok.Pos,
 			Value:    tok.FloatValue(),
@@ -122,15 +122,32 @@ func (p *parser) parseExpr_primary() ast.Expr {
 		}
 
 	case token.LPAREN:
-		p.nextToken()
+		p.r.ReadToken()
 		expr := p.parseExpr()
-		if _, ok := p.acceptToken(token.RPAREN); !ok {
+		if _, ok := p.r.AcceptToken(token.RPAREN); !ok {
 			p.err = fmt.Errorf("todo")
 			panic(p.err)
 		}
-		p.nextToken()
+		p.r.ReadToken()
 		return expr
 	default:
-		panic(fmt.Errorf("expr: %v", p.peekToken()))
+		panic(fmt.Errorf("expr: %v", p.r.PeekToken()))
+	}
+}
+
+func (p *parser) parseExpr_call() *ast.CallExpr {
+	tokIdent := p.r.MustAcceptToken(token.IDENT)
+	tokLparen := p.r.MustAcceptToken(token.LPAREN)
+	args := p.parseExprList()
+	tokRparen := p.r.MustAcceptToken(token.RPAREN)
+
+	return &ast.CallExpr{
+		Fun: &ast.Ident{
+			NamePos: tokIdent.Pos,
+			Name:    tokIdent.IdentName(),
+		},
+		Lparen: tokLparen.Pos,
+		Args:   args,
+		Rparen: tokRparen.Pos,
 	}
 }

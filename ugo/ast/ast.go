@@ -186,11 +186,43 @@ func (p *IfStmt) End() token.Pos {
 // ForStmt 表示一个 for 语句节点.
 type ForStmt struct {
 	For  token.Pos  // for 关键字的位置
+	Init Stmt       // 初始化语句
+	Cond Expr       // 条件表达式
+	Post Stmt       // 迭代语句
 	Body *BlockStmt // 循环对应的语句列表
 }
 
 func (p *ForStmt) Pos() token.Pos { return p.For }
 func (p *ForStmt) End() token.Pos { return p.Body.End() }
+
+type DeferStmt struct {
+	Defer token.Token
+	Call  *CallExpr
+}
+
+func (p *DeferStmt) Pos() token.Pos { return p.Defer.Pos }
+func (p *DeferStmt) End() token.Pos { return p.Call.End() }
+
+type ReturnStmt struct {
+	Result  token.Token
+	Results []Expr
+}
+
+func (p *ReturnStmt) Pos() token.Pos { return p.Result.Pos }
+func (p *ReturnStmt) End() token.Pos {
+	if len(p.Results) == 0 {
+		return p.Result.Pos + token.Pos(len("return"))
+	}
+	return p.Results[len(p.Results)-1].End()
+}
+
+// ExprStmt 表示单个表达式语句
+type ExprStmt struct {
+	X Expr
+}
+
+func (p *ExprStmt) Pos() token.Pos { return p.X.Pos() }
+func (p *ExprStmt) End() token.Pos { return p.X.End() }
 
 // AssignStmt 表示一个赋值语句节点.
 type AssignStmt struct {

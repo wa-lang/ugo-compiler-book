@@ -18,6 +18,9 @@ var (
 	_ Stmt = (*IfStmt)(nil)
 	_ Stmt = (*ForStmt)(nil)
 	_ Stmt = (*AssignStmt)(nil)
+	_ Stmt = (*ExprStmt)(nil)
+	_ Stmt = (*DeferStmt)(nil)
+	_ Stmt = (*ReturnStmt)(nil)
 )
 
 var (
@@ -42,6 +45,9 @@ func (p *BlockStmt) node_private()  {}
 func (p *IfStmt) node_private()     {}
 func (p *ForStmt) node_private()    {}
 func (p *AssignStmt) node_private() {}
+func (p *ExprStmt) node_private()   {}
+func (p *DeferStmt) node_private()  {}
+func (p *ReturnStmt) node_private() {}
 
 func (p *Ident) node_private()      {}
 func (p *Number) node_private()     {}
@@ -63,6 +69,9 @@ func (p *BlockStmt) stmt_private()  {}
 func (p *IfStmt) stmt_private()     {}
 func (p *ForStmt) stmt_private()    {}
 func (p *AssignStmt) stmt_private() {}
+func (p *ExprStmt) stmt_private()   {}
+func (p *DeferStmt) stmt_private()  {}
+func (p *ReturnStmt) stmt_private() {}
 
 func (p *Ident) expr_private()      {}
 func (p *Number) expr_private()     {}

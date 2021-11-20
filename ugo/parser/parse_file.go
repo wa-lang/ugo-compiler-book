@@ -7,7 +7,7 @@ import (
 )
 
 func (p *parser) parseFile() {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	p.file = &ast.File{
 		Name: p.filename,
@@ -19,13 +19,13 @@ func (p *parser) parseFile() {
 
 LoopImport:
 	for {
-		switch tok := p.peekToken(); tok.Type {
+		switch tok := p.r.PeekToken(); tok.Type {
 		case token.EOF:
 			return
 		case token.ILLEGAL:
 			panic(tok)
 		case token.SEMICOLON:
-			p.acceptTokenRun(token.SEMICOLON)
+			p.r.AcceptTokenList(token.SEMICOLON)
 
 		case token.IMPORT:
 			p.file.Imports = append(p.file.Imports, p.parseImport())
@@ -36,32 +36,32 @@ LoopImport:
 	}
 
 	for {
-		switch tok := p.peekToken(); tok.Type {
+		switch tok := p.r.PeekToken(); tok.Type {
 		case token.EOF:
 			return
 		case token.ILLEGAL:
 			panic(tok)
 		case token.SEMICOLON:
-			p.acceptTokenRun(token.SEMICOLON)
+			p.r.AcceptTokenList(token.SEMICOLON)
 
 		case token.CONST:
-			p.file.Consts = append(p.file.Consts, p.parseConst())
+			p.file.Consts = append(p.file.Consts, p.parseStmt_const())
 		case token.TYPE:
-			p.file.Types = append(p.file.Types, p.parseType())
+			p.file.Types = append(p.file.Types, p.parseStmt_type())
 		case token.VAR:
-			p.file.Globals = append(p.file.Globals, p.parseVar())
+			p.file.Globals = append(p.file.Globals, p.parseStmt_var())
 		case token.FUNC:
 			p.file.Funcs = append(p.file.Funcs, p.parseFunc())
 
 		default:
-			p.errorf("unknown token: %v", tok)
+			p.errorf(tok.Pos, "unknown token: %v", tok)
 		}
 	}
 }
 
 func (p *parser) parsePackage() {
-	pkg := p.mustAcceptToken(token.PACKAGE)
-	ident := p.mustAcceptToken(token.IDENT)
+	pkg := p.r.MustAcceptToken(token.PACKAGE)
+	ident := p.r.MustAcceptToken(token.IDENT)
 
 	p.file.Pkg = &ast.PackageSpec{}
 

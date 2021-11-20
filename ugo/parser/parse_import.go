@@ -8,13 +8,13 @@ import (
 // import "path/to/pkg"
 // import name "path/to/pkg"
 func (p *parser) parseImport() *ast.ImportSpec {
-	tokImport := p.mustAcceptToken(token.IMPORT)
+	tokImport := p.r.MustAcceptToken(token.IMPORT)
 
 	var importSpec = &ast.ImportSpec{
 		ImportPos: tokImport.Pos,
 	}
 
-	asName, ok := p.acceptToken(token.IDENT)
+	asName, ok := p.r.AcceptToken(token.IDENT)
 	if ok {
 		importSpec.Name = &ast.Ident{
 			NamePos: asName.Pos,
@@ -22,7 +22,7 @@ func (p *parser) parseImport() *ast.ImportSpec {
 		}
 	}
 
-	if pkgPath, ok := p.acceptToken(token.STRING); ok {
+	if pkgPath, ok := p.r.AcceptToken(token.STRING); ok {
 		importSpec.Path = &ast.Ident{
 			NamePos: pkgPath.Pos,
 			Name:    pkgPath.StringValue(),

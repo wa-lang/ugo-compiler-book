@@ -10,4 +10,7 @@ dev:
 expr:
 	go run main.go -lex -ast -llir -mode=expr -file=expr.ugo
 
+wc:
+	wc -l */*.go
+
 clean:

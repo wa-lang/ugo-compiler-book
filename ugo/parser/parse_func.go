@@ -12,42 +12,42 @@ import (
 // func() (int, int) {}
 
 func (p *parser) parseFunc() *ast.Func {
-	tokFunc := p.mustAcceptToken(token.FUNC)
+	tokFunc := p.r.MustAcceptToken(token.FUNC)
 
 	var funcSpec = &ast.Func{
 		FuncPos: tokFunc.Pos,
 	}
 
-	switch p.peekTokenType() {
+	switch tok := p.r.PeekToken(); tok.Type {
 	case token.IDENT:
-		p.backupToken()
+		p.r.UnreadToken()
 		p.parseFunc_func(funcSpec)
 	case token.LPAREN:
 		p.parseFunc_method(funcSpec)
 	default:
-		p.errorf("invalid token = %v", token.IDENT, p.peekToken())
+		p.errorf(tok.Pos, "invalid token = %v", tok)
 	}
 
 	return funcSpec
 }
 
 func (p *parser) parseFunc_func(fn *ast.Func) {
-	p.mustAcceptToken(token.FUNC)
+	p.r.MustAcceptToken(token.FUNC)
 
 	p.parseFunc_sig_name(fn)
 	p.parseFunc_sig_args(fn)
 	p.parseFunc_sig_returns(fn)
 
 	// 函数声明
-	if p.peekTokenType() == token.LBRACE {
+	if p.r.PeekToken().Type == token.LBRACE {
 		fn.Body = p.parseStmt_block()
 	}
 
-	p.acceptTokenRun(token.SEMICOLON)
+	p.r.AcceptTokenList(token.SEMICOLON)
 }
 
 func (p *parser) parseFunc_method(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	p.parseFunc_sig_self(fn)
 	p.parseFunc_sig_name(fn)
@@ -55,32 +55,32 @@ func (p *parser) parseFunc_method(fn *ast.Func) {
 	p.parseFunc_sig_returns(fn)
 
 	// 函数声明
-	if p.peekTokenType() == token.LBRACE {
+	if p.r.PeekToken().Type == token.LBRACE {
 		fn.Body = p.parseStmt_block()
 	}
 
-	p.acceptTokenRun(token.SEMICOLON)
+	p.r.AcceptTokenList(token.SEMICOLON)
 }
 
 func (p *parser) parseFunc_closure(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	p.parseFunc_sig_args(fn)
 	p.parseFunc_sig_returns(fn)
 
 	fn.Body = p.parseStmt_block()
 
-	p.acceptTokenRun(token.SEMICOLON)
+	p.r.AcceptTokenList(token.SEMICOLON)
 }
 
 func (p *parser) parseFunc_sig_self(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	fn.Self = p.parseFunc_sig_field()
 }
 
 func (p *parser) parseFunc_sig_name(fn *ast.Func) {
-	tokIdent := p.mustAcceptToken(token.IDENT)
+	tokIdent := p.r.MustAcceptToken(token.IDENT)
 
 	fn.Name = &ast.Ident{
 		NamePos: tokIdent.Pos,
@@ -89,16 +89,16 @@ func (p *parser) parseFunc_sig_name(fn *ast.Func) {
 }
 
 func (p *parser) parseFunc_sig_args(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
-	if _, ok := p.acceptToken(token.LPAREN); !ok {
-		p.errorf("invalid token = %v", token.IDENT, p.peekToken())
+	if tok, ok := p.r.AcceptToken(token.LPAREN); !ok {
+		p.errorf(tok.Pos, "invalid token = %v", tok)
 	}
 
 	for {
-		switch p.peekTokenType() {
+		switch p.r.PeekToken().Type {
 		case token.RPAREN:
-			p.nextToken()
+			p.r.ReadToken()
 			return
 		default:
 			if field := p.parseFunc_sig_field(); field != nil {
@@ -111,13 +111,13 @@ func (p *parser) parseFunc_sig_args(fn *ast.Func) {
 }
 
 func (p *parser) parseFunc_sig_returns(fn *ast.Func) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
-	p.acceptToken(token.LPAREN)
+	p.r.AcceptToken(token.LPAREN)
 	for {
-		switch p.peekTokenType() {
+		switch p.r.PeekToken().Type {
 		case token.RPAREN, token.RBRACE, token.SEMICOLON:
-			p.nextToken()
+			p.r.ReadToken()
 			return
 		default:
 			if field := p.parseFunc_sig_field(); field != nil {
@@ -130,17 +130,17 @@ func (p *parser) parseFunc_sig_returns(fn *ast.Func) {
 }
 
 func (p *parser) parseFunc_sig_field() (field *ast.Field) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
-	switch p.peekTokenType() {
+	switch p.r.PeekToken().Type {
 	case token.RPAREN, token.SEMICOLON:
-		p.nextToken()
+		p.r.ReadToken()
 		return nil
 	case token.LBRACE:
 		return nil
 	}
 
-	tokIdent, ok := p.acceptToken(token.IDENT)
+	tokIdent, ok := p.r.AcceptToken(token.IDENT)
 	if !ok {
 		return nil
 	}
@@ -152,11 +152,11 @@ func (p *parser) parseFunc_sig_field() (field *ast.Field) {
 		},
 	}
 
-	if _, ok := p.acceptToken(token.COMMA); ok {
+	if _, ok := p.r.AcceptToken(token.COMMA); ok {
 		return field
 	}
 
-	switch p.peekTokenType() {
+	switch p.r.PeekToken().Type {
 	case token.RPAREN, token.LBRACE, token.SEMICOLON:
 		return field
 	}
