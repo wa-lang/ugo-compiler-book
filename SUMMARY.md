@@ -9,7 +9,7 @@
   - [乘除法表达式](./ch2-expr/ch2-02-mul-div.md)
   - [解析表达式语法树](./ch2-expr/ch2-03-parser.md)
   - [重构解析器](./ch2-expr/ch2-04-parser-v2.md)
-- [语句、变量和词法域](./ch3-block-stmt/readme.md)
+- [最小µGo程序](./ch3-block-stmt/readme.md)
   - [函数调用表达式](./ch3-block-stmt/ch3-01.md)
   - [变量左值和右值](./ch3-block-stmt/ch3-02.md)
   - [嵌套的词法域](./ch3-block-stmt/ch3-03.md)
