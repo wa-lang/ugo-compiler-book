@@ -6,7 +6,7 @@
 package main
 
 func main() {
-	exit(40+2) // 推出码 42
+	exit(40+2) // 退出码 42
 }
 ```
 
