@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>函数调用表达式 - 从头实现µGo语言</title>
+        <title>AST视角的µGo程序 - 从头实现µGo语言</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="从头开发一个迷你Go语言编译器">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-parser-v2.html"><strong aria-hidden="true">2.4.</strong> 重构解析器</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/index.html"><strong aria-hidden="true">3.</strong> 最小µGo程序</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-01.html" class="active"><strong aria-hidden="true">3.1.</strong> 函数调用表达式</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-02.html"><strong aria-hidden="true">3.2.</strong> 变量左值和右值</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 嵌套的词法域</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-if-for/index.html"><strong aria-hidden="true">4.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch5-func/index.html"><strong aria-hidden="true">5.</strong> 函数</a></li><li class="chapter-item expanded "><a href="../ch6-string/index.html"><strong aria-hidden="true">6.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch7-array/index.html"><strong aria-hidden="true">7.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch8-map/index.html"><strong aria-hidden="true">8.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch9-struct/index.html"><strong aria-hidden="true">9.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch10-method/index.html"><strong aria-hidden="true">10.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch11-closure/index.html"><strong aria-hidden="true">11.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch12-interface/index.html"><strong aria-hidden="true">12.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch13-panic/index.html"><strong aria-hidden="true">13.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch14-cgo/index.html"><strong aria-hidden="true">14.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch15-wasm/index.html"><strong aria-hidden="true">15.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch16-type-system/index.html"><strong aria-hidden="true">16.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch17/index.html"><strong aria-hidden="true">17.</strong> 附录</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-parser-v2.html"><strong aria-hidden="true">2.4.</strong> 重构解析器</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/index.html"><strong aria-hidden="true">3.</strong> 最小µGo程序</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-01.html" class="active"><strong aria-hidden="true">3.1.</strong> AST视角的µGo程序</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-02.html"><strong aria-hidden="true">3.2.</strong> 变量左值和右值</a></li><li class="chapter-item expanded "><a href="../ch3-block-stmt/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 嵌套的词法域</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-if-for/index.html"><strong aria-hidden="true">4.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch5-func/index.html"><strong aria-hidden="true">5.</strong> 函数</a></li><li class="chapter-item expanded "><a href="../ch6-string/index.html"><strong aria-hidden="true">6.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch7-array/index.html"><strong aria-hidden="true">7.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch8-map/index.html"><strong aria-hidden="true">8.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch9-struct/index.html"><strong aria-hidden="true">9.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch10-method/index.html"><strong aria-hidden="true">10.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch11-closure/index.html"><strong aria-hidden="true">11.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch12-interface/index.html"><strong aria-hidden="true">12.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch13-panic/index.html"><strong aria-hidden="true">13.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch14-cgo/index.html"><strong aria-hidden="true">14.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch15-wasm/index.html"><strong aria-hidden="true">15.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch16-type-system/index.html"><strong aria-hidden="true">16.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch17/index.html"><strong aria-hidden="true">17.</strong> 附录</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -137,7 +137,139 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="函数调用表达式"><a class="header" href="#函数调用表达式">函数调用表达式</a></h1>
+                        <h1 id="31-ast视角的µgo程序"><a class="header" href="#31-ast视角的µgo程序">3.1 AST视角的µGo程序</a></h1>
+<p>最小的µGo程序虽然只有一个函数，函数中只有一个exit函数调用，但是已经是具有一个完整的程序的基本结构。本节我们将从AST角度分析最小µGo程序的结构，AST相关的代码在ast子包定义。</p>
+<h2 id="311-最小µgo程序"><a class="header" href="#311-最小µgo程序">3.1.1 最小µGo程序</a></h2>
+<p>最小µGo程序代码如下：</p>
+<pre><code class="language-go">package main
+
+func main() {
+	exit(40+2) // 退出码 42
+}
+</code></pre>
+<h2 id="312-package信息"><a class="header" href="#312-package信息">3.1.2 Package信息</a></h2>
+<p>为了减少干扰，我们先排除全部的注释信息。有含义的语句首先是<code>package main</code>，表示这是一个main包。我们可以定义一个<code>Package</code>结构表示：</p>
+<pre><code class="language-go">type Package struct {
+	PkgPos  int
+	NamePos int
+	Name    string
+}
+</code></pre>
+<p>其中PkgPos表示package关键字的位置，NamePos表示包名的开始位置，Name表示包的名字。我们通过在Package结构定义关键元素的值和位置信息，就可以精确表示文本格式的µGo程序（或则说可以轻松将<code>ast.Package</code>这个结构原样恢复出原始的µGo程序，而代码和AST的双向转换正是语法解析和代码格式化的基础）。</p>
+<h2 id="312-函数定义"><a class="header" href="#312-函数定义">3.1.2 函数定义</a></h2>
+<p>然后是函数的表示：这个最小程序虽然只有一个main函数，但是正常的µGo程序可以定义很多个函数。。我们现在尝试定义一个可以表示函数AST的Func结构：</p>
+<pre><code class="language-go">type Func struct {
+	FuncPos int
+	NamePos int
+	Name    string
+	Body    *BlockStmt
+}
+</code></pre>
+<p>其中FuncPos和NamePos分别是func关键字和函数名字的开始位置，Name表示函数的名字（同样为了简单，我们忽略函数的参数和返回值信息，也忽略了小括弧的位置信息），然后BlockStmt类型的Body表示函数体内的语句。</p>
+<h2 id="313-块语句"><a class="header" href="#313-块语句">3.1.3 块语句</a></h2>
+<p>目前函数虽然只有一个<code>exit(40+2)</code>语句，但是真实的µGo程序同样可以包含多个不同类型的语句。语句大约可以看作是分号分隔的、相同层级、顺序执行的代码。上面代码出现的BlockStmt就表示一个块语句，一个块语句是大括弧包含的语句序列。BlockStmt定义如下：</p>
+<pre><code class="language-go">type BlockStmt struct {
+	Lbrace int // '{'
+	List   []Stmt
+	Rbrace int // '}'
+}
+</code></pre>
+<p>其中Lbrace和Rbrace是左右大括弧的位置，而List则是Stmt接口表示的语句列表。因为µGo程序中可能有变量定义、赋值、表达式、if、for、return等不同类型的语句，因此我们需要定义一个Stmt类型的接口来表示语句：</p>
+<pre><code class="language-go">type Stmt interface {
+	Pos() int
+	End() int
+	stmt_type()
+}
+</code></pre>
+<p>语句也有一些共性的方法，其中Pos和End返回语句的开始和结束位置，对应一个语句代码的区间。同时为了区分Stmt和其他类型，我们定义了一个stmt_type私有方法。</p>
+<h2 id="314-表达式语句"><a class="header" href="#314-表达式语句">3.1.4 表达式语句</a></h2>
+<p>光有Stmt接口我们依然无法表示目前的最小µGo程序。我们还需要为表达式语句定义一个ExprStmt结构：</p>
+<pre><code class="language-go">type ExprStmt struct {
+	X Expr
+}
+
+type Expr interface {
+	Pos() int
+	End() int
+	expr_type()
+}
+</code></pre>
+<p>ExprStmt结构中只有一个X成员，表示一个Expr类型的表达式（表达式可以产生值，也可能没有值，比如一个没有返回值的函数调用）。而Expr是与Stmt类似的接口，用于表示具体的表达式的构成。</p>
+<h2 id="315-四则运算表达式结构"><a class="header" href="#315-四则运算表达式结构">3.1.5 四则运算表达式结构</a></h2>
+<p>在表达式一章我们已经通过一个简化的ExprNode节点表示全部的一元和二元表达式。但是目前的最小µGo程序出现了新的表达式结构：函数调用。因此，我们需要为表达式定义更为友好的结构：</p>
+<pre><code class="language-go">type Number struct {
+	ValuePos int
+	ValueEnd int
+	Value    int
+}
+
+type BinaryExpr struct {
+	Op token.Token // 运算符
+	X  Expr        // 左边的运算对象
+	Y  Expr        // 右边的运算对象
+}
+
+type UnaryExpr struct {
+	Op    token.Token // 运算符
+	X     Expr        // 运算对象
+}
+
+type ParenExpr struct {
+	Lparen int  // &quot;(&quot; 的位置
+	X      Expr // 圆括弧内的表达式对象
+	Rparen int  // &quot;)&quot; 的位置
+}
+</code></pre>
+<p>其中Number表示一个普通的整数字面值、BinaryExpr表示二元表达式、UnaryExpr表示一元表达式、ParenExpr表示小括弧表达式。其中递归的表达式定义都是Expr类型，其他属性则是运算符类型和位置信息等。需要注意到是token.Token是一个词法记号值，其中不仅仅包含记号的类型和字面值，还包含记号的位置信息（在稍后的词法分析部分会继续讨论）。</p>
+<h2 id="316-函数调用表达式"><a class="header" href="#316-函数调用表达式">3.1.6 函数调用表达式</a></h2>
+<p>函数调用表达式定义如下：</p>
+<pre><code class="language-go">type CallExpr struct {
+	FuncPos  int
+	FuncName string
+	Lparen   int
+	Args     []Expr
+	Rparen   int
+}
+</code></pre>
+<p>FuncPos和FuncName是调用函数的名字和位置信息，Lparen和Rparen是小括弧位置，Args则是函数的参数表达式列表。</p>
+<h2 id="317-file结构"><a class="header" href="#317-file结构">3.1.7 File结构</a></h2>
+<p>最小µGo程序的全部元素以已经定义，我们现在定义一个File结构表示一个文件：</p>
+<pre><code class="language-go">type File struct {
+	Pkg   *Package
+	Funcs []Func
+}
+</code></pre>
+<p>其中Pkg表示包信息，Funcs则表示文件中顺序出现的函数列表。</p>
+<h2 id="318-ast表示的µgo程序"><a class="header" href="#318-ast表示的µgo程序">3.1.8 AST表示的µGo程序</a></h2>
+<p>现在我们尝试通过AST表示µGo程序（为了方便表示，我们暂时忽略位置信息）：</p>
+<pre><code class="language-go">ugoProg := &amp;File {
+	Pkg: &amp;Package{
+		Name: &quot;main&quot;,
+	},
+	Funcs: []Func{
+		{
+			Name: &quot;main&quot;,
+			Body: &amp;BlockStmt {
+				List: []Stmt{
+					&amp;CallExpr{
+						FuncName: &quot;exit&quot;,
+						Args: []Expr{
+							&amp;BinaryExpr{
+								Op: token.Token{Type: token.ADD},
+								X: &amp;Number{Value: 40},
+								Y: &amp;Number{Value: 2},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+</code></pre>
+<p>这样我们就得到了一个全新形式表示的µGo程序。</p>
+<h2 id="319-小结"><a class="header" href="#319-小结">3.1.9 小结</a></h2>
+<p>AST是编译器前后端链接的纽带：AST虽然看起来繁琐，但是结构非常清晰，非常适合程序处理。有了AST之后我们不仅仅可以进行语义检查、编译到汇编代码、也可以进行AST结构转换和代码格式化等很多工作。在本章稍后，我们将围绕AST明确token包的结构、讨论如何遍历AST、以及如何从AST输出LLVM汇编代码。</p>
 
                     </main>
 
