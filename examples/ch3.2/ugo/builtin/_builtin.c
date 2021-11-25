@@ -1,4 +1,4 @@
-extern int exit(int);
+extern void exit(int);
 
 int ugo_builtin_exit(int x) {
 	exit(x);

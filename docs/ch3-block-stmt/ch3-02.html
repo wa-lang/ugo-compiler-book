@@ -171,7 +171,7 @@ int ugo_builtin_exit(int x) {
 }
 </code></pre>
 <p>然后用<code>clang -S -emit-llvm builtin.c</code>将C代码转化为LLVM汇编语言格式。输出的<code>builtin.ll</code>文件如下：</p>
-<pre><code class="language-ll">declare i32 @exit(i32)
+<pre><code class="language-ll">declare void @exit(i32)
 
 define i32 @ugo_builtin_exit(i32) {
   %2 = alloca i32, align 4
@@ -189,6 +189,52 @@ $ echo $?
 </code></pre>
 <p>验证一切正常之后，我们就可以开始尝试用程序生成<code>main.ll</code>了。</p>
 <h2 id="323-构造compilercompiler对象"><a class="header" href="#323-构造compilercompiler对象">3.2.3 构造<code>compiler.Compiler</code>对象</a></h2>
+<p>编译器的代码放在compiler包，其中Compiler对象提供一个编译方法：</p>
+<pre><code class="language-go">type Compiler struct{}
+
+func (p *Compiler) Compile(f *ast.File) string {
+	var buf bytes.Buffer
+
+	p.genBuiltin(&amp;buf)
+	p.compileFile(&amp;buf, f)
+	p.genMainMain(&amp;buf)
+
+	return buf.String()
+}
+</code></pre>
+<p>参数是输入的<code>ast.File</code>，对应µGo程序的AST。其中<code>p.genBuiltin</code>调用用于生成内置函数的声明，<code>p.compileFile</code>则将µGo程序编译为LLVM汇编，最后将<code>main.main</code>函数挂到入口的main函数。</p>
+<h2 id="324-内置函数声明和入口代码生成"><a class="header" href="#324-内置函数声明和入口代码生成">3.2.4 内置函数声明和入口代码生成</a></h2>
+<p>内置函数的声明和入口函数的定义均在builtin包定义：</p>
+<pre><code class="language-go">package builtin
+
+const Header = `
+declare i32 @ugo_builtin_exit(i32)
+`
+
+const MainMain = `
+define i32 @main() {
+	call i32() @ugo_main_main()
+	ret i32 0
+}
+`
+</code></pre>
+<p>对应的编译函数实现：</p>
+<pre><code class="language-go">package compiler
+
+import (
+	&quot;github.com/chai2010/ugo/builtin&quot;
+)
+
+func (p *Compiler) genBuiltin(w io.Writer) {
+	fmt.Fprintln(w, builtin.Header)
+}
+func (p *Compiler) genMainMain(w io.Writer) {
+	fmt.Fprintln(w, builtin.MainMain)
+}
+</code></pre>
+<p>将预定义的LLVM汇编代码直接输出即可。</p>
+<h2 id="325-编译文件"><a class="header" href="#325-编译文件">3.2.5 编译文件</a></h2>
+<p>TODO</p>
 
                     </main>
 
