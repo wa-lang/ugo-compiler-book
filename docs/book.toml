@@ -1,7 +1,7 @@
 [book]
-title = "从头实现µGo语言"
+title = "µGo语言实现"
 authors = ["chai2010"]
-description = "从头开发一个迷你Go语言编译器"
+description = "如何从头开发一个迷你Go语言编译器"
 language = "zh"
 multilingual = false
 src = "."
