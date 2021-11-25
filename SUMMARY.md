@@ -11,7 +11,7 @@
   - [重构解析器](./ch2-expr/ch2-04-parser-v2.md)
 - [最小µGo程序](./ch3-block-stmt/readme.md)
   - [AST视角的µGo程序](./ch3-block-stmt/ch3-01.md)
-  - [变量左值和右值](./ch3-block-stmt/ch3-02.md)
+  - [AST到LLVM汇编](./ch3-block-stmt/ch3-02.md)
   - [嵌套的词法域](./ch3-block-stmt/ch3-03.md)
 - [if分支和for循环](./ch4-if-for/readme.md)
 - [函数](./ch5-func/readme.md)
