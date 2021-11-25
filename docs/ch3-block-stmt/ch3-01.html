@@ -251,13 +251,15 @@ type ParenExpr struct {
 			Name: &quot;main&quot;,
 			Body: &amp;BlockStmt {
 				List: []Stmt{
-					&amp;CallExpr{
-						FuncName: &quot;exit&quot;,
-						Args: []Expr{
-							&amp;BinaryExpr{
-								Op: token.Token{Type: token.ADD},
-								X: &amp;Number{Value: 40},
-								Y: &amp;Number{Value: 2},
+					&amp;ast.ExprStmt{
+						X: &amp;ast.CallExpr{
+							FuncName: &quot;exit&quot;,
+							Args: []ast.Expr{
+								&amp;ast.BinaryExpr{
+									Op: token.Token{Type: token.ADD},
+									X:  &amp;ast.Number{Value: 40},
+									Y:  &amp;ast.Number{Value: 2},
+								},
 							},
 						},
 					},

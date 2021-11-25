@@ -1041,13 +1041,15 @@ type ParenExpr struct {
 			Name: &quot;main&quot;,
 			Body: &amp;BlockStmt {
 				List: []Stmt{
-					&amp;CallExpr{
-						FuncName: &quot;exit&quot;,
-						Args: []Expr{
-							&amp;BinaryExpr{
-								Op: token.Token{Type: token.ADD},
-								X: &amp;Number{Value: 40},
-								Y: &amp;Number{Value: 2},
+					&amp;ast.ExprStmt{
+						X: &amp;ast.CallExpr{
+							FuncName: &quot;exit&quot;,
+							Args: []ast.Expr{
+								&amp;ast.BinaryExpr{
+									Op: token.Token{Type: token.ADD},
+									X:  &amp;ast.Number{Value: 40},
+									Y:  &amp;ast.Number{Value: 2},
+								},
 							},
 						},
 					},
@@ -1118,14 +1120,14 @@ $ echo $?
 func (p *Compiler) Compile(f *ast.File) string {
 	var buf bytes.Buffer
 
-	p.genBuiltin(&amp;buf)
-	p.compileFile(&amp;buf, f)
-	p.genMainMain(&amp;buf)
+	p.genHeader(&amp;buf, file)
+	p.compileFile(&amp;buf, file)
+	p.genMain(&amp;buf, file)
 
 	return buf.String()
 }
 </code></pre>
-<p>参数是输入的<code>ast.File</code>，对应µGo程序的AST。其中<code>p.genBuiltin</code>调用用于生成内置函数的声明，<code>p.compileFile</code>则将µGo程序编译为LLVM汇编，最后将<code>main.main</code>函数挂到入口的main函数。</p>
+<p>参数是输入的<code>ast.File</code>，对应µGo程序的AST。其中<code>p.genHeader</code>调用用于生成内置函数的声明，<code>p.compileFile</code>则将µGo程序编译为LLVM汇编，最后<code>p.genMain</code>将<code>main.main</code>函数挂到入口的main函数。</p>
 <h2 id="324-内置函数声明和入口代码生成"><a class="header" href="#324-内置函数声明和入口代码生成">3.2.4 内置函数声明和入口代码生成</a></h2>
 <p>内置函数的声明和入口函数的定义均在builtin包定义：</p>
 <pre><code class="language-go">package builtin
@@ -1148,16 +1150,100 @@ import (
 	&quot;github.com/chai2010/ugo/builtin&quot;
 )
 
-func (p *Compiler) genBuiltin(w io.Writer) {
+func (p *Compiler) genHeader(w io.Writer, file *ast.File) {
+	fmt.Fprintf(w, &quot;; package %s\n&quot;, file.Pkg.Name)
 	fmt.Fprintln(w, builtin.Header)
 }
-func (p *Compiler) genMainMain(w io.Writer) {
-	fmt.Fprintln(w, builtin.MainMain)
+
+func (p *Compiler) genMain(w io.Writer, file *ast.File) {
+	if file.Pkg.Name != &quot;main&quot; {
+		return
+	}
+	for _, fn := range file.Funcs {
+		if fn.Name == &quot;main&quot; {
+			fmt.Fprintln(w, builtin.MainMain)
+			return
+		}
+	}
 }
 </code></pre>
-<p>将预定义的LLVM汇编代码直接输出即可。</p>
+<p>genHeader方法首先生成注释说明当前边缘的源文件信息，然后输出内置函数的声明。genMain函数则是针对<code>main.main</code>输出main入口函数。</p>
 <h2 id="325-编译文件"><a class="header" href="#325-编译文件">3.2.5 编译文件</a></h2>
-<p>TODO</p>
+<p>因为目前的程序比较简单，AST中只有函数。compileFile实现如下：</p>
+<pre><code class="language-go">func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
+	for _, fn := range file.Funcs {
+		p.compileFunc(w, file, fn)
+	}
+}
+</code></pre>
+<p>只是简单遍历<code>file.Funcs</code>包含的每个函数，然后调用p.compileFunc编译函数。</p>
+<p>p.compileFunc实现如下：</p>
+<pre><code class="language-go">func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
+	if fn.Body == nil {
+		fmt.Fprintf(w, &quot;declare i32 @ugo_%s_%s() {\n&quot;, file.Pkg.Name, fn.Name)
+		return
+	}
+
+	fmt.Fprintf(w, &quot;define i32 @ugo_%s_%s() {\n&quot;, file.Pkg.Name, fn.Name)
+	p.compileStmt(w, fn.Body)
+
+	fmt.Fprintln(w, &quot;\tret i32 0&quot;)
+	fmt.Fprintln(w, &quot;}&quot;)
+}
+</code></pre>
+<p>如果函数没有Body，则产生函数的声明，否则则输出完整的函数定义。函数的定义对应一个块语句，通过p.compileStmt函数完成编译。输出的函数名字做了简单的名字修饰——增加了当前包的名字。</p>
+<h2 id="326-编译语句"><a class="header" href="#326-编译语句">3.2.6 编译语句</a></h2>
+<p>语句是编程语言中最有价值的部分，比如if、for这些都是语句。目前的程序只有块和表达式两种语句，compileStmt实现如下：</p>
+<pre><code class="language-go">func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
+	switch stmt := stmt.(type) {
+	case *ast.BlockStmt:
+		for _, x := range stmt.List {
+			p.compileStmt(w, x)
+		}
+	case *ast.ExprStmt:
+		p.compileExpr(w, stmt.X)
+
+	default:
+		panic(&quot;unreachable&quot;)
+	}
+}
+</code></pre>
+<p>其实函数的Body就是一个<code>*ast.BlockStmt</code>，只要针对其中的每个语句再次递归调用<code>p.compileStmt</code>编译即可。如果是普通的表达式语句，则调用<code>p.compileExpr</code>编译表达式。</p>
+<h2 id="327-编译表达式"><a class="header" href="#327-编译表达式">3.2.7 编译表达式</a></h2>
+<p>我们已经在第二章展示过如何编译加减乘除构成的表达式，现在的表达式则增加了一个函数调用，但是实现的方式依然相似。</p>
+<p>内容稍后补充，大家可以先自行尝试完成。</p>
+<h2 id="328-组装编译器"><a class="header" href="#328-组装编译器">3.2.8 组装编译器</a></h2>
+<p>现在我们可以构造一个测试程序，将AST和编译函数串起来：</p>
+<pre><code class="language-go">package main
+
+import (
+	&quot;fmt&quot;
+
+	&quot;github.com/chai2010/ugo/ast&quot;
+	&quot;github.com/chai2010/ugo/compiler&quot;
+)
+
+func main() {
+	ast := &amp;ast.File{} // 用ch3.1内容填充
+	ll := new(compiler.Compiler).Compile(ast)
+	fmt.Print(ll)
+}
+</code></pre>
+<p>输出的LL汇编程序：</p>
+<pre><code class="language-ll">; package main
+
+declare i32 @ugo_builtin_exit(i32)
+
+define i32 @ugo_main_main() {
+	ret i32 0
+}
+
+define i32 @main() {
+	call i32() @ugo_main_main()
+	ret i32 0
+}
+</code></pre>
+<p>这样我们就实现了自动翻译的编译器程序。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="嵌套的词法域"><a class="header" href="#嵌套的词法域">嵌套的词法域</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="4-if分支和for循环"><a class="header" href="#4-if分支和for循环">4. if分支和for循环</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="5-函数"><a class="header" href="#5-函数">5. 函数</a></h1>
