@@ -383,6 +383,10 @@ func main() {
 declare i32 @ugo_builtin_exit(i32)
 
 define i32 @ugo_main_main() {
+	%t2 = add i32 0, 40
+	%t3 = add i32 0, 2
+	%t1 = add i32 %t2, %t3
+	%t0 = call i32(i32) @ugo_builtin_exit(i32 %t1)
 	ret i32 0
 }
 
