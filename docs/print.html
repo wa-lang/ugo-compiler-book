@@ -1353,6 +1353,61 @@ x:=x语句
 <div style="break-before: page; page-break-before: always;"></div><h1 id="15-wasm"><a class="header" href="#15-wasm">15. WASM</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="16-类型系统"><a class="header" href="#16-类型系统">16. 类型系统</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="17-附录"><a class="header" href="#17-附录">17. 附录</a></h1>
+<h2 id="llvm-参考"><a class="header" href="#llvm-参考">LLVM 参考</a></h2>
+<h3 id="标识符"><a class="header" href="#标识符">标识符</a></h3>
+<p>LLIR中命名标识符有两种：全局标识符、局部标识符。命名的标识符命名规则是：<code>[@%][a-zA-Z$._][a-zA-Z$._0-9]*</code>，以<code>@</code>开头的是全局标识符，以<code>%</code>开头的是局部标识符。</p>
+<h4 id="全局标识符"><a class="header" href="#全局标识符">全局标识符</a></h4>
+<p>全局标识符主要用于表示全局的变量或常量，还有全局函数的命名。下面是全局标识符的一些例子：</p>
+<pre><code class="language-llvm">@count = global i32 21
+@hello = internal constant [6 x i8] c&quot;hello\00&quot;
+
+declare i32 @puts(i8* nocapture) nounwind
+
+define void @main() {
+	ret void
+}
+</code></pre>
+<p>其中<code>@count</code>是一个全局的变量，类型是<code>i32</code>，初始值为21；<code>@hello</code>是一个内部的字符串常量；<code>@puts</code>是外部导入的函数名；<code>@main</code>是新定义的函数名。</p>
+<p>因为<code>$.</code>都是合法的标识符名称，可以通过<code>$.</code>来为全局的标识符构造不同层级的名字空间。比如下面的例子：</p>
+<pre><code class="language-llvm">@main.count = global i32 21
+@std.math.pi = global double 3.14
+
+@main.count.$type = ....
+</code></pre>
+<p>其中<code>@main.count</code>可以表示为<code>main</code>包下面的<code>count</code>全局变量，而<code>@std.math.pi</code>可以表示为<code>std.math</code>包下面的<code>pi</code>变量。最后的<code>@main.count.$type</code>带有<code>$</code>字符，可以用户表示和<code>count</code>全局变量相关的其它信息。</p>
+<p>关于全局变量的其它细节可以暂时忽略，在后文会详细解释。</p>
+<h4 id="局部标识符"><a class="header" href="#局部标识符">局部标识符</a></h4>
+<p>除了全局标识符之外还有局部标识符。局部标识符主要用于表示函数的参数和函数内局部变量（局部变量可以对应未寄存器）。下面是局部标识符的一些例子：</p>
+<pre><code class="language-llvm">define i32 @main(i32 %argc, i8** %argv) nounwind {
+	ret i32 0
+}
+</code></pre>
+<p>其中<code>%argc</code>和<code>%argv</code>都是以<code>%</code>开头表示局部变量，对应<code>@main</code>函数的两个输出参数。</p>
+<p>也可以通过<code>$.</code>来为布局的标识符构造不同层级的名字空间。比如下面的例子：</p>
+<pre><code class="language-llvm">define i32 @main() {
+	%str.addr = getelementptr [6 x i8],[6 x i8]* @&quot;hello\0a&quot;, i64 0, i64 0
+	ret i32 0
+}
+</code></pre>
+<p><code>%str.addr</code>可以用于表示字符串中的地址属性。</p>
+<h4 id="未命名标识符"><a class="header" href="#未命名标识符">未命名标识符</a></h4>
+<p>除了命名的标识符之外，还有未命名的标识符，它们以无符号的数字表示：</p>
+<pre><code class="language-llvm">@0 = global i32 100
+@1 = global i32 200
+@2 = global i32 300
+
+define void @main() {
+	%1 = load i32, i32* @0
+	ret void
+}
+</code></pre>
+<p>其中<code>@0</code>/<code>@1</code>/<code>@2</code>分别是三个未命名的全局标识符，对应三个<code>i32</code>类型的全局变量。而<code>@main</code>函数内部的<code>%1</code>表示一个局部的未命名标识符，可以理解为一个寄存器。</p>
+<p>在LLVM8中，全局的未命名标识符好像必须从<code>@0</code>开始编号，局部的未命名标识符好像必须从<code>%1</code>开始编号，具体原因还有待分析。</p>
+<h4 id="特殊字符"><a class="header" href="#特殊字符">特殊字符</a></h4>
+<p>在标识符还可以通过转义字符的方式表示任意的特殊字符：</p>
+<pre><code class="language-llvm">@&quot;hello\0a&quot; = internal constant [6 x i8] c&quot;hello\00&quot;
+</code></pre>
+<p>如果标识符有转义字符存在则必须用双引号包围起来，比如<code>@&quot;hello\0a&quot;</code>。转义字符串的格式为<code>\xx</code>，其中<code>xx</code>是十六进制表达的ASCII值，比如<code>\0a</code>表示换行符<code>\n</code>。几乎可以使用任意的Unicode字符来命名标识符，只要用UTF8编码后再用转义字符就可以表示了。</p>
 
                     </main>
 
