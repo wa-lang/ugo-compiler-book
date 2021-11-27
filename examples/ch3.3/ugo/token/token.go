@@ -17,6 +17,12 @@ const (
 	SUB // -
 	MUL // *
 	DIV // /
+
+	LPAREN // (
+	RPAREN // )
+
+	LBRACE // {
+	RBRACE // }
 )
 
 // 记号值
