@@ -286,7 +286,80 @@ func (p *Compiler) genMain(w io.Writer, file *ast.File) {
 <p>其实函数的Body就是一个<code>*ast.BlockStmt</code>，只要针对其中的每个语句再次递归调用<code>p.compileStmt</code>编译即可。如果是普通的表达式语句，则调用<code>p.compileExpr</code>编译表达式。</p>
 <h2 id="327-编译表达式"><a class="header" href="#327-编译表达式">3.2.7 编译表达式</a></h2>
 <p>我们已经在第二章展示过如何编译加减乘除构成的表达式，现在的表达式则增加了一个函数调用，但是实现的方式依然相似。</p>
-<p>内容稍后补充，大家可以先自行尝试完成。</p>
+<p>调套表达式的特点是每个节点最多产生一个值（不返回或返回多个值的一般不会出现在前套的表达式中，只需要特化处理即可），只需要针对每个表达式节点类型分别处理：</p>
+<pre><code class="language-go">func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
+	switch expr := expr.(type) {
+	case *ast.Number:
+		// %t1 = add i32 0, x; x
+		return `%t1`
+	case *ast.BinaryExpr:
+		// %t1 = bin_op i32 x, y; x+y
+		return `%t1`
+	case *ast.UnaryExpr:
+		// %t1 = sub i32 0, x; -x, or x
+		return `%t1`
+	case *ast.ParenExpr:
+		// %t1 = %t0; (x) -&gt; x
+		return `%t1`
+	case *ast.CallExpr:
+		// %t1 = call i32(i32) func(i32 %x)
+		return `%t1`
+	}
+	panic(&quot;unreachable&quot;)
+}
+</code></pre>
+<p>普通的数字面值、二元、一元和小括弧和第2章产生的方式类似：</p>
+<pre><code class="language-go">func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
+	switch expr := expr.(type) {
+	case *ast.Number:
+		localName = p.genId()
+		fmt.Fprintf(w, &quot;\t%s = %s i32 %v, %v\n&quot;,
+			localName, &quot;add&quot;, `0`, expr.Value,
+		)
+		return localName
+	case *ast.BinaryExpr:
+		localName = p.genId()
+		switch expr.Op.Type {
+		case token.ADD:
+			fmt.Fprintf(w, &quot;\t%s = %s i32 %v, %v\n&quot;,
+				localName, &quot;add&quot;, p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.SUB:
+			// ...
+		case token.MUL:
+			// ...
+		case token.DIV:
+			// ...
+		}
+	case *ast.UnaryExpr:
+		if expr.Op.Type == token.SUB {
+			localName = p.genId()
+			fmt.Fprintf(w, &quot;\t%s = %s i32 %v, %v\n&quot;,
+				localName, &quot;sub&quot;, `0`, p.compileExpr(w, expr.X),
+			)
+			return localName
+		}
+		return p.compileExpr(w, expr.X)
+	case *ast.ParenExpr:
+		return p.compileExpr(w, expr.X)
+
+	// ...
+</code></pre>
+<p>函数调用是新加的，实现如下：</p>
+<pre><code class="language-go">	case *ast.CallExpr:
+		// call i32(i32) @ugo_builtin_exit(i32 %t2)
+		localName = p.genId()
+		fmt.Fprintf(w, &quot;\t%s = call i32(i32) @ugo_builtin_%s(i32 %v)\n&quot;,
+			localName, expr.FuncName, p.compileExpr(w, expr.Args[0]),
+		)
+		return localName
+	}
+
+	panic(&quot;unreachable&quot;)
+}
+</code></pre>
+<p>为了简化函数的返回值和参数类型目前是固定的，函数的名字增加一个<code>@ugo_builtin_</code>前缀。到此我们基本完成了编译器后端的基础工作。</p>
 <h2 id="328-组装编译器"><a class="header" href="#328-组装编译器">3.2.8 组装编译器</a></h2>
 <p>现在我们可以构造一个测试程序，将AST和编译函数串起来：</p>
 <pre><code class="language-go">package main

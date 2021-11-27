@@ -7,9 +7,12 @@ import (
 
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/builtin"
+	"github.com/chai2010/ugo/token"
 )
 
-type Compiler struct{}
+type Compiler struct {
+	nextId int
+}
 
 func (p *Compiler) Compile(file *ast.File) string {
 	var buf bytes.Buffer
@@ -71,6 +74,63 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 	}
 }
 
-func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) {
-	// TODO
+func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
+	switch expr := expr.(type) {
+	case *ast.Number:
+		localName = p.genId()
+		fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+			localName, "add", `0`, expr.Value,
+		)
+		return localName
+	case *ast.BinaryExpr:
+		localName = p.genId()
+		switch expr.Op.Type {
+		case token.ADD:
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "add", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.SUB:
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "sub", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.MUL:
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "mul", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.DIV:
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "div", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		}
+	case *ast.UnaryExpr:
+		if expr.Op.Type == token.SUB {
+			localName = p.genId()
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "sub", `0`, p.compileExpr(w, expr.X),
+			)
+			return localName
+		}
+		return p.compileExpr(w, expr.X)
+	case *ast.ParenExpr:
+		return p.compileExpr(w, expr.X)
+	case *ast.CallExpr:
+		// call i32(i32) @ugo_builtin_exit(i32 %t2)
+		localName = p.genId()
+		fmt.Fprintf(w, "\t%s = call i32(i32) @ugo_builtin_%s(i32 %v)\n",
+			localName, expr.FuncName, p.compileExpr(w, expr.Args[0]),
+		)
+		return localName
+	}
+
+	panic("unreachable")
+}
+
+func (p *Compiler) genId() string {
+	id := fmt.Sprintf("%%t%d", p.nextId)
+	p.nextId++
+	return id
 }
