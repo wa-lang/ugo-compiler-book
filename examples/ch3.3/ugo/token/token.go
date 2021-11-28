@@ -6,6 +6,7 @@ type TokenType int
 // ch3中 µGo程序用到的记号类型
 const (
 	EOF TokenType = iota
+	ERROR
 
 	IDENT
 	NUMBER
@@ -20,9 +21,10 @@ const (
 
 	LPAREN // (
 	RPAREN // )
-
 	LBRACE // {
 	RBRACE // }
+
+	SEMICOLON // ;
 )
 
 // 记号值
@@ -31,4 +33,16 @@ type Token struct {
 	Value   interface{} // 记号的值, 目前只有 int
 	Pos     int         // 记号所在的位置(从1开始)
 	Literal string      // 程序中原始的字符串
+}
+
+var keywords = map[string]TokenType{
+	"package": PACKAGE,
+	"func":    FUNC,
+}
+
+func Lookup(ident string) TokenType {
+	if tok, is_keyword := keywords[ident]; is_keyword {
+		return tok
+	}
+	return IDENT
 }

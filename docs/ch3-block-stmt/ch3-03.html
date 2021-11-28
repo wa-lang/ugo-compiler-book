@@ -179,7 +179,51 @@ var ugoTokens = []token.Token {
 </code></pre>
 <p>简单说，在<code>package main</code>和<code>func</code>之间至少要有一个换行符号或则是分号。其实语法解析器最终需要的是分号，因为分号才是Go语言中语句的分隔符号（正如空白也是单词之间的分隔符）。而Go语言的词法解析起在解析时如果是特殊的Token遇到换行（标识符、数字或字符串等字面值、break/continue/fallthrough/return等关键字、<code>++</code>/<code>--</code>/<code>)</code>/<code>]</code>/<code>}</code>等运算符，同时<code>)</code>/<code>}</code>之前的分号可以省略，具体请参考 <a href="https://golang.google.cn/ref/spec#Semicolons">spec</a> 文档），会自动添加分号。</p>
 <p>同样，注释是可以以任意的形式混入在Token序列之间的。如果加入注释的干扰，会导致语法的定义和分析变得复杂。常见的做法是词法解析的同时记录每个Token的位置信息，词法解析完成后将注释剥离再进行语法解析，等语法解析器完成AST构造之后再将注释根据位置合并到AST的相应结点中。</p>
-<h2 id="333-完整的token包"><a class="header" href="#333-完整的token包">3.3.3 完整的token包</a></h2>
+<h2 id="333-完善token包的记号类型"><a class="header" href="#333-完善token包的记号类型">3.3.3 完善token包的记号类型</a></h2>
+<p>token包的内容和第2章结构类似，增加了部分新的关键字类型：</p>
+<pre><code class="language-go">package token
+
+// 记号类型
+type TokenType int
+
+// ch3中 µGo程序用到的记号类型
+const (
+	EOF TokenType = iota
+	ERROR
+
+	IDENT
+	NUMBER
+
+	PACKAGE
+	FUNC
+
+	ADD // +
+	SUB // -
+	MUL // *
+	DIV // /
+
+	LPAREN // (
+	RPAREN // )
+	LBRACE // {
+	RBRACE // }
+
+	SEMICOLON // ;
+)
+</code></pre>
+<p>增加了IDENT表示标识符、PACKAGE定义包、FUNC针对函数大括弧用于定义函数的Body、并引入了分号。如果是语法位置记号用ERROR表示，EOF表示文件结束。</p>
+<p>token.Token对应记号的值（含记号类型、解析后的值、位置和原始面值）：</p>
+<pre><code class="language-go">type Token struct {
+	Type    TokenType   // 记号的类型
+	Value   interface{} // 记号的值, 目前只有 int
+	Pos     int         // 记号所在的位置(从1开始)
+	Literal string      // 程序中原始的字符串
+}
+</code></pre>
+<p>这样我们就可以用<code>[]token.Token</code>表示的记号序列来等价地表示词法解析后的代码。</p>
+<h3 id="334-重构词法解析器"><a class="header" href="#334-重构词法解析器">3.3.4 重构词法解析器</a></h3>
+<p>在地2章最后的例子中，我们通过包装<code>text/scanner</code>标准库实现了词法解析。这种方式虽然可以用于µGo程序，但是依然有隔山打牛的弊端。本节我们该用纯手工的方式重新实现词法解析，这样不仅仅可以让我们可以了解词法解析的实现细节，而且词法解析的套路依然可以用于后续的AST解析工作。这种问题只要彻底解决一次就一劳永逸了。</p>
+<h4 id="3341-字节流的reader"><a class="header" href="#3341-字节流的reader">3.3.4.1 字节流的Reader</a></h4>
+<p>词法解析的输入是字节流，在解析的过程中常常需要向前多看一个字符，同时也可能要忽略一些字符，为此我们需要先构造一个字节流的Reader（这个设计同样可以复制到Token流Reader，用于语法解析）。</p>
 <p>TODO</p>
 <!--
 词法流读接口
