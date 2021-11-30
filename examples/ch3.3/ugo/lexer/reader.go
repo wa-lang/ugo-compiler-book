@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"strings"
 	"unicode/utf8"
 )
 
@@ -11,8 +12,8 @@ type Reader interface {
 	Read() rune
 	Unread()
 
-	Accept(valid string) bool
-	AcceptRun(valid string) bool
+	Accept(valid string) (lit string, pos int, ok bool)
+	AcceptRun(valid string) (litList []string, posList []int, ok bool)
 
 	EmitToken() (lit string, pos int)
 	IgnoreToken()
@@ -64,10 +65,26 @@ func (p *srcReader) IgnoreToken() {
 	_, _ = p.EmitToken()
 }
 
-func (p *srcReader) Accept(valid string) bool {
-	panic("TODO")
+func (p *srcReader) Accept(valid string) (lit string, pos int, ok bool) {
+	if strings.IndexRune(valid, rune(p.Read())) >= 0 {
+		lit, pos = p.EmitToken()
+		ok = true
+		return
+	}
+	p.Unread()
+	ok = false
+	return
 }
 
-func (p *srcReader) AcceptRun(valid string) bool {
-	panic("TODO")
+func (p *srcReader) AcceptRun(valid string) (litList []string, posList []int, ok bool) {
+	for {
+		lit, pos, ok := p.Accept(valid)
+		if !ok {
+			break
+		}
+		litList = append(litList, lit)
+		posList = append(posList, pos)
+	}
+	ok = len(litList) > 0
+	return
 }
