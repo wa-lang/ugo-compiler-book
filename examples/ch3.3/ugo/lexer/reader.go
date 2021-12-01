@@ -50,6 +50,7 @@ func (p *srcReader) Read() rune {
 		p.width = 0
 		return 0
 	}
+
 	r, size := utf8.DecodeRune([]byte(p.input[p.pos:]))
 	p.width = size
 	p.pos += p.width
@@ -64,7 +65,6 @@ func (p *srcReader) Accept(valid string) bool {
 	if strings.IndexRune(valid, rune(p.Read())) >= 0 {
 		return true
 	}
-	p.Unread()
 	return false
 }
 

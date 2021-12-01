@@ -35,6 +35,10 @@ func newLexer(name, input string, opt Option) *lexer {
 
 func (p *lexer) emit(typ token.TokenType) {
 	lit, pos := p.r.EmitToken()
+	if typ == token.EOF {
+		pos = p.r.Pos()
+		lit = ""
+	}
 	p.items = append(p.items, token.Token{
 		Type:    typ,
 		Literal: lit,
@@ -63,12 +67,16 @@ func (p *lexer) run() (items []token.Token) {
 	}()
 
 	for {
-		switch r := p.r.Read(); {
-		case r == eof:
+		r := p.r.Read()
+		if r == eof {
 			p.emit(token.EOF)
 			return
+		}
 
+		switch {
 		case r == '\n':
+			p.r.IgnoreToken()
+
 			if len(p.items) > 0 {
 				switch p.items[len(p.items)-1].Type {
 				case token.RPAREN, token.RBRACE:
@@ -103,7 +111,21 @@ func (p *lexer) run() (items []token.Token) {
 		case r == '*': // *, *=
 			p.emit(token.MUL)
 		case r == '/': // /, //, /*, /=
-			p.emit(token.DIV)
+			if p.r.Peek() == '/' {
+				// line comment
+				for {
+					t := p.r.Read()
+					if t == '\n' {
+						p.r.IgnoreToken()
+						break
+					}
+					if t == eof {
+						return
+					}
+				}
+			} else {
+				p.emit(token.DIV)
+			}
 
 		case r == '(':
 			p.emit(token.LPAREN)

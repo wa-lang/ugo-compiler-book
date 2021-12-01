@@ -1,3 +1,7 @@
+// go get golang.org/x/tools/cmd/stringer
+
+//go:generate stringer -type=TokenType
+
 package token
 
 // 记号类型
