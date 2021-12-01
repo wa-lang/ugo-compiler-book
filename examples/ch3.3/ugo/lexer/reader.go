@@ -8,6 +8,7 @@ import (
 type Reader interface {
 	Input() string
 
+	Pos() int
 	Peek() rune
 	Read() rune
 	Unread()
@@ -32,6 +33,10 @@ type srcReader struct {
 
 func (p *srcReader) Input() string {
 	return p.input
+}
+
+func (p *srcReader) Pos() int {
+	return p.pos
 }
 
 func (p *srcReader) Peek() rune {

@@ -29,10 +29,11 @@ const (
 
 // 记号值
 type Token struct {
-	Type    TokenType   // 记号的类型
-	Value   interface{} // 记号的值, 目前只有 int
-	Pos     int         // 记号所在的位置(从1开始)
-	Literal string      // 程序中原始的字符串
+	Type    TokenType // 记号的类型
+	Literal string    // 程序中原始的字符串
+	Pos     int       // 记号所在的位置(从1开始)
+
+	Value interface{} // 记号的值, 目前只有 int
 }
 
 var keywords = map[string]TokenType{

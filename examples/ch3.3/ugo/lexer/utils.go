@@ -4,8 +4,7 @@ import (
 	"unicode"
 )
 
-// isSpace reports whether r is a space character.
-func isSpace(r int) bool {
+func isSpace(r rune) bool {
 	switch r {
 	case ' ', '\t', '\r':
 		return true
@@ -13,11 +12,10 @@ func isSpace(r int) bool {
 	return false
 }
 
-func isAlpha(r int) bool {
-	return r == '_' || unicode.IsLetter(rune(r))
+func isAlpha(r rune) bool {
+	return r == '_' || unicode.IsLetter(r)
 }
 
-// isAlphaNumeric reports whether r is an alphabetic, digit, or underscore.
-func isAlphaNumeric(r int) bool {
-	return r == '_' || unicode.IsLetter(rune(r)) || unicode.IsDigit(rune(r))
+func isAlphaNumeric(r rune) bool {
+	return r == '_' || unicode.IsLetter(rune(r)) || unicode.IsDigit(r)
 }
