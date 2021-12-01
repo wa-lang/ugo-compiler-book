@@ -30,4 +30,5 @@
 - [CGO](./ch14-cgo/readme.md)
 - [WASM](./ch15-wasm/readme.md)
 - [类型系统](./ch16-type-system/readme.md)
-- [附录](./ch17/readme.md)
+- [LSP服务](./ch17-lsp/readme.md)
+- [附录](./ch18/readme.md)
