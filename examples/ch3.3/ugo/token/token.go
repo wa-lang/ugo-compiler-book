@@ -9,7 +9,7 @@ type TokenType int
 
 // ch3中 µGo程序用到的记号类型
 const (
-	EOF TokenType = iota
+	EOF TokenType = iota // = 0
 	ERROR
 
 	IDENT

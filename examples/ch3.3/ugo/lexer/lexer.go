@@ -6,59 +6,51 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
-const eof = 0
-
-type Option struct {
-	SkipComment    bool
-	DontInsertSemi bool
+type Lexer struct {
+	*Stream
+	tokens []token.Token
 }
 
-func Lex(name, input string, opt Option) []token.Token {
-	return newLexer(name, input, opt).run()
+func Lex(name, input string) []token.Token {
+	return NewLexer(name, input).Lex()
 }
 
-// lexer holds the state of the scanner.
-type lexer struct {
-	r     Reader
-	opt   Option
-	name  string
-	items []token.Token
-}
-
-func newLexer(name, input string, opt Option) *lexer {
-	return &lexer{
-		r:    NewReader(input),
-		opt:  opt,
-		name: name,
+func NewLexer(name, input string) *Lexer {
+	return &Lexer{
+		Stream: NewStream(name, input),
 	}
 }
 
-func (p *lexer) emit(typ token.TokenType) {
-	lit, pos := p.r.EmitToken()
+func (p *Lexer) Lex() []token.Token {
+	return p.run()
+}
+
+func (p *Lexer) emit(typ token.TokenType) {
+	lit, pos := p.EmitToken()
 	if typ == token.EOF {
-		pos = p.r.Pos()
+		pos = p.Pos()
 		lit = ""
 	}
-	p.items = append(p.items, token.Token{
+	p.tokens = append(p.tokens, token.Token{
 		Type:    typ,
 		Literal: lit,
 		Pos:     pos,
 	})
 }
 
-func (p *lexer) errorf(format string, args ...interface{}) {
+func (p *Lexer) errorf(format string, args ...interface{}) {
 	tok := token.Token{
 		Type:    token.ERROR,
 		Literal: fmt.Sprintf(format, args...),
-		Pos:     p.r.Pos(),
+		Pos:     p.Pos(),
 	}
-	p.items = append(p.items, tok)
+	p.tokens = append(p.tokens, tok)
 	panic(tok)
 }
 
-func (p *lexer) run() (items []token.Token) {
+func (p *Lexer) run() (tokens []token.Token) {
 	defer func() {
-		items = p.items
+		tokens = p.tokens
 		if r := recover(); r != nil {
 			if _, ok := r.(token.Token); !ok {
 				panic(r)
@@ -67,41 +59,41 @@ func (p *lexer) run() (items []token.Token) {
 	}()
 
 	for {
-		r := p.r.Read()
-		if r == eof {
+		r := p.Read()
+		if r == rune(token.EOF) {
 			p.emit(token.EOF)
 			return
 		}
 
 		switch {
 		case r == '\n':
-			p.r.IgnoreToken()
+			p.IgnoreToken()
 
-			if len(p.items) > 0 {
-				switch p.items[len(p.items)-1].Type {
+			if len(p.tokens) > 0 {
+				switch p.tokens[len(p.tokens)-1].Type {
 				case token.RPAREN, token.RBRACE:
 					p.emit(token.SEMICOLON)
 				}
 			}
 
 		case isSpace(r):
-			p.r.IgnoreToken()
+			p.IgnoreToken()
 
 		case isAlpha(r):
-			p.r.Unread()
+			p.Unread()
 			for {
-				if r := p.r.Read(); !isAlphaNumeric(r) {
-					p.r.Unread()
+				if r := p.Read(); !isAlphaNumeric(r) {
+					p.Unread()
 					p.emit(token.IDENT)
 					break
 				}
 			}
 
 		case ('0' <= r && r <= '9'): // 123, 1.0
-			p.r.Unread()
+			p.Unread()
 
 			digits := "0123456789"
-			p.r.AcceptRun(digits)
+			p.AcceptRun(digits)
 			p.emit(token.NUMBER)
 
 		case r == '+': // +, +=, ++
@@ -111,15 +103,15 @@ func (p *lexer) run() (items []token.Token) {
 		case r == '*': // *, *=
 			p.emit(token.MUL)
 		case r == '/': // /, //, /*, /=
-			if p.r.Peek() == '/' {
+			if p.Peek() == '/' {
 				// line comment
 				for {
-					t := p.r.Read()
+					t := p.Read()
 					if t == '\n' {
-						p.r.IgnoreToken()
+						p.IgnoreToken()
 						break
 					}
-					if t == eof {
+					if t == rune(token.EOF) {
 						return
 					}
 				}
