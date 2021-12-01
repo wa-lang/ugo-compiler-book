@@ -12,8 +12,8 @@ type Reader interface {
 	Read() rune
 	Unread()
 
-	Accept(valid string) (lit string, pos int, ok bool)
-	AcceptRun(valid string) (litList []string, posList []int, ok bool)
+	Accept(valid string) bool
+	AcceptRun(valid string) bool
 
 	EmitToken() (lit string, pos int)
 	IgnoreToken()
@@ -55,6 +55,22 @@ func (p *srcReader) Unread() {
 	return
 }
 
+func (p *srcReader) Accept(valid string) bool {
+	if strings.IndexRune(valid, rune(p.Read())) >= 0 {
+		return true
+	}
+	p.Unread()
+	return false
+}
+
+func (p *srcReader) AcceptRun(valid string) (ok bool) {
+	for p.Accept(valid) {
+		ok = true
+	}
+	p.Unread()
+	return
+}
+
 func (p *srcReader) EmitToken() (lit string, pos int) {
 	lit, pos = p.input[p.start:p.pos], p.start
 	p.start = p.pos
@@ -63,28 +79,4 @@ func (p *srcReader) EmitToken() (lit string, pos int) {
 
 func (p *srcReader) IgnoreToken() {
 	_, _ = p.EmitToken()
-}
-
-func (p *srcReader) Accept(valid string) (lit string, pos int, ok bool) {
-	if strings.IndexRune(valid, rune(p.Read())) >= 0 {
-		lit, pos = p.EmitToken()
-		ok = true
-		return
-	}
-	p.Unread()
-	ok = false
-	return
-}
-
-func (p *srcReader) AcceptRun(valid string) (litList []string, posList []int, ok bool) {
-	for {
-		lit, pos, ok := p.Accept(valid)
-		if !ok {
-			break
-		}
-		litList = append(litList, lit)
-		posList = append(posList, pos)
-	}
-	ok = len(litList) > 0
-	return
 }
