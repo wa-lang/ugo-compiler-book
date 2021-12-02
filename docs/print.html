@@ -1409,12 +1409,346 @@ const (
 <p>这样我们就可以用<code>[]token.Token</code>表示的记号序列来等价地表示词法解析后的代码。</p>
 <h3 id="334-重构词法解析器"><a class="header" href="#334-重构词法解析器">3.3.4 重构词法解析器</a></h3>
 <p>在地2章最后的例子中，我们通过包装<code>text/scanner</code>标准库实现了词法解析。这种方式虽然可以用于µGo程序，但是依然有隔山打牛的弊端。本节我们该用纯手工的方式重新实现词法解析，这样不仅仅可以让我们可以了解词法解析的实现细节，而且词法解析的套路依然可以用于后续的AST解析工作。这种问题只要彻底解决一次就一劳永逸了。</p>
-<h4 id="3341-字节流的reader"><a class="header" href="#3341-字节流的reader">3.3.4.1 字节流的Reader</a></h4>
-<p>词法解析的输入是字节流，在解析的过程中常常需要向前多看一个字符，同时也可能要忽略一些字符，为此我们需要先构造一个字节流的Reader（这个设计同样可以复制到Token流Reader，用于语法解析）。</p>
-<p>TODO</p>
-<!--
-词法流读接口
--->
+<h4 id="3341-字节流的stream"><a class="header" href="#3341-字节流的stream">3.3.4.1 字节流的Stream</a></h4>
+<p>词法解析的输入是字节流，在解析的过程中常常需要向前多看一个字符，同时也可能要忽略一些字符，为此我们需要先构造一个字节流的Stream对象（这个设计同样可以复制到Token流Stream，用于语法解析）。</p>
+<p>Stream定义的API如下：</p>
+<pre><code class="language-go">type Stream struct {}
+
+func NewStream(name, src string) *Stream
+
+func (p *Stream) Name() string
+func (p *Stream) Input() string
+
+func (p *Stream) Pos() int
+func (p *Stream) Peek() rune
+func (p *Stream) Read() rune
+func (p *Stream) Unread()
+
+func (p *Stream) Accept(valid string) bool
+func (p *Stream) AcceptRun(valid string) (ok bool)
+
+func (p *Stream) EmitToken() (lit string, pos int)
+func (p *Stream) IgnoreToken()
+</code></pre>
+<p>NewStream根据文件名和内容构造一个Stream对象。其Name和Input方法分别返回源文件的名字和内容。Pos方法返回当前读的位置，Peek预取下一个字符、Read读取下一个字符、Unread用于一次回退。Accept会尝试消费一个存在于valid中的字符，而AcceptRun则会尝试尽量消费多个存在于valid中的字符。EmitToken方法用于产生当前读取到的记号面值和位置信息，IgnoreToken则忽略当前的记号。</p>
+<p>Stream中最基础的核心函数Read和Unread实现如下：</p>
+<pre><code class="language-go">type Stream struct {
+	name  string // 文件名
+	input string // 输入的源代码
+	start int    // 当前正解析中的记号的开始位置
+	pos   int    // 当前读取的位置
+	width int    // 最后一次读取utf8字符的字节宽度, 用于回退
+}
+
+func (p *Stream) Read() rune {
+	if p.pos &gt;= len(p.input) {
+		p.width = 0
+		return 0
+	}
+
+	r, size := utf8.DecodeRune([]byte(p.input[p.pos:]))
+	p.width = size
+	p.pos += p.width
+	return r
+}
+func (p *Stream) Unread() {
+	p.pos -= p.width
+	return
+}
+</code></pre>
+<p>Read方法会解码并读一个utf8字符，其中<code>p.width</code>用于记录当前读取字符的utf8编码的字节宽度，如果遇到结尾则返回0。Unread方法则可以用于进行一次回退刚刚读取的Read操作（不能进行多次回退）。</p>
+<p>基于Read和Unread可以很容易实现Peek、Accept和AcceptRun等方法：</p>
+<pre><code class="language-go">func (p *Stream) Peek() rune {
+	x := p.Read()
+	p.Unread()
+	return x
+}
+func (p *Stream) Accept(valid string) bool {
+	if strings.IndexRune(valid, rune(p.Read())) &gt;= 0 {
+		return true
+	}
+	return false
+}
+
+func (p *Stream) AcceptRun(valid string) (ok bool) {
+	for p.Accept(valid) {
+		ok = true
+	}
+	p.Unread()
+	return
+}
+</code></pre>
+<p>Peek等方法先用Read进行正常读取，如果失败则调用Unread回退最近一次的Read操作。</p>
+<p>最后是产生记号面值的实现：</p>
+<pre><code class="language-go">func (p *Stream) EmitToken() (lit string, pos int) {
+	lit, pos = p.input[p.start:p.pos], p.start
+	p.start = p.pos
+	return
+}
+
+func (p *Stream) IgnoreToken() {
+	_, _ = p.EmitToken()
+}
+</code></pre>
+<p>EmitToken返回的记号面值和位置是构造token.Token的必要数据。</p>
+<h4 id="3342-基于stream重构词法解析器"><a class="header" href="#3342-基于stream重构词法解析器">3.3.4.2 基于Stream重构词法解析器</a></h4>
+<p>词法解析器的API定义如下：</p>
+<pre><code class="language-go">type Lexer struct {}
+
+func NewLexer(name, input string) *Lexer
+func (p *Lexer) Comments() []token.Token
+func (p *Lexer) Tokens() []token.Token
+</code></pre>
+<p>NewLexer基于源文件名和内容构造解析器，Comments方法返回注释列表，Tokens方法返回非注释列表。</p>
+<p>Lexer基于Stream对象构建：</p>
+<pre><code class="language-go">type Lexer struct {
+	*Stream
+	tokens   []token.Token
+	comments []token.Token
+}
+
+func NewLexer(name, input string) *Lexer {
+	p := &amp;Lexer{ Stream: NewStream(name, input)}
+	p.run()
+	return p
+}
+
+func (p *Lexer) Tokens() []token.Token {
+	return p.tokens
+}
+
+func (p *Lexer) Comments() []token.Token {
+	return p.comments
+}
+</code></pre>
+<p>NewLexer在构造Lexer对象后，调用私有的<code>p.run</code>函数将源代码解析为词法列表。</p>
+<p>在实现词法解析之前先定义一个emit方法用于产生记号，实现如下：</p>
+<pre><code class="language-go">func (p *Lexer) emit(typ token.TokenType) {
+	lit, pos := p.EmitToken()
+	if typ == token.IDENT {
+		typ = token.Lookup(lit)
+	}
+	p.tokens = append(p.tokens, token.Token{
+		Type:    typ,
+		Literal: lit,
+		Pos:     pos,
+	})
+}
+</code></pre>
+<p>手写通过<code>p.EmitToken()</code>调用内部Stream对象提供的方法，然后构造新的token.Token对象并添加到p.tokens列表。如果是标识符类型，则通过token.Lookup(lit)查询是否为关键字类型。</p>
+<p>我们还需要一个产生注释记号的emitComment方法：</p>
+<pre><code class="language-go">func (p *Lexer) emitComment() {
+	lit, pos := p.EmitToken()
+	p.comments = append(p.comments, token.Token{
+		Type:    token.COMMENT,
+		Literal: lit,
+		Pos:     pos,
+	})
+}
+</code></pre>
+<p>注释也是一种token.Token，只是记录到了另一个p.comments成员中。将注释分开的原因是为了屏蔽注释对正常词法流的干扰，例如在遇到换行需要决策是否添加分号时注释会带来噪声。</p>
+<p>我们还需要一个错误处理函数记录不能识别的记号：</p>
+<pre><code class="language-go">func (p *Lexer) errorf(format string, args ...interface{}) {
+	tok := token.Token{
+		Type:    token.ERROR,
+		Literal: fmt.Sprintf(format, args...),
+		Pos:     p.Pos(),
+	}
+	p.tokens = append(p.tokens, tok)
+	panic(tok)
+}
+</code></pre>
+<p>错误也是一种特殊的记号，添加到p.tokens成员，然后调用panic抛出异常快速退出到外层函数。</p>
+<p>最后也是最重要的run方法解析记号：</p>
+<pre><code class="language-go">func (p *Lexer) run() (tokens []token.Token) {
+	defer func() {
+		tokens = p.tokens
+		if r := recover(); r != nil {
+			if _, ok := r.(token.Token); !ok {
+				panic(r)
+			}
+		}
+	}()
+	...
+</code></pre>
+<p>首先是在defer函数中捕获errorf方法抛出的异常。词法解析的具体工作在一个for循环进行：</p>
+<pre><code class="language-go">	for {
+		r := p.Read()
+		if r == rune(token.EOF) {
+			p.emit(token.EOF)
+			return
+		}
+
+		switch {
+		case r == '\n':
+		case isSpace(r):
+		...
+		}
+	}
+}
+</code></pre>
+<p>每次循环开始读取一个字符，判断如果是结束则产生EOF类型的记号并退出。否则通过switch多分枝分别解析不同类型的记号。</p>
+<p>比如遇到换行时解析方式如下：</p>
+<pre><code class="language-go">		case r == '\n':
+			p.IgnoreToken()
+			if len(p.tokens) &gt; 0 {
+				switch p.tokens[len(p.tokens)-1].Type {
+				case token.RPAREN, token.IDENT, token.NUMBER:
+					p.emit(token.SEMICOLON)
+				}
+			}
+</code></pre>
+<p>首先是通过p.IgnoreToken()忽略换行前读取的内容。然后判断是否已经读取到过记号，如果是并且前一个读取的记号是右小括弧、数字或标识符等类型时插入一个分号记号（类似Go语言可以省略大部分的行尾分号特性）。</p>
+<p>如果是空白字符，则直接忽略：</p>
+<pre><code class="language-go">		case isSpace(r):
+			p.IgnoreToken()
+</code></pre>
+<p>如果是英文字母则尝试解析为标识符或关键字：</p>
+<pre><code class="language-go">		case isAlpha(r):
+			p.Unread()
+			for {
+				if r := p.Read(); !isAlphaNumeric(r) {
+					p.Unread()
+					p.emit(token.IDENT)
+					break
+				}
+			}
+</code></pre>
+<p>数字的解析如下：</p>
+<pre><code class="language-go">		case ('0' &lt;= r &amp;&amp; r &lt;= '9'): // 123, 1.0
+			p.Unread()
+
+			digits := &quot;0123456789&quot;
+			p.AcceptRun(digits)
+			p.emit(token.NUMBER)
+</code></pre>
+<p>如果是数字开头，则通过p.AcceptRun尽量读取多个数字字符，然后通过p.emit(token.NUMBER)产生数字记号。</p>
+<p>四则运算符处理如下：</p>
+<pre><code class="language-go">		case r == '+': // +, +=, ++
+			p.emit(token.ADD)
+		case r == '-': // -, -=, --
+			p.emit(token.SUB)
+		case r == '*': // *, *=
+			p.emit(token.MUL)
+		case r == '/': // /, //, /*, /=
+			if p.Peek() != '/' {
+				p.emit(token.DIV)
+			}
+</code></pre>
+<p>加、减、乘目前都是单个字符，直接产生记号即可。除法要特殊一点，需要分别处理行注释的问题（多行注释暂不支持）：</p>
+<pre><code class="language-go">		case r == '/': // /, //, /*, /=
+			if p.Peek() != '/' {
+				p.emit(token.DIV)
+			} else {
+				// line comment
+				for {
+					t := p.Read()
+					if t == '\n' {
+						p.emitComment()
+						break
+					}
+					if t == rune(token.EOF) {
+						p.emitComment()
+						return
+					}
+				}
+			}
+</code></pre>
+<p>如果是行注释直接读取到换行或文件末尾。</p>
+<p>其他的特色记号如下：</p>
+<pre><code class="language-go">		case r == '(':
+			p.emit(token.LPAREN)
+		case r == '{':
+			p.emit(token.LBRACE)
+
+		case r == ')':
+			p.emit(token.RPAREN)
+		case r == '}':
+			p.emit(token.RBRACE)
+
+		case r == ';':
+			p.emit(token.SEMICOLON)
+</code></pre>
+<p>未知的记号直接抛出错误：</p>
+<pre><code class="language-go">		default:
+			p.errorf(&quot;unrecognized character: %#U&quot;, r)
+			return
+		}
+</code></pre>
+<p>run方法是词法解析的核心方法，虽然目前的处理相对粗糙，后续可以根据语法的提炼慢慢改进。</p>
+<h4 id="335-格式化位置信息"><a class="header" href="#335-格式化位置信息">3.3.5 格式化位置信息</a></h4>
+<p>在词法解析的过程中我们已经记录了每个记号的偏移量信息。如果结合文件名和内容可以转换为更适合阅读的行列号位置信息。</p>
+<p>可以定义PosString函数用于将偏移量转位行列信息：</p>
+<pre><code class="language-go">package lexer
+
+import gotoken &quot;go/token&quot;
+
+func PosString(filename string, src string, pos int) string {
+	fset := gotoken.NewFileSet()
+	fset.AddFile(filename, 1, len(src)).SetLinesForContent([]byte(src))
+	return fmt.Sprintf(&quot;%v&quot;, fset.Position(gotoken.Pos(pos+1)))
+}
+</code></pre>
+<p>为了简单，我们直接借助了Go语言自带的token.FileSet实现此功能。需要注意点时，pos是从0开始的，转行列表时pos需要加1.</p>
+<h4 id="336-测试词法解析器"><a class="header" href="#336-测试词法解析器">3.3.6 测试词法解析器</a></h4>
+<p>还是本章的最小µGo程序：</p>
+<pre><code class="language-go">package main
+
+func main() {
+	exit(40 + 2) // exit code 42
+}
+</code></pre>
+<p>词法解析程序如下：</p>
+<pre><code class="language-go">import  &quot;github.com/chai2010/ugo/lexer&quot;
+
+func main() {
+	// 构造词法解析器
+	code := loadCode(&quot;../hello.ugo&quot;)
+	lexer := lexpkg.NewLexer(&quot;../hello.ugo&quot;, code)
+
+	// 遍历正常记号
+	for i, tok := range lexer.Tokens() {
+		fmt.Printf(
+			&quot;%02d: %-12v: %-20q // %s\n&quot;,
+			i, tok.Type, tok.Literal,
+			lexpkg.PosString(&quot;../hello.ugo&quot;, code, tok.Pos),
+		)
+	}
+
+	fmt.Println(&quot;----&quot;)
+
+	// 遍历注释
+	for i, tok := range lexer.Comments() {
+		fmt.Printf(
+			&quot;%02d: %-12v: %-20q // %s\n&quot;,
+			i, tok.Type, tok.Literal,
+			lexpkg.PosString(&quot;../hello.ugo&quot;, code, tok.Pos),
+		)
+	}
+}
+</code></pre>
+<p>输出的结果如下：</p>
+<pre><code>00: PACKAGE     : &quot;package&quot;            // ../hello.ugo:1:1
+01: IDENT       : &quot;main&quot;               // ../hello.ugo:1:9
+02: SEMICOLON   : &quot;&quot;                   // ../hello.ugo:2:1
+03: FUNC        : &quot;func&quot;               // ../hello.ugo:3:1
+04: IDENT       : &quot;main&quot;               // ../hello.ugo:3:6
+05: LPAREN      : &quot;(&quot;                  // ../hello.ugo:3:10
+06: RPAREN      : &quot;)&quot;                  // ../hello.ugo:3:11
+07: LBRACE      : &quot;{&quot;                  // ../hello.ugo:3:13
+08: IDENT       : &quot;exit&quot;               // ../hello.ugo:4:2
+09: LPAREN      : &quot;(&quot;                  // ../hello.ugo:4:6
+10: NUMBER      : &quot;40&quot;                 // ../hello.ugo:4:7
+11: ADD         : &quot;+&quot;                  // ../hello.ugo:4:10
+12: NUMBER      : &quot;2&quot;                  // ../hello.ugo:4:12
+13: RPAREN      : &quot;)&quot;                  // ../hello.ugo:4:13
+14: RBRACE      : &quot;}&quot;                  // ../hello.ugo:5:1
+15: EOF         : &quot;&quot;                   // ../hello.ugo:5:3
+----
+00: COMMENT     : &quot;// exit code 42\n&quot;  // ../hello.ugo:4:15
+</code></pre>
+<p>输出的记号不仅仅有记号类型、记号面值、还有行列号位置信息（在VSCode环境可通过鼠标点击位置实现跳转），位置信息非常有助于调试定位问题。</p>
+<p>至此，我们我们实现了将µGo程序的字符流转化为了正常记号和注释记号的两个词法流。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="34-完善语法解析器"><a class="header" href="#34-完善语法解析器">3.4 完善语法解析器</a></h1>
 <p>TODO</p>
 <!--

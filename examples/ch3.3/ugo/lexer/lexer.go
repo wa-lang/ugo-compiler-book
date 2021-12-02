@@ -42,6 +42,9 @@ func (p *Lexer) emit(typ token.TokenType) {
 		pos = p.Pos()
 		lit = ""
 	}
+	if typ == token.IDENT {
+		typ = token.Lookup(lit)
+	}
 	p.tokens = append(p.tokens, token.Token{
 		Type:    typ,
 		Literal: lit,
@@ -92,7 +95,7 @@ func (p *Lexer) run() (tokens []token.Token) {
 
 			if len(p.tokens) > 0 {
 				switch p.tokens[len(p.tokens)-1].Type {
-				case token.RPAREN, token.RBRACE:
+				case token.RPAREN, token.IDENT, token.NUMBER:
 					p.emit(token.SEMICOLON)
 				}
 			}
@@ -124,7 +127,9 @@ func (p *Lexer) run() (tokens []token.Token) {
 		case r == '*': // *, *=
 			p.emit(token.MUL)
 		case r == '/': // /, //, /*, /=
-			if p.Peek() == '/' {
+			if p.Peek() != '/' {
+				p.emit(token.DIV)
+			} else {
 				// line comment
 				for {
 					t := p.Read()
@@ -137,8 +142,6 @@ func (p *Lexer) run() (tokens []token.Token) {
 						return
 					}
 				}
-			} else {
-				p.emit(token.DIV)
 			}
 
 		case r == '(':
