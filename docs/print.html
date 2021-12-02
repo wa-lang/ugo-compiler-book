@@ -1377,6 +1377,7 @@ type TokenType int
 const (
 	EOF TokenType = iota
 	ERROR
+	COMMENT
 
 	IDENT
 	NUMBER
@@ -1397,7 +1398,7 @@ const (
 	SEMICOLON // ;
 )
 </code></pre>
-<p>增加了IDENT表示标识符、PACKAGE定义包、FUNC针对函数大括弧用于定义函数的Body、并引入了分号。如果是语法位置记号用ERROR表示，EOF表示文件结束。</p>
+<p>增加了IDENT表示标识符、PACKAGE定义包、FUNC针对函数大括弧用于定义函数的Body、并引入了分号。如果是语法位置记号用ERROR表示，EOF表示文件结束。同时增加了COMMENT表示注释。</p>
 <p>token.Token对应记号的值（含记号类型、解析后的值、位置和原始面值）：</p>
 <pre><code class="language-go">type Token struct {
 	Type    TokenType   // 记号的类型
