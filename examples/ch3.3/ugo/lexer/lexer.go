@@ -8,11 +8,12 @@ import (
 
 type Lexer struct {
 	*Stream
-	tokens []token.Token
+	tokens   []token.Token
+	comments []token.Token
 }
 
 func Lex(name, input string) []token.Token {
-	return NewLexer(name, input).Lex()
+	return NewLexer(name, input).Tokens()
 }
 
 func NewLexer(name, input string) *Lexer {
@@ -21,8 +22,18 @@ func NewLexer(name, input string) *Lexer {
 	}
 }
 
-func (p *Lexer) Lex() []token.Token {
-	return p.run()
+func (p *Lexer) Tokens() []token.Token {
+	if len(p.tokens) == 0 {
+		p.run()
+	}
+	return p.tokens
+}
+
+func (p *Lexer) Comments() []token.Token {
+	if len(p.tokens) == 0 {
+		p.run()
+	}
+	return p.comments
 }
 
 func (p *Lexer) emit(typ token.TokenType) {
@@ -33,6 +44,16 @@ func (p *Lexer) emit(typ token.TokenType) {
 	}
 	p.tokens = append(p.tokens, token.Token{
 		Type:    typ,
+		Literal: lit,
+		Pos:     pos,
+	})
+}
+
+func (p *Lexer) emitComment() {
+	lit, pos := p.EmitToken()
+
+	p.comments = append(p.comments, token.Token{
+		Type:    token.COMMENT,
 		Literal: lit,
 		Pos:     pos,
 	})
@@ -108,10 +129,11 @@ func (p *Lexer) run() (tokens []token.Token) {
 				for {
 					t := p.Read()
 					if t == '\n' {
-						p.IgnoreToken()
+						p.emitComment()
 						break
 					}
 					if t == rune(token.EOF) {
+						p.emitComment()
 						return
 					}
 				}

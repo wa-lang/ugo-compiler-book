@@ -11,6 +11,7 @@ type TokenType int
 const (
 	EOF TokenType = iota // = 0
 	ERROR
+	COMMENT
 
 	IDENT
 	NUMBER

@@ -6,17 +6,28 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chai2010/ugo/lexer"
+	lexpkg "github.com/chai2010/ugo/lexer"
 )
 
 func main() {
 	code := loadCode("../hello.ugo")
-	tokens := lexer.Lex("../hello.ugo", code)
-	for i, tok := range tokens {
+	lexer := lexpkg.NewLexer("../hello.ugo", code)
+
+	for i, tok := range lexer.Tokens() {
 		fmt.Printf(
-			"%02d: %-12v: %-16q // %s\n",
+			"%02d: %-12v: %-20q // %s\n",
 			i, tok.Type, tok.Literal,
-			lexer.PosString("../hello.ugo", code, tok.Pos),
+			lexpkg.PosString("../hello.ugo", code, tok.Pos),
+		)
+	}
+
+	fmt.Println("----")
+
+	for i, tok := range lexer.Comments() {
+		fmt.Printf(
+			"%02d: %-12v: %-20q // %s\n",
+			i, tok.Type, tok.Literal,
+			lexpkg.PosString("../hello.ugo", code, tok.Pos),
 		)
 	}
 }
