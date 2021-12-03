@@ -6,14 +6,15 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
+func Lex(name, input string) (tokens, comments []token.Token) {
+	l := NewLexer(name, input)
+	return l.tokens, l.comments
+}
+
 type Lexer struct {
 	*SourceStream
 	tokens   []token.Token
 	comments []token.Token
-}
-
-func Lex(name, input string) []token.Token {
-	return NewLexer(name, input).Tokens()
 }
 
 func NewLexer(name, input string) *Lexer {
