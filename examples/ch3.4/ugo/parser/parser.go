@@ -28,6 +28,9 @@ func NewParser(filename, src string) *Parser {
 
 func (p *Parser) ParseFile() (file *ast.File, err error) {
 	defer func() {
+		if r := recover(); r != p.err {
+			panic(r)
+		}
 		file, err = p.file, p.err
 	}()
 
