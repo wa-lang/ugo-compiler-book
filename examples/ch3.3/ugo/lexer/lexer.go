@@ -7,7 +7,7 @@ import (
 )
 
 type Lexer struct {
-	*Stream
+	*SourceStream
 	tokens   []token.Token
 	comments []token.Token
 }
@@ -18,7 +18,7 @@ func Lex(name, input string) []token.Token {
 
 func NewLexer(name, input string) *Lexer {
 	return &Lexer{
-		Stream: NewStream(name, input),
+		SourceStream: NewSourceStream(name, input),
 	}
 }
 

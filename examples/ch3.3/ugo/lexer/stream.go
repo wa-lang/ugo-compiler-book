@@ -5,7 +5,7 @@ import (
 	"unicode/utf8"
 )
 
-type Stream struct {
+type SourceStream struct {
 	name  string // 文件名
 	input string // 输入的源代码
 	start int    // 当前正解析中的记号的开始位置
@@ -13,28 +13,28 @@ type Stream struct {
 	width int    // 最后一次读取utf8字符的字节宽度, 用于回退
 }
 
-func NewStream(name, src string) *Stream {
-	return &Stream{name: name, input: src}
+func NewSourceStream(name, src string) *SourceStream {
+	return &SourceStream{name: name, input: src}
 }
 
-func (p *Stream) Name() string {
+func (p *SourceStream) Name() string {
 	return p.name
 }
-func (p *Stream) Input() string {
+func (p *SourceStream) Input() string {
 	return p.input
 }
 
-func (p *Stream) Pos() int {
+func (p *SourceStream) Pos() int {
 	return p.pos
 }
 
-func (p *Stream) Peek() rune {
+func (p *SourceStream) Peek() rune {
 	x := p.Read()
 	p.Unread()
 	return x
 }
 
-func (p *Stream) Read() rune {
+func (p *SourceStream) Read() rune {
 	if p.pos >= len(p.input) {
 		p.width = 0
 		return 0
@@ -45,19 +45,19 @@ func (p *Stream) Read() rune {
 	p.pos += p.width
 	return r
 }
-func (p *Stream) Unread() {
+func (p *SourceStream) Unread() {
 	p.pos -= p.width
 	return
 }
 
-func (p *Stream) Accept(valid string) bool {
+func (p *SourceStream) Accept(valid string) bool {
 	if strings.IndexRune(valid, rune(p.Read())) >= 0 {
 		return true
 	}
 	return false
 }
 
-func (p *Stream) AcceptRun(valid string) (ok bool) {
+func (p *SourceStream) AcceptRun(valid string) (ok bool) {
 	for p.Accept(valid) {
 		ok = true
 	}
@@ -65,12 +65,12 @@ func (p *Stream) AcceptRun(valid string) (ok bool) {
 	return
 }
 
-func (p *Stream) EmitToken() (lit string, pos int) {
+func (p *SourceStream) EmitToken() (lit string, pos int) {
 	lit, pos = p.input[p.start:p.pos], p.start
 	p.start = p.pos
 	return
 }
 
-func (p *Stream) IgnoreToken() {
+func (p *SourceStream) IgnoreToken() {
 	_, _ = p.EmitToken()
 }

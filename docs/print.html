@@ -1410,30 +1410,30 @@ const (
 <p>这样我们就可以用<code>[]token.Token</code>表示的记号序列来等价地表示词法解析后的代码。</p>
 <h3 id="334-重构词法解析器"><a class="header" href="#334-重构词法解析器">3.3.4 重构词法解析器</a></h3>
 <p>在地2章最后的例子中，我们通过包装<code>text/scanner</code>标准库实现了词法解析。这种方式虽然可以用于µGo程序，但是依然有隔山打牛的弊端。本节我们该用纯手工的方式重新实现词法解析，这样不仅仅可以让我们可以了解词法解析的实现细节，而且词法解析的套路依然可以用于后续的AST解析工作。这种问题只要彻底解决一次就一劳永逸了。</p>
-<h4 id="3341-字节流的stream"><a class="header" href="#3341-字节流的stream">3.3.4.1 字节流的Stream</a></h4>
-<p>词法解析的输入是字节流，在解析的过程中常常需要向前多看一个字符，同时也可能要忽略一些字符，为此我们需要先构造一个字节流的Stream对象（这个设计同样可以复制到Token流Stream，用于语法解析）。</p>
-<p>Stream定义的API如下：</p>
-<pre><code class="language-go">type Stream struct {}
+<h4 id="3341-源文件sourcestream"><a class="header" href="#3341-源文件sourcestream">3.3.4.1 源文件SourceStream</a></h4>
+<p>词法解析的输入是字节流，在解析的过程中常常需要向前多看一个字符，同时也可能要忽略一些字符，为此我们需要先构造一个字节流的SourceStream对象（这个设计同样可以复制到Token流，用于语法解析）。</p>
+<p>SourceStream定义的API如下：</p>
+<pre><code class="language-go">type SourceStream struct {}
 
-func NewStream(name, src string) *Stream
+func NewSourceStream(name, src string) *SourceStream
 
-func (p *Stream) Name() string
-func (p *Stream) Input() string
+func (p *SourceStream) Name() string
+func (p *SourceStream) Input() string
 
-func (p *Stream) Pos() int
-func (p *Stream) Peek() rune
-func (p *Stream) Read() rune
-func (p *Stream) Unread()
+func (p *SourceStream) Pos() int
+func (p *SourceStream) Peek() rune
+func (p *SourceStream) Read() rune
+func (p *SourceStream) Unread()
 
-func (p *Stream) Accept(valid string) bool
-func (p *Stream) AcceptRun(valid string) (ok bool)
+func (p *SourceStream) Accept(valid string) bool
+func (p *SourceStream) AcceptRun(valid string) (ok bool)
 
-func (p *Stream) EmitToken() (lit string, pos int)
-func (p *Stream) IgnoreToken()
+func (p *SourceStream) EmitToken() (lit string, pos int)
+func (p *SourceStream) IgnoreToken()
 </code></pre>
-<p>NewStream根据文件名和内容构造一个Stream对象。其Name和Input方法分别返回源文件的名字和内容。Pos方法返回当前读的位置，Peek预取下一个字符、Read读取下一个字符、Unread用于一次回退。Accept会尝试消费一个存在于valid中的字符，而AcceptRun则会尝试尽量消费多个存在于valid中的字符。EmitToken方法用于产生当前读取到的记号面值和位置信息，IgnoreToken则忽略当前的记号。</p>
-<p>Stream中最基础的核心函数Read和Unread实现如下：</p>
-<pre><code class="language-go">type Stream struct {
+<p>NewSourceStream根据文件名和内容构造一个SourceStream对象。其Name和Input方法分别返回源文件的名字和内容。Pos方法返回当前读的位置，Peek预取下一个字符、Read读取下一个字符、Unread用于一次回退。Accept会尝试消费一个存在于valid中的字符，而AcceptRun则会尝试尽量消费多个存在于valid中的字符。EmitToken方法用于产生当前读取到的记号面值和位置信息，IgnoreToken则忽略当前的记号。</p>
+<p>SourceStream中最基础的核心函数Read和Unread实现如下：</p>
+<pre><code class="language-go">type SourceStream struct {
 	name  string // 文件名
 	input string // 输入的源代码
 	start int    // 当前正解析中的记号的开始位置
@@ -1441,7 +1441,7 @@ func (p *Stream) IgnoreToken()
 	width int    // 最后一次读取utf8字符的字节宽度, 用于回退
 }
 
-func (p *Stream) Read() rune {
+func (p *SourceStream) Read() rune {
 	if p.pos &gt;= len(p.input) {
 		p.width = 0
 		return 0
@@ -1452,26 +1452,26 @@ func (p *Stream) Read() rune {
 	p.pos += p.width
 	return r
 }
-func (p *Stream) Unread() {
+func (p *SourceStream) Unread() {
 	p.pos -= p.width
 	return
 }
 </code></pre>
 <p>Read方法会解码并读一个utf8字符，其中<code>p.width</code>用于记录当前读取字符的utf8编码的字节宽度，如果遇到结尾则返回0。Unread方法则可以用于进行一次回退刚刚读取的Read操作（不能进行多次回退）。</p>
 <p>基于Read和Unread可以很容易实现Peek、Accept和AcceptRun等方法：</p>
-<pre><code class="language-go">func (p *Stream) Peek() rune {
+<pre><code class="language-go">func (p *SourceStream) Peek() rune {
 	x := p.Read()
 	p.Unread()
 	return x
 }
-func (p *Stream) Accept(valid string) bool {
+func (p *SourceStream) Accept(valid string) bool {
 	if strings.IndexRune(valid, rune(p.Read())) &gt;= 0 {
 		return true
 	}
 	return false
 }
 
-func (p *Stream) AcceptRun(valid string) (ok bool) {
+func (p *SourceStream) AcceptRun(valid string) (ok bool) {
 	for p.Accept(valid) {
 		ok = true
 	}
@@ -1481,18 +1481,18 @@ func (p *Stream) AcceptRun(valid string) (ok bool) {
 </code></pre>
 <p>Peek等方法先用Read进行正常读取，如果失败则调用Unread回退最近一次的Read操作。</p>
 <p>最后是产生记号面值的实现：</p>
-<pre><code class="language-go">func (p *Stream) EmitToken() (lit string, pos int) {
+<pre><code class="language-go">func (p *SourceStream) EmitToken() (lit string, pos int) {
 	lit, pos = p.input[p.start:p.pos], p.start
 	p.start = p.pos
 	return
 }
 
-func (p *Stream) IgnoreToken() {
+func (p *SourceStream) IgnoreToken() {
 	_, _ = p.EmitToken()
 }
 </code></pre>
 <p>EmitToken返回的记号面值和位置是构造token.Token的必要数据。</p>
-<h4 id="3342-基于stream重构词法解析器"><a class="header" href="#3342-基于stream重构词法解析器">3.3.4.2 基于Stream重构词法解析器</a></h4>
+<h4 id="3342-基于sourcestream重构词法解析器"><a class="header" href="#3342-基于sourcestream重构词法解析器">3.3.4.2 基于SourceStream重构词法解析器</a></h4>
 <p>词法解析器的API定义如下：</p>
 <pre><code class="language-go">type Lexer struct {}
 
@@ -1501,15 +1501,15 @@ func (p *Lexer) Comments() []token.Token
 func (p *Lexer) Tokens() []token.Token
 </code></pre>
 <p>NewLexer基于源文件名和内容构造解析器，Comments方法返回注释列表，Tokens方法返回非注释列表。</p>
-<p>Lexer基于Stream对象构建：</p>
+<p>Lexer基于SourceStream对象构建：</p>
 <pre><code class="language-go">type Lexer struct {
-	*Stream
+	*SourceStream
 	tokens   []token.Token
 	comments []token.Token
 }
 
 func NewLexer(name, input string) *Lexer {
-	p := &amp;Lexer{ Stream: NewStream(name, input)}
+	p := &amp;Lexer{ SourceStream: NewSourceStream(name, input)}
 	p.run()
 	return p
 }
@@ -1536,7 +1536,7 @@ func (p *Lexer) Comments() []token.Token {
 	})
 }
 </code></pre>
-<p>手写通过<code>p.EmitToken()</code>调用内部Stream对象提供的方法，然后构造新的token.Token对象并添加到p.tokens列表。如果是标识符类型，则通过token.Lookup(lit)查询是否为关键字类型。</p>
+<p>手写通过<code>p.EmitToken()</code>调用内部SourceStream对象提供的方法，然后构造新的token.Token对象并添加到p.tokens列表。如果是标识符类型，则通过token.Lookup(lit)查询是否为关键字类型。</p>
 <p>我们还需要一个产生注释记号的emitComment方法：</p>
 <pre><code class="language-go">func (p *Lexer) emitComment() {
 	lit, pos := p.EmitToken()
