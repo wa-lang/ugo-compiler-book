@@ -28,13 +28,6 @@ func NewParser(filename, src string) *Parser {
 
 func (p *Parser) ParseFile() (file *ast.File, err error) {
 	defer func() {
-		if r := recover(); r != nil {
-			if errx, ok := r.(error); ok {
-				p.err = errx
-			} else {
-				panic(r)
-			}
-		}
 		file, err = p.file, p.err
 	}()
 
@@ -45,7 +38,7 @@ func (p *Parser) ParseFile() (file *ast.File, err error) {
 		}
 	}
 
-	p.TokenStream = NewTokenStream(tokens, comments)
+	p.TokenStream = NewTokenStream(p.filename, p.src, tokens, comments)
 	p.parseFile()
 
 	return

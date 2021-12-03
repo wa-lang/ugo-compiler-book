@@ -8,7 +8,9 @@ import (
 
 func Lex(name, input string) (tokens, comments []token.Token) {
 	l := NewLexer(name, input)
-	return l.tokens, l.comments
+	tokens = l.Tokens()
+	comments = l.Comments()
+	return
 }
 
 type Lexer struct {

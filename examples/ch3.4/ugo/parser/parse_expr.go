@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/chai2010/ugo/ast"
@@ -45,9 +46,29 @@ func (p *Parser) parseExpr_primary() ast.Expr {
 		return expr
 	}
 
-	tokNumber := p.MustAcceptToken(token.NUMBER)
-	value, _ := strconv.Atoi(tokNumber.Literal)
-	return &ast.Number{
-		Value: value,
+	switch tok := p.PeekToken(); tok.Type {
+	case token.IDENT: // call
+		return p.parseExpr_call()
+	case token.NUMBER:
+		tokNumber := p.MustAcceptToken(token.NUMBER)
+		value, _ := strconv.Atoi(tokNumber.Literal)
+		return &ast.Number{
+			Value: value,
+		}
+	default:
+		s := fmt.Sprint(tok)
+		panic(s)
+	}
+}
+
+func (p *Parser) parseExpr_call() *ast.CallExpr {
+	tokIdent := p.MustAcceptToken(token.IDENT)
+	p.MustAcceptToken(token.LPAREN)
+	arg0 := p.parseExpr()
+	p.MustAcceptToken(token.RPAREN)
+
+	return &ast.CallExpr{
+		FuncName: tokIdent.Literal,
+		Args:     []ast.Expr{arg0},
 	}
 }

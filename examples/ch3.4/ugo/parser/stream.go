@@ -3,21 +3,34 @@ package parser
 import (
 	"fmt"
 
+	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/token"
 )
 
 type TokenStream struct {
+	filename string
+	src      string
 	tokens   []token.Token
 	comments []token.Token
 	pos      int
 	width    int
 }
 
-func NewTokenStream(tokens, comments []token.Token) *TokenStream {
+func NewTokenStream(filename, src string, tokens, comments []token.Token) *TokenStream {
 	return &TokenStream{
+		filename: filename,
+		src:      src,
 		tokens:   tokens,
 		comments: comments,
 	}
+}
+
+func (p *TokenStream) Tokens() []token.Token {
+	return p.tokens
+}
+
+func (p *TokenStream) Comments() []token.Token {
+	return p.comments
 }
 
 func (p *TokenStream) PeekToken() token.Token {
@@ -66,7 +79,7 @@ func (p *TokenStream) AcceptTokenList(expectTypes ...token.TokenType) (toks []to
 func (p *TokenStream) MustAcceptToken(expectTypes ...token.TokenType) (tok token.Token) {
 	tok, ok := p.AcceptToken(expectTypes...)
 	if !ok {
-		panic(fmt.Errorf("token.TokenStream.MustAcceptToken(%v) failed", expectTypes))
+		panic(fmt.Errorf("parser.TokenStream.MustAcceptToken(%v) failed", expectTypes))
 	}
 	return tok
 }
@@ -74,11 +87,27 @@ func (p *TokenStream) MustAcceptToken(expectTypes ...token.TokenType) (tok token
 func (p *TokenStream) MustAcceptTokenList(expectTypes ...token.TokenType) (toks []token.Token) {
 	toks, ok := p.AcceptTokenList(expectTypes...)
 	if !ok {
-		panic(fmt.Errorf("token.TokenStream.AcceptTokenList(%v) failed", expectTypes))
+		panic(fmt.Errorf("parser.TokenStream.AcceptTokenList(%v) failed", expectTypes))
 	}
 	return toks
 }
 
-func (p *TokenStream) Comments() []token.Token {
-	return p.comments
+func (p *TokenStream) PrintTokens() {
+	for i, tok := range p.Tokens() {
+		fmt.Printf(
+			"%02d: %-12v: %-20q // %s\n",
+			i, tok.Type, tok.Literal,
+			lexer.PosString(p.filename, p.src, tok.Pos),
+		)
+	}
+
+	fmt.Println("----")
+
+	for i, tok := range p.Comments() {
+		fmt.Printf(
+			"%02d: %-12v: %-20q // %s\n",
+			i, tok.Type, tok.Literal,
+			lexer.PosString(p.filename, p.src, tok.Pos),
+		)
+	}
 }
