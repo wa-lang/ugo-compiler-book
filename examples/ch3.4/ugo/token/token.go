@@ -52,3 +52,13 @@ func Lookup(ident string) TokenType {
 	}
 	return IDENT
 }
+
+func (op TokenType) Precedence() int {
+	switch op {
+	case ADD, SUB:
+		return 1
+	case MUL, DIV:
+		return 2
+	}
+	return 0
+}

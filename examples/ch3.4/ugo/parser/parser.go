@@ -5,6 +5,7 @@ import (
 
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/lexer"
+	"github.com/chai2010/ugo/token"
 )
 
 func ParseFile(filename, src string) (*ast.File, error) {
@@ -37,7 +38,16 @@ func (p *Parser) ParseFile() (file *ast.File, err error) {
 		file, err = p.file, p.err
 	}()
 
+	tokens, comments := lexer.Lex(p.filename, p.src)
+	for _, tok := range tokens {
+		if tok.Type == token.ERROR {
+			p.errorf(tok.Pos, "invalid token: %s", tok.Literal)
+		}
+	}
+
+	p.TokenStream = NewTokenStream(tokens, comments)
 	p.parseFile()
+
 	return
 }
 

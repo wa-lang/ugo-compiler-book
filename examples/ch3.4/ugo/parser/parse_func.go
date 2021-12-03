@@ -19,10 +19,3 @@ func (p *Parser) parseFunc() *ast.Func {
 		Body:    p.parseStmt_block(), // {}
 	}
 }
-
-func (p *Parser) parseStmt_block() *ast.BlockStmt {
-	p.MustAcceptToken(token.LBRACE)       // {
-	defer p.MustAcceptToken(token.RBRACE) // }
-
-	panic("TODO")
-}
