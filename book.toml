@@ -11,4 +11,5 @@ build-dir = "docs"
 
 [output.html]
 git-repository-url = "https://github.com/chai2010/ugo-compiler-book"
+edit-url-template = "https://github.com/chai2010/ugo-compiler-book/edit/master/{path}"
 git-repository-icon = "fa-github"
