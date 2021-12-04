@@ -2,40 +2,27 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/compiler"
-	"github.com/chai2010/ugo/token"
+	"github.com/chai2010/ugo/parser"
 )
 
 func main() {
-	ll := new(compiler.Compiler).Compile(ugoProg)
+	code := loadCode("./hello.ugo")
+	f, err := parser.ParseFile("./hello.ugo", code)
+	if err != nil {
+		panic(err)
+	}
+
+	ll := new(compiler.Compiler).Compile(f)
 	fmt.Print(ll)
 }
 
-var ugoProg = &ast.File{
-	Pkg: &ast.Package{
-		Name: "main",
-	},
-	Funcs: []*ast.Func{
-		{
-			Name: "main",
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.ExprStmt{
-						X: &ast.CallExpr{
-							FuncName: "exit",
-							Args: []ast.Expr{
-								&ast.BinaryExpr{
-									Op: token.Token{Type: token.ADD},
-									X:  &ast.Number{Value: 40},
-									Y:  &ast.Number{Value: 2},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	},
+func loadCode(filename string) string {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	return string(data)
 }
