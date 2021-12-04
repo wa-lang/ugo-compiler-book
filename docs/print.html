@@ -1645,6 +1645,7 @@ func (p *Lexer) Comments() []token.Token {
 				for {
 					t := p.Read()
 					if t == '\n' {
+						p.Unread()
 						p.emitComment()
 						break
 					}
@@ -1655,7 +1656,7 @@ func (p *Lexer) Comments() []token.Token {
 				}
 			}
 </code></pre>
-<p>如果是行注释直接读取到换行或文件末尾。</p>
+<p>如果是行注释直接读取到换行或文件末尾，需要注意的是在行注释结尾要判断是否要产生分号。</p>
 <p>其他的特色记号如下：</p>
 <pre><code class="language-go">		case r == '(':
 			p.emit(token.LPAREN)
@@ -1743,19 +1744,327 @@ func main() {
 11: ADD         : &quot;+&quot;                  // ../hello.ugo:4:10
 12: NUMBER      : &quot;2&quot;                  // ../hello.ugo:4:12
 13: RPAREN      : &quot;)&quot;                  // ../hello.ugo:4:13
-14: RBRACE      : &quot;}&quot;                  // ../hello.ugo:5:1
-15: EOF         : &quot;&quot;                   // ../hello.ugo:5:3
+14: SEMICOLON   : &quot;&quot;                   // ../hello.ugo:5:1
+15: RBRACE      : &quot;}&quot;                  // ../hello.ugo:5:1
+16: EOF         : &quot;&quot;                   // ../hello.ugo:5:3
 ----
 00: COMMENT     : &quot;// exit code 42\n&quot;  // ../hello.ugo:4:15
 </code></pre>
 <p>输出的记号不仅仅有记号类型、记号面值、还有行列号位置信息（在VSCode环境可通过鼠标点击位置实现跳转），位置信息非常有助于调试定位问题。</p>
 <p>至此，我们我们实现了将µGo程序的字符流转化为了正常记号和注释记号的两个词法流。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="34-完善语法解析器"><a class="header" href="#34-完善语法解析器">3.4 完善语法解析器</a></h1>
-<p>TODO</p>
-<!--
-记号流Reader
-最小程序的EBNF表示
--->
+<p>本章在前一章最小µGo程序产生的token.Token序列基础之上通过解析语法产生AST语法树。</p>
+<h2 id="341-最小µgo程序的词法序列"><a class="header" href="#341-最小µgo程序的词法序列">3.4.1 最小µGo程序的词法序列</a></h2>
+<p>最小µGo程序如下：</p>
+<pre><code class="language-go">package main
+
+func main() {
+	exit(40+2) // 退出码 42
+}
+</code></pre>
+<p>基于前一章的词法解析程序将产生以下的token.Token列表：</p>
+<pre><code class="language-go">
+import &quot;github.com/chai2010/ugo/token&quot;
+
+var ugoTokens = []token.Token {
+	{Type: token.PACKAGE},                          // package
+	{Type: token.IDENT, Literal: &quot;main&quot;},           // main
+	{Type: token.SEMICOLON},                        // \n =&gt; ;
+	{Type: token.FUNC},                             // func
+	{Type: token.IDENT, Literal: &quot;main&quot;},           // main
+	{Type: token.LPAREN},                           // (
+	{Type: token.RPAREN},                           // )
+	{Type: token.LBRACE},                           // {
+	{Type: token.IDENT, Literal: &quot;exit&quot;},           // exit
+	{Type: token.LPAREN},                           // (
+	{Type: token.NUMBER, Literal: &quot;40&quot;, Value: 40}, // 40
+	{Type: token.ADD},                              // +
+	{Type: token.NUMBER, Literal: &quot;2&quot;, Value: 2},   // 2
+	{Type: token.RPAREN},                           // )
+	{Type: token.SEMICOLON},                        // \n =&gt; ;
+	{Type: token.RBRACE},                           // }
+}
+</code></pre>
+<p>消费这个序列产生AST语法树是本节的目标。</p>
+<h2 id="342-tokenstream"><a class="header" href="#342-tokenstream">3.4.2 TokenStream</a></h2>
+<p>这个token.Token列表和词法解析器要处理的字符列表并没有本质的区别，因此我们同样可以构造和源文件SourceStream类似的TokenStream对象简化语法的解析工作。</p>
+<p>TokenStream的API如下：</p>
+<pre><code class="language-go">type TokenStream struct {}
+
+func NewTokenStream(tokens []token.Token) *TokenStream
+
+func (p *TokenStream) PeekToken() token.Token
+func (p *TokenStream) ReadToken() token.Token
+func (p *TokenStream) UnreadToken()
+
+func (p *TokenStream) AcceptToken(expectTypes ...token.TokenType) (tok token.Token, ok bool)
+func (p *TokenStream) AcceptTokenList(expectTypes ...token.TokenType) (toks []token.Token, ok bool)
+
+func (p *TokenStream) MustAcceptToken(expectTypes ...token.TokenType) (tok token.Token)
+func (p *TokenStream) MustAcceptTokenList(expectTypes ...token.TokenType) (toks []token.Token)
+</code></pre>
+<p>NewTokenStream主要基于普通记号序列构造TokenStream对象（目前注释记号并不参与复杂的解析工作，暂时忽略）。PeekToken、ReadToken、UnreadToken分别是预取一个记号、读取一个记号和回退一个记号。AcceptToken尝试消费一个存在于expectTypes中的一个记号，而MustAcceptTokenList则会尝试尽量消费多个满足的记号，它们都返回成功获取的记号值。而MustAcceptToken和MustAcceptTokenList则必须至少成功消费一个满足的记号，否则将通过panic抛出错误（语法解析函数会捕获这类异常并转化为错误返回值）。</p>
+<p>最基础的ReadToken和UnreadToken实现如下：</p>
+<pre><code class="language-go">type TokenStream struct {
+	tokens   []token.Token
+	comments []token.Token
+	pos      int
+	width    int
+}
+
+func (p *TokenStream) ReadToken() token.Token {
+	if p.pos &gt;= len(p.tokens) {
+		p.width = 0
+		return token.Token{Type: token.EOF}
+	}
+	tok := p.tokens[p.pos]
+	p.width = 1
+	p.pos += p.width
+	return tok
+}
+
+func (p *TokenStream) UnreadToken() {
+	p.pos -= p.width
+	return
+}
+</code></pre>
+<p>ReadToken方法会解码并读一个记号，其中<code>p.width</code>用于控制UnreadToken回退操作，它们的实现方式和SourceStream的Read、Unread方法类似。</p>
+<p>基于ReadToken和UnreadToken就可以很容易实现PeekToken等其他方法：</p>
+<pre><code class="language-go">func (p *TokenStream) PeekToken() token.Token {
+	tok := p.ReadToken()
+	p.UnreadToken()
+	return tok
+}
+
+func (p *TokenStream) AcceptToken(expectTypes ...token.TokenType) (tok token.Token, ok bool) {
+	tok = p.ReadToken()
+	for _, x := range expectTypes {
+		if tok.Type == x {
+			return tok, true
+		}
+	}
+	p.UnreadToken()
+	return tok, false
+}
+
+func (p *TokenStream) AcceptTokenList(expectTypes ...token.TokenType) (toks []token.Token, ok bool) {
+	for {
+		tok, ok := p.AcceptToken(expectTypes...)
+		if !ok || tok.Type == token.EOF {
+			return toks, len(toks) != 0
+		}
+		toks = append(toks, tok)
+	}
+}
+</code></pre>
+<p>PeekToken等方法先用ReadToken进行正常读取，如果失败则调用UnreadToken回退最近一次的Read操作。</p>
+<p>为了简化错误处理，两个Must方法实现如下：</p>
+<pre><code class="language-go">func (p *TokenStream) MustAcceptToken(expectTypes ...token.TokenType) (tok token.Token) {
+	tok, ok := p.AcceptToken(expectTypes...)
+	if !ok {
+		panic(fmt.Errorf(&quot;expect %v, got %v&quot;, expectTypes, tok))
+	}
+	return tok
+}
+
+func (p *TokenStream) MustAcceptTokenList(expectTypes ...token.TokenType) (toks []token.Token) {
+	toks, ok := p.AcceptTokenList(expectTypes...)
+	if !ok {
+		panic(fmt.Errorf(&quot;expect %v, got %v&quot;, expectTypes, tok))
+	}
+	return toks
+}
+</code></pre>
+<p>通过panic可以轻松从多层递归嵌套的语法解析函数中返回，由外层函数将panic再转换为错误返回。</p>
+<h2 id="343-构造解析器parser对象"><a class="header" href="#343-构造解析器parser对象">3.4.3 构造解析器Parser对象</a></h2>
+<p>Parser对象用于维护解析器内部状态，同时包装了词法解析器并在此基础上实现语法解析功能。Parser定义如下：</p>
+<pre><code class="language-go">type Parser struct {
+	filename string
+	src      string
+
+	*TokenStream
+	file *ast.File
+	err  error
+}
+</code></pre>
+<p>Parser对象的filename和src对应文件名和文件内容，TokenStream用于包装记号流对象，file则用于保存解析得到的AST语法树，err用于记录错误。</p>
+<p>为了统一产生错误，Parser还提供了一个errorf函数：</p>
+<pre><code class="language-go">func (p *Parser) errorf(pos int, format string, args ...interface{}) {
+	p.err = fmt.Errorf(&quot;%s: %s&quot;,
+		lexer.PosString(p.filename, p.src, pos),
+		fmt.Sprintf(format, args...),
+	)
+	panic(p.err)
+}
+</code></pre>
+<p>将错误格式化之后保存到p.err，然后panic抛出异常。</p>
+<p>解析文件通过ParseFile方法实现：</p>
+<pre><code class="language-go">func (p *Parser) ParseFile() (file *ast.File, err error) {
+	defer func() {
+		if r := recover(); r != p.err {
+			panic(r)
+		}
+		file, err = p.file, p.err
+	}()
+
+	tokens, comments := lexer.Lex(p.filename, p.src)
+	for _, tok := range tokens {
+		if tok.Type == token.ERROR {
+			p.errorf(tok.Pos, &quot;invalid token: %s&quot;, tok.Literal)
+		}
+	}
+
+	p.TokenStream = NewTokenStream(p.filename, p.src, tokens, comments)
+	p.parseFile()
+
+	return
+}
+</code></pre>
+<p>首先在defer函数捕获p.errorf产生的异常并作为错误返回。然后通过lexer.Lex将源文件解析为记号序列，并过滤其中的错误记号。有了正确的记号序列之后通过NewTokenStream构造TokenStream记号流读取对象。最后通过p.parseFile()进行文件语法树解析。</p>
+<h3 id="3431-解析文件"><a class="header" href="#3431-解析文件">3.4.3.1 解析文件</a></h3>
+<p>解析语法树的过程和写Go代码的过程，根据语法结构对应解析即可：</p>
+<pre><code class="language-go">func (p *Parser) parseFile() {
+	p.file = &amp;ast.File{}
+
+	// package xxx
+	p.file.Pkg = p.parsePackage()
+
+	for {
+		switch tok := p.PeekToken(); tok.Type {
+		case token.EOF:
+			return
+		case token.ERROR:
+			panic(tok)
+		case token.SEMICOLON:
+			p.AcceptTokenList(token.SEMICOLON)
+
+		case token.FUNC:
+			p.file.Funcs = append(p.file.Funcs, p.parseFunc())
+
+		default:
+			p.errorf(tok.Pos, &quot;unknown token: %v&quot;, tok)
+		}
+	}
+}
+</code></pre>
+<p>首先初始化p.file对象，然后通过p.parsePackage()解析<code>package xxx</code>对应的包定义。然后在for循环中解析全局的对象，目前我们只要处理func定义即可。在没一层选择递归入口的时候，首先通过p.PeekToken()预取一个记号，然后根据记号的类型选择不同的递归函数（因为是手写解析器，我们可以很容易向前看多个记号，实现一些更灵活的语法解析）。</p>
+<p>目前只处理EOF、ERROR、SEMICOLON和FUNC等类型，其他未知的记号作为错误处理。对于FUNC分号，AcceptTokenList可以消费多个连续的分号。对于FUNC函数，通过p.parseFunc()解析，并将解析得到的函数添加到p.file.Funcs函数列表中。</p>
+<h3 id="3432-解析包定义"><a class="header" href="#3432-解析包定义">3.4.3.2 解析包定义</a></h3>
+<p>包的解析非常简单：</p>
+<pre><code class="language-go">func (p *Parser) parsePackage() *ast.Package {
+	tokPkg := p.MustAcceptToken(token.PACKAGE)
+	tokPkgIdent := p.MustAcceptToken(token.IDENT)
+
+	return &amp;ast.Package{
+		PkgPos:  tokPkg.Pos,
+		NamePos: tokPkgIdent.Pos,
+		Name:    tokPkgIdent.Literal,
+	}
+}
+</code></pre>
+<p>通过MustAcceptToken方法强制匹配package和包名，然后返回。</p>
+<h3 id="3433-解析函数"><a class="header" href="#3433-解析函数">3.4.3.3 解析函数</a></h3>
+<p>目前最小µGo程序只有一个main函数，没有函数参数和返回值，函数的解析也是比较直观的：</p>
+<pre><code class="language-go">func (p *Parser) parseFunc() *ast.Func {
+	// func main()
+	tokFunc := p.MustAcceptToken(token.FUNC)
+	tokFuncIdent := p.MustAcceptToken(token.IDENT)
+	p.MustAcceptToken(token.LPAREN) // (
+	p.MustAcceptToken(token.RPAREN) // )
+
+	body := p.parseStmt_block()
+
+	return &amp;ast.Func{
+		FuncPos: tokFunc.Pos,
+		NamePos: tokFuncIdent.Pos,
+		Name:    tokFuncIdent.Literal,
+		Body:    body, // {}
+	}
+}
+</code></pre>
+<p>同样用MustAcceptToken方法一次强制匹配func、函数名、<code>(</code>、<code>)</code>，然后通过p.parseStmt_block()解析函数体。</p>
+<h3 id="3434-解析block"><a class="header" href="#3434-解析block">3.4.3.4 解析Block</a></h3>
+<p>函数Body对应一个Block块语句，块语句内由N个语句组成（可以递归包含块语句），解析如下：</p>
+<pre><code class="language-go">func (p *Parser) parseStmt_block() *ast.BlockStmt {
+	block := &amp;ast.BlockStmt{}
+
+	tokBegin := p.MustAcceptToken(token.LBRACE) // {
+
+Loop:
+	for {
+		switch tok := p.PeekToken(); tok.Type {
+		case token.EOF:
+			break Loop
+		case token.ERROR:
+			p.errorf(tok.Pos, &quot;invalid token: %s&quot;, tok.Literal)
+		case token.SEMICOLON:
+			p.AcceptTokenList(token.SEMICOLON)
+
+		case token.RBRACE: // }
+			break Loop
+
+		default:
+			block.List = append(block.List, p.parseStmt_expr())
+		}
+	}
+
+	tokEnd := p.MustAcceptToken(token.RBRACE) // }
+
+	block.Lbrace = tokBegin.Pos
+	block.Rbrace = tokEnd.Pos
+
+	return block
+}
+</code></pre>
+<p>块语句可能包含多个语句，因此通过for循环内实现解析。块内的子语句在switch的default分支解析：p.parseStmt_expr()解析一个表达式语句，并将结果添加到block.List子语句列表中。</p>
+<p>函数返回前记得通过p.MustAcceptToken吃掉结尾的<code>}</code>记号。</p>
+<h3 id="3435-解析表达式语句"><a class="header" href="#3435-解析表达式语句">3.4.3.5 解析表达式语句</a></h3>
+<p>表达式语句基于parseExpr方法实现：</p>
+<pre><code class="language-go">func (p *Parser) parseStmt_expr() *ast.ExprStmt {
+	return &amp;ast.ExprStmt{
+		X: p.parseExpr(),
+	}
+}
+</code></pre>
+<p>parseExpr方法用于解析一个表达式，在第2章已经详细讨论过，只要将返回值改造为AST的结构就可以，这里就不展开了。</p>
+<h3 id="3436-parsefile"><a class="header" href="#3436-parsefile">3.4.3.6 ParseFile</a></h3>
+<p>为了方便使用，再包装一个ParseFile函数：</p>
+<pre><code class="language-go">func ParseFile(filename, src string) (*ast.File, error) {
+	p := NewParser(filename, src)
+	return p.ParseFile()
+}
+</code></pre>
+<p>函数风格和Go语言的<code>go/parser</code>包的ParseFile函数类似。</p>
+<h2 id="344-组装编译器"><a class="header" href="#344-组装编译器">3.4.4 组装编译器</a></h2>
+<p>现在我们已经完成了语法树解析器的实现，只要对接上后端的编译代码就可以实现从µGo代码到本地可执行程序的编译工作了。</p>
+<p>构造以下代码：</p>
+<pre><code class="language-go">func main() {
+	code := loadCode(&quot;./hello.ugo&quot;)
+	f, err := parser.ParseFile(&quot;./hello.ugo&quot;, code)
+	if err != nil {
+		panic(err)
+	}
+
+	ll := new(compiler.Compiler).Compile(f)
+	fmt.Print(ll)
+}
+
+func loadCode(filename string) string {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	return string(data)
+}
+</code></pre>
+<p>该程序将µGo代码输出为LLVM的汇编程序a.out.ll，然后结合clang编译为本地可执行程序并执行：</p>
+<pre><code>$ go run main.go &gt; a.out.ll
+$ clang -Wno-override-module ./a.out.ll ./builtin/_builtin.ll
+$ ./a.out || echo $?
+ugo_builtin_exit(42)
+42
+</code></pre>
+<p>这样我们就实现了从最小µGo程序到可执行程序的编译工作。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="36-命令行界面"><a class="header" href="#36-命令行界面">3.6 命令行界面</a></h1>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="36-命令行界面-1"><a class="header" href="#36-命令行界面-1">3.6 命令行界面</a></h1>

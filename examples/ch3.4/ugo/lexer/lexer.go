@@ -137,6 +137,7 @@ func (p *Lexer) run() (tokens []token.Token) {
 				for {
 					t := p.Read()
 					if t == '\n' {
+						p.Unread()
 						p.emitComment()
 						break
 					}

@@ -138,6 +138,7 @@ func (p *Lexer) run() (tokens []token.Token) {
 						break
 					}
 					if t == rune(token.EOF) {
+						p.Unread()
 						p.emitComment()
 						return
 					}

@@ -458,6 +458,7 @@ func (p *Lexer) Comments() []token.Token {
 				for {
 					t := p.Read()
 					if t == '\n' {
+						p.Unread()
 						p.emitComment()
 						break
 					}
@@ -468,7 +469,7 @@ func (p *Lexer) Comments() []token.Token {
 				}
 			}
 </code></pre>
-<p>如果是行注释直接读取到换行或文件末尾。</p>
+<p>如果是行注释直接读取到换行或文件末尾，需要注意的是在行注释结尾要判断是否要产生分号。</p>
 <p>其他的特色记号如下：</p>
 <pre><code class="language-go">		case r == '(':
 			p.emit(token.LPAREN)
@@ -556,8 +557,9 @@ func main() {
 11: ADD         : &quot;+&quot;                  // ../hello.ugo:4:10
 12: NUMBER      : &quot;2&quot;                  // ../hello.ugo:4:12
 13: RPAREN      : &quot;)&quot;                  // ../hello.ugo:4:13
-14: RBRACE      : &quot;}&quot;                  // ../hello.ugo:5:1
-15: EOF         : &quot;&quot;                   // ../hello.ugo:5:3
+14: SEMICOLON   : &quot;&quot;                   // ../hello.ugo:5:1
+15: RBRACE      : &quot;}&quot;                  // ../hello.ugo:5:1
+16: EOF         : &quot;&quot;                   // ../hello.ugo:5:3
 ----
 00: COMMENT     : &quot;// exit code 42\n&quot;  // ../hello.ugo:4:15
 </code></pre>
