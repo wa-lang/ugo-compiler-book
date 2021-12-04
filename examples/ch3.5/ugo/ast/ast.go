@@ -4,8 +4,17 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
+// AST中全部结点
+type Node interface {
+	Pos() int
+	End() int
+	node_type()
+}
+
 // File 表示 µGo 文件对应的语法树.
 type File struct {
+	Name  string   // 文件名
+	Data  string   // 源代码
 	Pkg   *Package // 包信息
 	Funcs []*Func  // 函数列表
 }
@@ -34,8 +43,7 @@ type BlockStmt struct {
 
 // Stmt 表示一个语句节点.
 type Stmt interface {
-	Pos() int
-	End() int
+	Node
 	stmt_type()
 }
 
@@ -46,9 +54,14 @@ type ExprStmt struct {
 
 // Expr 表示一个表达式节点。
 type Expr interface {
-	Pos() int
-	End() int
+	Node
 	expr_type()
+}
+
+// Ident 表示一个标识符
+type Ident struct {
+	NamePos int
+	Name    string
 }
 
 // Number 表示一个数值.

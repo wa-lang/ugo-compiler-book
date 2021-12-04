@@ -1,8 +1,8 @@
-// go get golang.org/x/tools/cmd/stringer
-
-//go:generate stringer -type=TokenType
-
 package token
+
+import (
+	"strconv"
+)
 
 // 记号类型
 type TokenType int
@@ -39,6 +39,41 @@ type Token struct {
 	Pos     int       // 记号所在的位置(从1开始)
 
 	Value interface{} // 记号的值, 目前只有 int
+}
+
+var tokens = [...]string{
+	EOF:     "EOF",
+	ERROR:   "ERROR",
+	COMMENT: "COMMENT",
+
+	IDENT:  "IDENT",
+	NUMBER: "NUMBER",
+
+	PACKAGE: "PACKAGE",
+	FUNC:    "FUNC",
+
+	ADD: "+",
+	SUB: "-",
+	MUL: "*",
+	DIV: "/",
+
+	LPAREN: "(",
+	RPAREN: ")",
+	LBRACE: "{",
+	RBRACE: "}",
+
+	SEMICOLON: ";",
+}
+
+func (tokType TokenType) String() string {
+	s := ""
+	if 0 <= tokType && tokType < TokenType(len(tokens)) {
+		s = tokens[tokType]
+	}
+	if s == "" {
+		s = "token(" + strconv.Itoa(int(tokType)) + ")"
+	}
+	return s
 }
 
 var keywords = map[string]TokenType{
