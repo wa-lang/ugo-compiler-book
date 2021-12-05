@@ -2,9 +2,13 @@
 
 本书尝试以实现 µGo 编译器为线索，以边学习边完善的自举方式实现一个玩具语言。
 
+![](cover.png)
+
 - [µGo 简介](ugo) - ugo 子目录是正在实现中的代码
 - 在线阅读: https://chai2010.cn/ugo-compiler-book/
 - µGo 输出C语言: https://github.com/3dgen/ugo-c-book
+
+---
 
 ## Why: 凹(读音Wa)坑的起因
 
