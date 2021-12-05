@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/compiler"
 	"github.com/chai2010/ugo/parser"
 )
@@ -15,8 +15,11 @@ func main() {
 		panic(err)
 	}
 
+	ast.Print(f)
+
 	ll := new(compiler.Compiler).Compile(f)
-	fmt.Print(ll)
+	//fmt.Print(ll)
+	_ = ll
 }
 
 func loadCode(filename string) string {
