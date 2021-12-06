@@ -84,7 +84,7 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 		return localName
 	case *ast.BinaryExpr:
 		localName = p.genId()
-		switch expr.Op.Type {
+		switch expr.Op {
 		case token.ADD:
 			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
 				localName, "add", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
@@ -107,7 +107,7 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 			return localName
 		}
 	case *ast.UnaryExpr:
-		if expr.Op.Type == token.SUB {
+		if expr.Op == token.SUB {
 			localName = p.genId()
 			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
 				localName, "sub", `0`, p.compileExpr(w, expr.X),

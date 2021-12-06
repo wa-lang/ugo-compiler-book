@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 
-	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/token"
 )
 
@@ -23,6 +22,14 @@ func NewTokenStream(filename, src string, tokens, comments []token.Token) *Token
 		tokens:   tokens,
 		comments: comments,
 	}
+}
+
+func (p *TokenStream) Filename() string {
+	return p.filename
+}
+
+func (p *TokenStream) Source() string {
+	return p.src
 }
 
 func (p *TokenStream) Tokens() []token.Token {
@@ -97,7 +104,7 @@ func (p *TokenStream) PrintTokens() {
 		fmt.Printf(
 			"%02d: %-12v: %-20q // %s\n",
 			i, tok.Type, tok.Literal,
-			lexer.PosString(p.filename, p.src, tok.Pos),
+			tok.Pos.Position(p.filename, p.src),
 		)
 	}
 
@@ -107,7 +114,7 @@ func (p *TokenStream) PrintTokens() {
 		fmt.Printf(
 			"%02d: %-12v: %-20q // %s\n",
 			i, tok.Type, tok.Literal,
-			lexer.PosString(p.filename, p.src, tok.Pos),
+			tok.Pos.Position(p.filename, p.src),
 		)
 	}
 }

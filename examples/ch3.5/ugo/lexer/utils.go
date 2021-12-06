@@ -1,16 +1,8 @@
 package lexer
 
 import (
-	"fmt"
-	gotoken "go/token"
 	"unicode"
 )
-
-func PosString(filename string, src string, pos int) string {
-	fset := gotoken.NewFileSet()
-	fset.AddFile(filename, 1, len(src)).SetLinesForContent([]byte(src))
-	return fmt.Sprintf("%v", fset.Position(gotoken.Pos(pos+1)))
-}
 
 func isSpace(r rune) bool {
 	switch r {

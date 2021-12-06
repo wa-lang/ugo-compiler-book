@@ -14,14 +14,14 @@ func Lex(name, input string) (tokens, comments []token.Token) {
 }
 
 type Lexer struct {
-	*SourceStream
+	src      *SourceStream
 	tokens   []token.Token
 	comments []token.Token
 }
 
 func NewLexer(name, input string) *Lexer {
 	return &Lexer{
-		SourceStream: NewSourceStream(name, input),
+		src: NewSourceStream(name, input),
 	}
 }
 
@@ -40,9 +40,9 @@ func (p *Lexer) Comments() []token.Token {
 }
 
 func (p *Lexer) emit(typ token.TokenType) {
-	lit, pos := p.EmitToken()
+	lit, pos := p.src.EmitToken()
 	if typ == token.EOF {
-		pos = p.Pos()
+		pos = p.src.Pos()
 		lit = ""
 	}
 	if typ == token.IDENT {
@@ -51,17 +51,17 @@ func (p *Lexer) emit(typ token.TokenType) {
 	p.tokens = append(p.tokens, token.Token{
 		Type:    typ,
 		Literal: lit,
-		Pos:     pos,
+		Pos:     token.Pos(pos + 1),
 	})
 }
 
 func (p *Lexer) emitComment() {
-	lit, pos := p.EmitToken()
+	lit, pos := p.src.EmitToken()
 
 	p.comments = append(p.comments, token.Token{
 		Type:    token.COMMENT,
 		Literal: lit,
-		Pos:     pos,
+		Pos:     token.Pos(pos + 1),
 	})
 }
 
@@ -69,7 +69,7 @@ func (p *Lexer) errorf(format string, args ...interface{}) {
 	tok := token.Token{
 		Type:    token.ERROR,
 		Literal: fmt.Sprintf(format, args...),
-		Pos:     p.Pos(),
+		Pos:     token.Pos(p.src.Pos() + 1),
 	}
 	p.tokens = append(p.tokens, tok)
 	panic(tok)
@@ -86,7 +86,7 @@ func (p *Lexer) run() (tokens []token.Token) {
 	}()
 
 	for {
-		r := p.Read()
+		r := p.src.Read()
 		if r == rune(token.EOF) {
 			p.emit(token.EOF)
 			return
@@ -94,7 +94,7 @@ func (p *Lexer) run() (tokens []token.Token) {
 
 		switch {
 		case r == '\n':
-			p.IgnoreToken()
+			p.src.IgnoreToken()
 
 			if len(p.tokens) > 0 {
 				switch p.tokens[len(p.tokens)-1].Type {
@@ -104,23 +104,23 @@ func (p *Lexer) run() (tokens []token.Token) {
 			}
 
 		case isSpace(r):
-			p.IgnoreToken()
+			p.src.IgnoreToken()
 
 		case isAlpha(r):
-			p.Unread()
+			p.src.Unread()
 			for {
-				if r := p.Read(); !isAlphaNumeric(r) {
-					p.Unread()
+				if r := p.src.Read(); !isAlphaNumeric(r) {
+					p.src.Unread()
 					p.emit(token.IDENT)
 					break
 				}
 			}
 
 		case ('0' <= r && r <= '9'): // 123, 1.0
-			p.Unread()
+			p.src.Unread()
 
 			digits := "0123456789"
-			p.AcceptRun(digits)
+			p.src.AcceptRun(digits)
 			p.emit(token.NUMBER)
 
 		case r == '+': // +, +=, ++
@@ -130,14 +130,14 @@ func (p *Lexer) run() (tokens []token.Token) {
 		case r == '*': // *, *=
 			p.emit(token.MUL)
 		case r == '/': // /, //, /*, /=
-			if p.Peek() != '/' {
+			if p.src.Peek() != '/' {
 				p.emit(token.DIV)
 			} else {
 				// line comment
 				for {
-					t := p.Read()
+					t := p.src.Read()
 					if t == '\n' {
-						p.Unread()
+						p.src.Unread()
 						p.emitComment()
 						break
 					}

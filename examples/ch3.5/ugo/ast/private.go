@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/chai2010/ugo/token"
+
 var (
 	_ Node = Expr(nil)
 	_ Node = Stmt(nil)
@@ -20,17 +22,17 @@ var (
 	_ Expr = (*CallExpr)(nil)
 )
 
-func (p *File) Pos() int   { return 0 }
-func (p *File) End() int   { return 0 }
-func (p *File) node_type() {}
+func (p *File) Pos() token.Pos { return token.NoPos }
+func (p *File) End() token.Pos { return token.NoPos }
+func (p *File) node_type()     {}
 
-func (p *Package) Pos() int   { return 0 }
-func (p *Package) End() int   { return 0 }
-func (p *Package) node_type() {}
+func (p *Package) Pos() token.Pos { return token.NoPos }
+func (p *Package) End() token.Pos { return token.NoPos }
+func (p *Package) node_type()     {}
 
-func (p *Func) Pos() int   { return 0 }
-func (p *Func) End() int   { return 0 }
-func (p *Func) node_type() {}
+func (p *Func) Pos() token.Pos { return token.NoPos }
+func (p *Func) End() token.Pos { return token.NoPos }
+func (p *Func) node_type()     {}
 
 func (p *BlockStmt) node_type() {}
 func (p *ExprStmt) node_type()  {}
@@ -52,22 +54,22 @@ func (p *UnaryExpr) expr_type()  {}
 func (p *ParenExpr) expr_type()  {}
 func (p *CallExpr) expr_type()   {}
 
-func (p *BlockStmt) Pos() int { return 0 }
-func (p *ExprStmt) Pos() int  { return 0 }
+func (p *BlockStmt) Pos() token.Pos { return token.NoPos }
+func (p *ExprStmt) Pos() token.Pos  { return token.NoPos }
 
-func (p *Ident) Pos() int      { return 0 }
-func (p *Number) Pos() int     { return 0 }
-func (p *BinaryExpr) Pos() int { return 0 }
-func (p *UnaryExpr) Pos() int  { return 0 }
-func (p *ParenExpr) Pos() int  { return 0 }
-func (p *CallExpr) Pos() int   { return 0 }
+func (p *Ident) Pos() token.Pos      { return token.NoPos }
+func (p *Number) Pos() token.Pos     { return token.NoPos }
+func (p *BinaryExpr) Pos() token.Pos { return token.NoPos }
+func (p *UnaryExpr) Pos() token.Pos  { return token.NoPos }
+func (p *ParenExpr) Pos() token.Pos  { return token.NoPos }
+func (p *CallExpr) Pos() token.Pos   { return token.NoPos }
 
-func (p *BlockStmt) End() int { return 0 }
-func (p *ExprStmt) End() int  { return 0 }
+func (p *BlockStmt) End() token.Pos { return token.NoPos }
+func (p *ExprStmt) End() token.Pos  { return token.NoPos }
 
-func (p *Ident) End() int      { return 0 }
-func (p *Number) End() int     { return 0 }
-func (p *BinaryExpr) End() int { return 0 }
-func (p *UnaryExpr) End() int  { return 0 }
-func (p *ParenExpr) End() int  { return 0 }
-func (p *CallExpr) End() int   { return 0 }
+func (p *Ident) End() token.Pos      { return token.NoPos }
+func (p *Number) End() token.Pos     { return token.NoPos }
+func (p *BinaryExpr) End() token.Pos { return token.NoPos }
+func (p *UnaryExpr) End() token.Pos  { return token.NoPos }
+func (p *ParenExpr) End() token.Pos  { return token.NoPos }
+func (p *CallExpr) End() token.Pos   { return token.NoPos }

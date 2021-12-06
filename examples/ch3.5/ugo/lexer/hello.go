@@ -17,7 +17,7 @@ func main() {
 		fmt.Printf(
 			"%02d: %-12v: %-20q // %s\n",
 			i, tok.Type, tok.Literal,
-			lexpkg.PosString("../hello.ugo", code, tok.Pos),
+			tok.Pos.Position("../hello.ugo", code),
 		)
 	}
 
@@ -27,7 +27,7 @@ func main() {
 		fmt.Printf(
 			"%02d: %-12v: %-20q // %s\n",
 			i, tok.Type, tok.Literal,
-			lexpkg.PosString("../hello.ugo", code, tok.Pos),
+			tok.Pos.Position("../hello.ugo", code),
 		)
 	}
 }

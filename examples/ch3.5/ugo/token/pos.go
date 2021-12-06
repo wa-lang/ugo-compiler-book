@@ -14,35 +14,43 @@ func (p Pos) IsValid() bool {
 	return p != NoPos
 }
 
-// PosString 格式化 pos 为字符串
-func PosString(filename string, src []byte, pos Pos) string {
-	var p = &Position{
+// Pos 装行列号位置
+func (pos Pos) Position(filename, src string) Position {
+	if !pos.IsValid() {
+		return Position{
+			Filename: filename,
+		}
+	}
+
+	var p = Position{
 		Filename: filename,
+		Offset:   int(pos) - 1,
+		Line:     1,
+		Column:   1,
 	}
 
-	if pos.IsValid() {
-		p.Offset = int(pos) - 1
-	}
-
-	for _, c := range string(src) {
+	for _, c := range []byte(src[:p.Offset]) {
+		p.Column++
 		if c == '\n' {
+			p.Column = 1
 			p.Line++
 		}
 	}
 
-	return p.String()
-
+	return p
 }
 
+// 行列号位置
 type Position struct {
-	Filename string // filename, if any
-	Offset   int    // offset, starting at 0
-	Line     int    // line number, starting at 1
-	Column   int    // column number, starting at 1 (byte count)
+	Filename string // 文件名
+	Offset   int    // 偏移量, 从 0 开始
+	Line     int    // 行号, 从 1 开始
+	Column   int    // 列号, 从 1 开始
 }
 
-// IsValid reports whether the position is valid.
-func (pos *Position) IsValid() bool { return pos.Line > 0 }
+func (pos *Position) IsValid() bool {
+	return pos.Line > 0
+}
 
 // String returns a string in one of several forms:
 //

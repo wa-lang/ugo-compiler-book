@@ -6,7 +6,10 @@ import (
 )
 
 func (p *Parser) parseFile() {
-	p.file = &ast.File{}
+	p.file = &ast.File{
+		Filename: p.Filename(),
+		Source:   p.Source(),
+	}
 
 	// package xxx
 	p.file.Pkg = p.parsePackage()

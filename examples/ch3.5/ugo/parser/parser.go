@@ -47,9 +47,9 @@ func (p *Parser) ParseFile() (file *ast.File, err error) {
 	return
 }
 
-func (p *Parser) errorf(pos int, format string, args ...interface{}) {
+func (p *Parser) errorf(pos token.Pos, format string, args ...interface{}) {
 	p.err = fmt.Errorf("%s: %s",
-		lexer.PosString(p.filename, p.src, pos),
+		pos.Position(p.filename, p.src),
 		fmt.Sprintf(format, args...),
 	)
 	panic(p.err)
