@@ -17,7 +17,7 @@
   - [AST到LLVM汇编](./ch3-block-stmt/ch3-02.md)
   - [完善词法解析器](./ch3-block-stmt/ch3-03.md)
   - [完善语法解析器](./ch3-block-stmt/ch3-04.md)
-  - [AST的遍历和处理](./ch3-block-stmt/ch3-05.md)
+  - [打印AST语法树](./ch3-block-stmt/ch3-05.md)
   - [命令行界面](./ch3-block-stmt/ch3-06.md)
 - [变量和作用域](./ch4-block-and-var/readme.md)
 - [if分支和for循环](./ch5-if-for/readme.md)

@@ -71,9 +71,12 @@ func (p *Parser) parseExpr_call() *ast.CallExpr {
 	tokRparen := p.MustAcceptToken(token.RPAREN)
 
 	return &ast.CallExpr{
-		FuncName: tokIdent.Literal,
-		Lparen:   tokLparen.Pos,
-		Args:     []ast.Expr{arg0},
-		Rparen:   tokRparen.Pos,
+		FuncName: &ast.Ident{
+			NamePos: tokIdent.Pos,
+			Name:    tokIdent.Literal,
+		},
+		Lparen: tokLparen.Pos,
+		Args:   []ast.Expr{arg0},
+		Rparen: tokRparen.Pos,
 	}
 }

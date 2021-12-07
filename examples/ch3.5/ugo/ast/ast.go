@@ -94,7 +94,7 @@ type ParenExpr struct {
 
 // CallExpr 表示一个函数调用
 type CallExpr struct {
-	FuncName string    // 函数名字
+	FuncName *Ident    // 函数名字
 	Lparen   token.Pos // '(' 位置
 	Args     []Expr    // 调用参数列表
 	Rparen   token.Pos // ')' 位置

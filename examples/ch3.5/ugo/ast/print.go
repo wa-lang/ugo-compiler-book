@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -229,6 +230,16 @@ func (p *printer) print(x reflect.Value) {
 		// default
 		p.printf("%v", v)
 	}
+}
+
+func (p *File) JSONString() string {
+	file := *p
+
+	if len(file.Source) > 8 {
+		file.Source = file.Source[:8] + "..."
+	}
+	d, _ := json.MarshalIndent(&file, "", "    ")
+	return string(d)
 }
 
 func (p *File) String() string {
