@@ -65,10 +65,10 @@ type printer struct {
 	output   io.Writer
 	filename string
 	source   string
-	ptrmap   map[interface{}]int // *T -> line number
-	indent   int                 // current indentation level
-	last     byte                // the last byte processed by Write
-	line     int                 // current line number
+	ptrmap   map[interface{}]int
+	indent   int
+	last     byte
+	line     int
 }
 
 func (p *printer) notNilFilter(_name string, v reflect.Value) bool {
