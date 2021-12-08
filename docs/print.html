@@ -2304,7 +2304,235 @@ type UnaryExpr struct {
 </code></pre>
 <p>AST结构发生变化后，parser包也需要做相应的更新，这类不再详细展开。</p>
 <h2 id="354-ast打印"><a class="header" href="#354-ast打印">3.5.4 AST打印</a></h2>
-<p>TODO</p>
+<p>AST语法树中结点类型是固定的，我们可以根据不同的类型分别定制打印。不过打印函数一般只用作调试场景，我们也可以基于反射简化打印的工作。先定义一个内部的printer打印对象：</p>
+<pre><code class="language-go">type printer struct {
+	output   io.Writer
+	filename string
+	source   string
+	ptrmap   map[interface{}]int
+	indent   int
+}
+</code></pre>
+<p>其中output是打印的目标流，filename和source将节点的Pos信息翻译为行列号（如果缺失则忽略位置信息），ptrmap用于处理内部相互引用的对象（目前还没有这种），indent用于控制缩进。</p>
+<p>然后基于反射提供一个打印的方法：</p>
+<pre><code class="language-go">func (p *printer) print(x reflect.Value) {
+	switch x.Kind() {
+	case reflect.Interface:
+		p.print(x.Elem())
+
+	case reflect.Map:
+		// TODO
+	case reflect.Ptr:
+		// TODO
+	case reflect.Array:
+		// TODO
+	case reflect.Slice:
+		// TODO
+	case reflect.Struct:
+		// TODO
+
+	default:
+		// TODO
+	}
+}
+</code></pre>
+<p>如果是接口则直接递归调用print方法打印对应的元素，其他map、指针、数组、切片、结构等也分开处理即可。</p>
+<p>map的打印如下：</p>
+<pre><code class="language-go">	case reflect.Map:
+		p.printf(&quot;%s (len = %d) {&quot;, x.Type(), x.Len())
+		if x.Len() &gt; 0 {
+			p.indent++
+			p.printf(&quot;\n&quot;)
+			for _, key := range x.MapKeys() {
+				p.print(key)
+				p.printf(&quot;: &quot;)
+				p.print(x.MapIndex(key))
+				p.printf(&quot;\n&quot;)
+			}
+			p.indent--
+		}
+		p.printf(&quot;}&quot;)
+</code></pre>
+<p>p.printf是打印对象包装的格式化打印函数，然后控制缩进并打印map的key-value对。</p>
+<p>指针类型打印方式如下：</p>
+<pre><code class="language-go">	case reflect.Ptr:
+		p.printf(&quot;*&quot;)
+		ptr := x.Interface()
+		if line, exists := p.ptrmap[ptr]; exists {
+			p.printf(&quot;(obj @ %d)&quot;, line)
+		} else {
+			p.ptrmap[ptr] = p.line
+			p.print(x.Elem())
+		}
+</code></pre>
+<p>其中关键点是需要记录制作到p.ptrmap中，如果第一次出现则打印，否则打印引用第一次打印该对象的行号。</p>
+<p>数组和切片的打印方式类似：</p>
+<pre><code class="language-go">	case reflect.Array:
+		p.printf(&quot;%s {&quot;, x.Type())
+		if x.Len() &gt; 0 {
+			p.indent++
+			p.printf(&quot;\n&quot;)
+			for i, n := 0, x.Len(); i &lt; n; i++ {
+				p.printf(&quot;%d: &quot;, i)
+				p.print(x.Index(i))
+				p.printf(&quot;\n&quot;)
+			}
+			p.indent--
+		}
+		p.printf(&quot;}&quot;)
+
+	case reflect.Slice:
+		if s, ok := x.Interface().([]byte); ok {
+			p.printf(&quot;%#q&quot;, s)
+			return
+		}
+		p.printf(&quot;%s (len = %d) {&quot;, x.Type(), x.Len())
+		if x.Len() &gt; 0 {
+			p.indent++
+			p.printf(&quot;\n&quot;)
+			for i, n := 0, x.Len(); i &lt; n; i++ {
+				p.printf(&quot;%d: &quot;, i)
+				p.print(x.Index(i))
+				p.printf(&quot;\n&quot;)
+			}
+			p.indent--
+		}
+		p.printf(&quot;}&quot;)
+</code></pre>
+<p>切片打印的类型包含了长度信息，同时对字节切片做了一定特花处理。然后控制缩进打印数组或切片的元素。</p>
+<p>最重要的是结构体的打印：</p>
+<pre><code class="language-go">	case reflect.Struct:
+		t := x.Type()
+		p.printf(&quot;%s {&quot;, t)
+		p.indent++
+		first := true
+		for i, n := 0, t.NumField(); i &lt; n; i++ {
+			name := t.Field(i).Name
+			value := x.Field(i)
+			if p.notNilFilter(name, value) {
+				if first {
+					p.printf(&quot;\n&quot;)
+					first = false
+				}
+				p.printf(&quot;%s: &quot;, name)
+				p.print(value)
+				p.printf(&quot;\n&quot;)
+			}
+		}
+		p.indent--
+		p.printf(&quot;}&quot;)
+</code></pre>
+<p>遍历结构体的成员，然后和map类似的方式打印其中内容。为了减少语法树中空指针的影响，通过p.notNilFilter做了简单的过滤，其实现如下：</p>
+<pre><code class="language-go">func (p *printer) notNilFilter(_name string, v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		return !v.IsNil()
+	}
+	return true
+}
+</code></pre>
+<p>最后是defaul分支的打印：</p>
+<pre><code class="language-go">	default:
+		v := x.Interface()
+		switch v := v.(type) {
+		case string:
+			// print strings in quotes
+			p.printf(&quot;%q&quot;, v)
+			return
+		case token.Pos:
+			if p.filename != &quot;&quot; &amp;&amp; p.source != &quot;&quot; {
+				p.printf(&quot;%s&quot;, v.Position(p.filename, p.source))
+				return
+			}
+		}
+		// default
+		p.printf(&quot;%v&quot;, v)
+	}
+</code></pre>
+<p>对应字符串和Pos做了特殊的格式化处理。</p>
+<h2 id="355-包装打印函数"><a class="header" href="#355-包装打印函数">3.5.5 包装打印函数</a></h2>
+<p>包装一个Print打印函数，打印任意的语法树结点</p>
+<pre><code class="language-go">func Fprint(w io.Writer, filename, source string, node Node) {
+	fprint(w, filename, source, node)
+}
+
+func fprint(w io.Writer, filename, source string, x interface{}) (err error) {
+	p := printer{
+		output:   w,
+		filename: filename,
+		source:   source,
+		ptrmap:   make(map[interface{}]int),
+		last:     '\n', // force printing of line number on first line
+	}
+
+	// print x
+	if x == nil {
+		p.printf(&quot;nil\n&quot;)
+		return
+	}
+	p.print(reflect.ValueOf(x))
+	p.printf(&quot;\n&quot;)
+	return
+}
+</code></pre>
+<p>并为File包装一个String方法：</p>
+<pre><code class="language-go">func (p *File) String() string {
+	var buf bytes.Buffer
+	Fprint(&amp;buf, p.Filename, p.Source, p)
+	return buf.String()
+}
+</code></pre>
+<h2 id="356-测试打印效果"><a class="header" href="#356-测试打印效果">3.5.6 测试打印效果</a></h2>
+<p>现在可以用<code>fmt.Println(f.String())</code>打印文件，输出结果如下：</p>
+<pre><code>     0  ast.File {
+     1  .  Filename: &quot;../hello.ugo&quot;
+     2  .  Source: &quot;package ...&quot;
+     3  .  Pkg: *ast.Package {
+     4  .  .  PkgPos: ../hello.ugo:1:1
+     5  .  .  NamePos: ../hello.ugo:1:9
+     6  .  .  Name: &quot;main&quot;
+     7  .  }
+     8  .  Funcs: []*ast.Func (len = 1) {
+     9  .  .  0: *ast.Func {
+    10  .  .  .  FuncPos: ../hello.ugo:3:1
+    11  .  .  .  NamePos: ../hello.ugo:3:6
+    12  .  .  .  Name: &quot;main&quot;
+    13  .  .  .  Body: *ast.BlockStmt {
+    14  .  .  .  .  Lbrace: ../hello.ugo:3:13
+    15  .  .  .  .  List: []ast.Stmt (len = 1) {
+    16  .  .  .  .  .  0: *ast.ExprStmt {
+    17  .  .  .  .  .  .  X: *ast.CallExpr {
+    18  .  .  .  .  .  .  .  FuncName: *ast.Ident {
+    19  .  .  .  .  .  .  .  .  NamePos: ../hello.ugo:4:2
+    20  .  .  .  .  .  .  .  .  Name: &quot;exit&quot;
+    21  .  .  .  .  .  .  .  }
+    22  .  .  .  .  .  .  .  Lparen: ../hello.ugo:4:6
+    23  .  .  .  .  .  .  .  Args: []ast.Expr (len = 1) {
+    24  .  .  .  .  .  .  .  .  0: *ast.BinaryExpr {
+    25  .  .  .  .  .  .  .  .  .  OpPos: ../hello.ugo:4:10
+    26  .  .  .  .  .  .  .  .  .  Op: +
+    27  .  .  .  .  .  .  .  .  .  X: *ast.Number {
+    28  .  .  .  .  .  .  .  .  .  .  ValuePos: ../hello.ugo:4:7
+    29  .  .  .  .  .  .  .  .  .  .  ValueEnd: ../hello.ugo:4:9
+    30  .  .  .  .  .  .  .  .  .  .  Value: 40
+    31  .  .  .  .  .  .  .  .  .  }
+    32  .  .  .  .  .  .  .  .  .  Y: *ast.Number {
+    33  .  .  .  .  .  .  .  .  .  .  ValuePos: ../hello.ugo:4:12
+    34  .  .  .  .  .  .  .  .  .  .  ValueEnd: ../hello.ugo:4:13
+    35  .  .  .  .  .  .  .  .  .  .  Value: 2
+    36  .  .  .  .  .  .  .  .  .  }
+    37  .  .  .  .  .  .  .  .  }
+    38  .  .  .  .  .  .  .  }
+    39  .  .  .  .  .  .  .  Rparen: ../hello.ugo:4:13
+    40  .  .  .  .  .  .  }
+    41  .  .  .  .  .  }
+    42  .  .  .  .  }
+    43  .  .  .  .  Rbrace: ../hello.ugo:5:1
+    44  .  .  .  }
+    45  .  .  }
+    46  .  }
+    47  }
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="36-命令行界面"><a class="header" href="#36-命令行界面">3.6 命令行界面</a></h1>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="4-作用域和变量"><a class="header" href="#4-作用域和变量">4. 作用域和变量</a></h1>

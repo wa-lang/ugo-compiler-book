@@ -13,7 +13,7 @@ import (
 
 // Print 打印语法树到 stdout
 func Print(node Node) {
-	Fprint(os.Stdout, "", "", node)
+	fprint(os.Stdout, "", "", node)
 }
 
 // Fprint 打印语法树到指定目标
