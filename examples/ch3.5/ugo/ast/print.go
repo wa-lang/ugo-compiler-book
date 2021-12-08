@@ -11,37 +11,30 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
-type FieldFilter func(name string, value reflect.Value) bool
-
-func NotNilFilter(_ string, v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
-		return !v.IsNil()
-	}
-	return true
-}
-
 // Print 打印语法树到 stdout
 func Print(node Node) {
-	Fprint(os.Stdout, node)
+	Fprint(os.Stdout, "", "", node)
 }
 
 // Fprint 打印语法树到指定目标
-func Fprint(w io.Writer, node Node) {
-	fprint(w, node, NotNilFilter)
+func Fprint(w io.Writer, filename, source string, node Node) {
+	fprint(w, filename, source, node)
 }
 
-func fprint(w io.Writer, x interface{}, f FieldFilter) (err error) {
+func fprint(w io.Writer, filename, source string, x interface{}) (err error) {
 	p := printer{
-		output: w,
-		filter: f,
-		ptrmap: make(map[interface{}]int),
-		last:   '\n', // force printing of line number on first line
+		output:   w,
+		filename: filename,
+		source:   source,
+		ptrmap:   make(map[interface{}]int),
+		last:     '\n', // force printing of line number on first line
 	}
 
 	if f, ok := x.(*File); ok {
-		p.filename = f.Filename
-		p.source = f.Source
+		if p.filename == "" && p.source == "" {
+			p.filename = f.Filename
+			p.source = f.Source
+		}
 
 		file := *f
 		if len(file.Source) > 8 {
@@ -72,11 +65,18 @@ type printer struct {
 	output   io.Writer
 	filename string
 	source   string
-	filter   FieldFilter
 	ptrmap   map[interface{}]int // *T -> line number
 	indent   int                 // current indentation level
 	last     byte                // the last byte processed by Write
 	line     int                 // current line number
+}
+
+func (p *printer) notNilFilter(_name string, v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		return !v.IsNil()
+	}
+	return true
 }
 
 func (p *printer) Write(data []byte) (n int, err error) {
@@ -124,7 +124,7 @@ func (p *printer) printf(format string, args ...interface{}) {
 }
 
 func (p *printer) print(x reflect.Value) {
-	if !NotNilFilter("", x) {
+	if !p.notNilFilter("", x) {
 		p.printf("nil")
 		return
 	}
@@ -201,7 +201,7 @@ func (p *printer) print(x reflect.Value) {
 		for i, n := 0, t.NumField(); i < n; i++ {
 			name := t.Field(i).Name
 			value := x.Field(i)
-			if p.filter == nil || p.filter(name, value) {
+			if p.notNilFilter(name, value) {
 				if first {
 					p.printf("\n")
 					first = false
@@ -244,6 +244,6 @@ func (p *File) JSONString() string {
 
 func (p *File) String() string {
 	var buf bytes.Buffer
-	Fprint(&buf, p)
+	Fprint(&buf, p.Filename, p.Source, p)
 	return buf.String()
 }
