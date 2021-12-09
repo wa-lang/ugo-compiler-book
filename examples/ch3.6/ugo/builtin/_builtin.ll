@@ -3,20 +3,27 @@ source_filename = "_builtin.c"
 target datalayout = "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx12.0.0"
 
-@.str = private unnamed_addr constant [22 x i8] c"ugo_builtin_exit(%d)\0A\00", align 1
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+; Function Attrs: noinline nounwind optnone ssp uwtable
+define i32 @ugo_builtin_println(i32 %0) #0 {
+  %2 = alloca i32, align 4
+  store i32 %0, i32* %2, align 4
+  %3 = load i32, i32* %2, align 4
+  %4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i64 0, i64 0), i32 %3)
+  ret i32 %4
+}
+
+declare i32 @printf(i8*, ...) #1
 
 ; Function Attrs: noinline nounwind optnone ssp uwtable
 define i32 @ugo_builtin_exit(i32 %0) #0 {
   %2 = alloca i32, align 4
   store i32 %0, i32* %2, align 4
   %3 = load i32, i32* %2, align 4
-  %4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str, i64 0, i64 0), i32 %3)
-  %5 = load i32, i32* %2, align 4
-  call void @exit(i32 %5) #3
+  call void @exit(i32 %3) #3
   unreachable
 }
-
-declare i32 @printf(i8*, ...) #1
 
 ; Function Attrs: noreturn
 declare void @exit(i32) #2

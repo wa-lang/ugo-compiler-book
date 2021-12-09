@@ -1,5 +1,7 @@
 package main
 
 func main() {
-	exit(40 + 2) // exit code 42
+	println(1)
+	println(1000 + 123)
+	println(40 + 2)
 }

@@ -53,6 +53,9 @@ func main() {
 		if errx, ok := err.(*exec.ExitError); ok {
 			os.Exit(errx.ExitCode())
 		}
+		if err != nil {
+			fmt.Println(err)
+		}
 		return nil
 	}
 
@@ -74,6 +77,9 @@ func main() {
 				if errx, ok := err.(*exec.ExitError); ok {
 					os.Exit(errx.ExitCode())
 				}
+				if err != nil {
+					fmt.Println(err)
+				}
 				return nil
 			},
 		},
@@ -93,6 +99,9 @@ func main() {
 				}
 				if errx, ok := err.(*exec.ExitError); ok {
 					os.Exit(errx.ExitCode())
+				}
+				if err != nil {
+					fmt.Println(err)
 				}
 				return nil
 			},

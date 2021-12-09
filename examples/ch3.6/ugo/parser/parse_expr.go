@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/chai2010/ugo/ast"
@@ -15,6 +14,13 @@ func (p *Parser) parseExpr() ast.Expr {
 func (p *Parser) parseExpr_binary(prec int) ast.Expr {
 	x := p.parseExpr_unary()
 	for {
+		switch tok := p.PeekToken(); tok.Type {
+		case token.EOF:
+			return x
+		case token.SEMICOLON: // ;
+			return x
+		}
+
 		op := p.PeekToken()
 		if op.Type.Precedence() < prec {
 			return x
@@ -24,7 +30,6 @@ func (p *Parser) parseExpr_binary(prec int) ast.Expr {
 		y := p.parseExpr_binary(op.Type.Precedence() + 1)
 		x = &ast.BinaryExpr{OpPos: op.Pos, Op: op.Type, X: x, Y: y}
 	}
-	return nil
 }
 
 func (p *Parser) parseExpr_unary() ast.Expr {
@@ -59,8 +64,8 @@ func (p *Parser) parseExpr_primary() ast.Expr {
 			Value:    value,
 		}
 	default:
-		s := fmt.Sprint(tok)
-		panic(s)
+		p.errorf(tok.Pos, "unknown tok: type=%v, lit=%q", tok.Type, tok.Literal)
+		panic("unreachable")
 	}
 }
 
