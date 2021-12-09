@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/urfave/cli/v2"
 
@@ -17,11 +18,25 @@ func main() {
 	app.Usage = "ugo is a tool for managing µGo source code."
 	app.Version = "0.0.1"
 
+	app.Action = func(c *cli.Context) error {
+		if c.NArg() == 0 {
+			fmt.Fprintf(os.Stderr, "no input file")
+			os.Exit(1)
+		}
+
+		run(c.Args().First())
+		return nil
+	}
+
 	app.Commands = []*cli.Command{
 		{
 			Name:  "build",
 			Usage: "compile µGo source code",
 			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
 				return nil
 			},
 		},
@@ -29,6 +44,10 @@ func main() {
 			Name:  "run",
 			Usage: "compile and run µGo program",
 			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
 				return nil
 			},
 		},
@@ -37,11 +56,11 @@ func main() {
 			Usage: "parse µGo source code and print ast",
 			Action: func(c *cli.Context) error {
 				if c.NArg() == 0 {
-					fmt.Fprintf(os.Stderr, "")
+					fmt.Fprintf(os.Stderr, "no input file")
 					os.Exit(1)
 				}
 
-				code := loadCode("./hello.ugo")
+				code := loadCode(c.Args().First())
 				f, err := parser.ParseFile("./hello.ugo", code)
 				if err != nil {
 					panic(err)
@@ -55,6 +74,10 @@ func main() {
 			Name:  "lex",
 			Usage: "lex µGo source code and print token list",
 			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
 				return nil
 			},
 		},
@@ -63,18 +86,22 @@ func main() {
 	app.Run(os.Args)
 }
 
-func main2() {
-	code := loadCode("./hello.ugo")
-	f, err := parser.ParseFile("./hello.ugo", code)
+func run(filename string) {
+	code := loadCode(filename)
+	f, err := parser.ParseFile(filename, code)
 	if err != nil {
 		panic(err)
 	}
 
-	ast.Print(f)
-
 	ll := new(compiler.Compiler).Compile(f)
-	//fmt.Print(ll)
-	_ = ll
+	if err := os.WriteFile("a.out.ll", []byte(ll), 0666); err != nil {
+		panic(err)
+	}
+
+	exec.Command("clang", "-Wno-override-module", "-o", "a.out", "a.out.ll", "./builtin/_builtin.ll").Run()
+	if err := exec.Command("./a.out").Run(); err != nil {
+		panic(err)
+	}
 }
 
 func loadCode(filename string) string {
