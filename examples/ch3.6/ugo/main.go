@@ -9,6 +9,7 @@ import (
 
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/compiler"
+	lexpkg "github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/parser"
 )
 
@@ -30,17 +31,6 @@ func main() {
 
 	app.Commands = []*cli.Command{
 		{
-			Name:  "build",
-			Usage: "compile µGo source code",
-			Action: func(c *cli.Context) error {
-				if c.NArg() == 0 {
-					fmt.Fprintf(os.Stderr, "no input file")
-					os.Exit(1)
-				}
-				return nil
-			},
-		},
-		{
 			Name:  "run",
 			Usage: "compile and run µGo program",
 			Action: func(c *cli.Context) error {
@@ -48,6 +38,19 @@ func main() {
 					fmt.Fprintf(os.Stderr, "no input file")
 					os.Exit(1)
 				}
+				run(c.Args().First())
+				return nil
+			},
+		},
+		{
+			Name:  "build",
+			Usage: "compile µGo source code",
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+				build(c.Args().First())
 				return nil
 			},
 		},
@@ -60,8 +63,10 @@ func main() {
 					os.Exit(1)
 				}
 
-				code := loadCode(c.Args().First())
-				f, err := parser.ParseFile("./hello.ugo", code)
+				filename := c.Args().First()
+
+				code := loadCode(filename)
+				f, err := parser.ParseFile(filename, code)
 				if err != nil {
 					panic(err)
 				}
@@ -78,6 +83,29 @@ func main() {
 					fmt.Fprintf(os.Stderr, "no input file")
 					os.Exit(1)
 				}
+
+				filename := c.Args().First()
+
+				code := loadCode(filename)
+				lexer := lexpkg.NewLexer(filename, code)
+
+				for i, tok := range lexer.Tokens() {
+					fmt.Printf(
+						"%02d: %-12v: %-20q // %s\n",
+						i, tok.Type, tok.Literal,
+						tok.Pos.Position(filename, code),
+					)
+				}
+
+				fmt.Println("----")
+
+				for i, tok := range lexer.Comments() {
+					fmt.Printf(
+						"%02d: %-12v: %-20q // %s\n",
+						i, tok.Type, tok.Literal,
+						tok.Pos.Position(filename, code),
+					)
+				}
 				return nil
 			},
 		},
@@ -87,6 +115,17 @@ func main() {
 }
 
 func run(filename string) {
+	build(filename)
+	data, err := exec.Command("./a.out").CombinedOutput()
+	if len(data) != 0 {
+		fmt.Print(string(data))
+	}
+	if errx, ok := err.(*exec.ExitError); ok {
+		os.Exit(errx.ExitCode())
+	}
+}
+
+func build(filename string) {
 	code := loadCode(filename)
 	f, err := parser.ParseFile(filename, code)
 	if err != nil {
@@ -99,9 +138,6 @@ func run(filename string) {
 	}
 
 	exec.Command("clang", "-Wno-override-module", "-o", "a.out", "a.out.ll", "./builtin/_builtin.ll").Run()
-	if err := exec.Command("./a.out").Run(); err != nil {
-		panic(err)
-	}
 }
 
 func loadCode(filename string) string {
