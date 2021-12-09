@@ -121,7 +121,7 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 		// call i32(i32) @ugo_builtin_exit(i32 %t2)
 		localName = p.genId()
 		fmt.Fprintf(w, "\t%s = call i32(i32) @ugo_builtin_%s(i32 %v)\n",
-			localName, expr.FuncName, p.compileExpr(w, expr.Args[0]),
+			localName, expr.FuncName.Name, p.compileExpr(w, expr.Args[0]),
 		)
 		return localName
 	}

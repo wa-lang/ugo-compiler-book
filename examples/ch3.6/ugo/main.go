@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/compiler"
-	lexpkg "github.com/chai2010/ugo/lexer"
-	"github.com/chai2010/ugo/parser"
+	"github.com/chai2010/ugo/build"
 )
 
 func main() {
@@ -19,13 +17,42 @@ func main() {
 	app.Usage = "ugo is a tool for managing µGo source code."
 	app.Version = "0.0.1"
 
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "goos",
+			Usage: "set GOOS",
+			Value: runtime.GOOS,
+		},
+		&cli.StringFlag{
+			Name:  "goarch",
+			Usage: "set GOARCH",
+			Value: runtime.GOARCH,
+		},
+		&cli.StringFlag{
+			Name:  "clang",
+			Usage: "set clang",
+		},
+		&cli.BoolFlag{
+			Name:    "debug",
+			Aliases: []string{"d"},
+			Usage:   "set debug mode",
+		},
+	}
+
 	app.Action = func(c *cli.Context) error {
 		if c.NArg() == 0 {
 			fmt.Fprintf(os.Stderr, "no input file")
 			os.Exit(1)
 		}
 
-		run(c.Args().First())
+		ctx := build.NewContext(build_Options(c))
+		data, err := ctx.Run(c.Args().First(), nil)
+		if len(data) != 0 {
+			fmt.Print(string(data))
+		}
+		if errx, ok := err.(*exec.ExitError); ok {
+			os.Exit(errx.ExitCode())
+		}
 		return nil
 	}
 
@@ -38,7 +65,15 @@ func main() {
 					fmt.Fprintf(os.Stderr, "no input file")
 					os.Exit(1)
 				}
-				run(c.Args().First())
+
+				ctx := build.NewContext(build_Options(c))
+				data, err := ctx.Run(c.Args().First(), nil)
+				if len(data) != 0 {
+					fmt.Print(string(data))
+				}
+				if errx, ok := err.(*exec.ExitError); ok {
+					os.Exit(errx.ExitCode())
+				}
 				return nil
 			},
 		},
@@ -50,28 +85,15 @@ func main() {
 					fmt.Fprintf(os.Stderr, "no input file")
 					os.Exit(1)
 				}
-				build(c.Args().First())
-				return nil
-			},
-		},
-		{
-			Name:  "ast",
-			Usage: "parse µGo source code and print ast",
-			Action: func(c *cli.Context) error {
-				if c.NArg() == 0 {
-					fmt.Fprintf(os.Stderr, "no input file")
-					os.Exit(1)
+
+				ctx := build.NewContext(build_Options(c))
+				data, err := ctx.Build(c.Args().First(), nil, "")
+				if len(data) != 0 {
+					fmt.Print(string(data))
 				}
-
-				filename := c.Args().First()
-
-				code := loadCode(filename)
-				f, err := parser.ParseFile(filename, code)
-				if err != nil {
-					panic(err)
+				if errx, ok := err.(*exec.ExitError); ok {
+					os.Exit(errx.ExitCode())
 				}
-
-				ast.Print(f)
 				return nil
 			},
 		},
@@ -85,27 +107,76 @@ func main() {
 				}
 
 				filename := c.Args().First()
+				code, err := os.ReadFile(filename)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 
-				code := loadCode(filename)
-				lexer := lexpkg.NewLexer(filename, code)
+				ctx := build.NewContext(build_Options(c))
+				tokens, comments, err := ctx.Lex(c.Args().First(), nil)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 
-				for i, tok := range lexer.Tokens() {
+				for i, tok := range tokens {
 					fmt.Printf(
 						"%02d: %-12v: %-20q // %s\n",
 						i, tok.Type, tok.Literal,
-						tok.Pos.Position(filename, code),
+						tok.Pos.Position(filename, string(code)),
 					)
 				}
 
-				fmt.Println("----")
+				if len(comments) != 0 {
+					fmt.Println("----")
+				}
 
-				for i, tok := range lexer.Comments() {
+				for i, tok := range comments {
 					fmt.Printf(
 						"%02d: %-12v: %-20q // %s\n",
 						i, tok.Type, tok.Literal,
-						tok.Pos.Position(filename, code),
+						tok.Pos.Position(filename, string(code)),
 					)
 				}
+				return nil
+			},
+		},
+		{
+			Name:  "ast",
+			Usage: "parse µGo source code and print ast",
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+
+				ctx := build.NewContext(build_Options(c))
+				out, err := ctx.AST(c.Args().First(), nil)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				fmt.Println(out)
+				return nil
+			},
+		},
+		{
+			Name:  "asm",
+			Usage: "parse µGo source code and print llvm-ir",
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+
+				ctx := build.NewContext(build_Options(c))
+				ll, err := ctx.ASM(c.Args().First(), nil)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				fmt.Println(ll)
 				return nil
 			},
 		},
@@ -114,36 +185,11 @@ func main() {
 	app.Run(os.Args)
 }
 
-func run(filename string) {
-	build(filename)
-	data, err := exec.Command("./a.out").CombinedOutput()
-	if len(data) != 0 {
-		fmt.Print(string(data))
+func build_Options(c *cli.Context) *build.Option {
+	return &build.Option{
+		Debug:  c.Bool("debug"),
+		GOOS:   c.String("goos"),
+		GOARCH: c.String("goarch"),
+		Clang:  c.String("clang"),
 	}
-	if errx, ok := err.(*exec.ExitError); ok {
-		os.Exit(errx.ExitCode())
-	}
-}
-
-func build(filename string) {
-	code := loadCode(filename)
-	f, err := parser.ParseFile(filename, code)
-	if err != nil {
-		panic(err)
-	}
-
-	ll := new(compiler.Compiler).Compile(f)
-	if err := os.WriteFile("a.out.ll", []byte(ll), 0666); err != nil {
-		panic(err)
-	}
-
-	exec.Command("clang", "-Wno-override-module", "-o", "a.out", "a.out.ll", "./builtin/_builtin.ll").Run()
-}
-
-func loadCode(filename string) string {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-	return string(data)
 }

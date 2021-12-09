@@ -1,5 +1,19 @@
 package builtin
 
+import _ "embed"
+
+//go:embed _builtin.ll
+var llBuiltin string
+
+func GetBuiltinLL(goos, goarch string) string {
+	switch goos {
+	case "darwin":
+	case "linux":
+	case "windows":
+	}
+	return llBuiltin
+}
+
 const Header = `
 declare i32 @ugo_builtin_exit(i32)
 `
