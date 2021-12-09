@@ -2534,6 +2534,52 @@ func fprint(w io.Writer, filename, source string, x interface{}) (err error) {
     47  }
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="36-命令行界面"><a class="header" href="#36-命令行界面">3.6 命令行界面</a></h1>
+<p>本节的目标是将目前功能还比较松散简陋的编译器包装为好用一点的ugo命令，这样更方便测试和遇到便于问题时定位。</p>
+<h2 id="361-最小µgo程序再前进一步"><a class="header" href="#361-最小µgo程序再前进一步">3.6.1 最小µGo程序再前进一步</a></h2>
+<p>我们先看看本节可以编译执行的稍微复杂一点的程序：</p>
+<pre><code class="language-go">package main
+
+func main() {
+	println(1)
+	println(1000 + 123)
+	println(40 + 2)
+}
+</code></pre>
+<p>使用ugo程序直接执行：</p>
+<pre><code>$ ugo run ./hello.ugo 
+1
+1123
+42
+</code></pre>
+<p>看起来还不错。</p>
+<h2 id="362-ugo的命令行界面"><a class="header" href="#362-ugo的命令行界面">3.6.2 ugo的命令行界面</a></h2>
+<p>和Go社区习惯一致，使用<code>-h</code>查看帮助：</p>
+<pre><code>$ ugo -h
+NAME:
+   ugo - ugo is a tool for managing µGo source code.
+
+USAGE:
+   ugo [global options] command [command options] [arguments...]
+
+VERSION:
+   0.0.1
+
+COMMANDS:
+   run      compile and run µGo program
+   build    compile µGo source code
+   lex      lex µGo source code and print token list
+   ast      parse µGo source code and print ast
+   asm      parse µGo source code and print llvm-ir
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --debug, -d     set debug mode (default: false)
+   --help, -h      show help (default: false)
+   --version, -v   print the version (default: false)
+$
+</code></pre>
+<p>这是基于cli包构建的命令行界面：run用于编译加执行、build构建本地可执行程序、lex输出词法分析结果、ast输出语法树结果、asm输出语法树翻译为LLVM汇编语言的结果。</p>
+<h2 id="363-实现ugo命令"><a class="header" href="#363-实现ugo命令">3.6.3 实现ugo命令</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="4-作用域和变量"><a class="header" href="#4-作用域和变量">4. 作用域和变量</a></h1>
 <p>TODO</p>
