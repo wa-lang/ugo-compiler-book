@@ -154,6 +154,12 @@ func main() {
 		{
 			Name:  "ast",
 			Usage: "parse µGo source code and print ast",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:  "json",
+					Usage: "output json format",
+				},
+			},
 			Action: func(c *cli.Context) error {
 				if c.NArg() == 0 {
 					fmt.Fprintf(os.Stderr, "no input file")
@@ -161,12 +167,16 @@ func main() {
 				}
 
 				ctx := build.NewContext(build_Options(c))
-				out, err := ctx.AST(c.Args().First(), nil)
+				f, err := ctx.AST(c.Args().First(), nil)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				fmt.Println(out)
+				if c.Bool("json") {
+					fmt.Println(f.JSONString())
+				} else {
+					fmt.Println(f.String())
+				}
 				return nil
 			},
 		},
