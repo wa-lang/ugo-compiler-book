@@ -18,25 +18,10 @@ func main() {
 	app.Version = "0.0.1"
 
 	app.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:  "goos",
-			Usage: "set GOOS",
-			Value: runtime.GOOS,
-		},
-		&cli.StringFlag{
-			Name:  "goarch",
-			Usage: "set GOARCH",
-			Value: runtime.GOARCH,
-		},
-		&cli.StringFlag{
-			Name:  "clang",
-			Usage: "set clang",
-		},
-		&cli.BoolFlag{
-			Name:    "debug",
-			Aliases: []string{"d"},
-			Usage:   "set debug mode",
-		},
+		&cli.StringFlag{Name: "goos", Usage: "set GOOS", Value: runtime.GOOS},
+		&cli.StringFlag{Name: "goarch", Usage: "set GOARCH", Value: runtime.GOARCH},
+		&cli.StringFlag{Name: "clang", Value: "", Usage: "set clang"},
+		&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Usage: "set debug mode"},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -155,10 +140,7 @@ func main() {
 			Name:  "ast",
 			Usage: "parse µGo source code and print ast",
 			Flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name:  "json",
-					Usage: "output json format",
-				},
+				&cli.BoolFlag{Name: "json", Usage: "output json format"},
 			},
 			Action: func(c *cli.Context) error {
 				if c.NArg() == 0 {

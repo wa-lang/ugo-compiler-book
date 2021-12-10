@@ -2579,8 +2579,189 @@ GLOBAL OPTIONS:
 $
 </code></pre>
 <p>这是基于cli包构建的命令行界面：run用于编译加执行、build构建本地可执行程序、lex输出词法分析结果、ast输出语法树结果、asm输出语法树翻译为LLVM汇编语言的结果。</p>
-<h2 id="363-实现ugo命令"><a class="header" href="#363-实现ugo命令">3.6.3 实现ugo命令</a></h2>
-<p>TODO</p>
+<h2 id="363-实现ugo命令---main函数"><a class="header" href="#363-实现ugo命令---main函数">3.6.3 实现ugo命令 - main函数</a></h2>
+<p>main函数通过cli包定义子命令和相关的参数：</p>
+<pre><code class="language-go">package main
+
+import &quot;github.com/urfave/cli/v2&quot;
+import &quot;github.com/chai2010/ugo/build&quot;
+
+func main() {
+	app := cli.NewApp()
+	app.Name = &quot;ugo&quot;
+	app.Usage = &quot;ugo is a tool for managing µGo source code.&quot;
+	app.Version = &quot;0.0.1&quot;
+
+	app.Flags = []cli.Flag{
+		&amp;cli.StringFlag{Name: &quot;goos&quot;, Usage: &quot;set GOOS&quot;, Value: runtime.GOOS},
+		&amp;cli.StringFlag{Name: &quot;goarch&quot;, Usage: &quot;set GOARCH&quot;, Value: runtime.GOARCH},
+		&amp;cli.StringFlag{Name: &quot;clang&quot;, Value: &quot;&quot;, Usage: &quot;set clang&quot;},
+		&amp;cli.BoolFlag{Name: &quot;debug&quot;, Aliases: []string{&quot;d&quot;}, Usage: &quot;set debug mode&quot;},
+	}
+</code></pre>
+<p>首先是<code>cli.NewApp()</code>定义主命令对象，然后设置名字、提示信息、版本和参数。参数中goos和goarch用于指定目标平台（目前还没有用到），clang则用于支持用户自定义的路径，debug表示调试模式。</p>
+<p>然后是定义全部的子命令：</p>
+<pre><code class="language-go">	app.Commands = []*cli.Command{
+		{
+			Name:  &quot;run&quot;,
+			Usage: &quot;compile and run µGo program&quot;,
+			Action: func(c *cli.Context) error {
+				ctx := build.NewContext(build_Options(c))
+				output, _ := ctx.Run(c.Args().First(), nil)
+				fmt.Print(string(output))
+				return nil
+			},
+		},
+		{
+			Name:  &quot;build&quot;,
+			Usage: &quot;compile µGo source code&quot;,
+			Action: func(c *cli.Context) error {
+				ctx := build.NewContext(build_Options(c))
+				ctx.Build(c.Args().First(), nil, &quot;a.out&quot;)
+				return nil
+			},
+		},
+		{
+			Name:  &quot;lex&quot;,
+			Usage: &quot;lex µGo source code and print token list&quot;,
+			Action: func(c *cli.Context) error {
+				ctx := build.NewContext(build_Options(c))
+				tokens, comments, _ := ctx.Lex(c.Args().First(), nil)
+				fmt.Println(tokens)
+				fmt.Println(comments)
+				return nil
+			},
+		},
+		{
+			Name:  &quot;ast&quot;,
+			Usage: &quot;parse µGo source code and print ast&quot;,
+			Flags: []cli.Flag{
+				&amp;cli.BoolFlag{Name: &quot;json&quot;, Usage: &quot;output json format&quot;},
+			},
+			Action: func(c *cli.Context) error {
+				ctx := build.NewContext(build_Options(c))
+				f, err := ctx.AST(c.Args().First(), nil)
+				if c.Bool(&quot;json&quot;) {
+					fmt.Println(f.JSONString())
+				} else {
+					fmt.Println(f.String())
+				}
+				return nil
+			},
+		},
+		{
+			Name:  &quot;asm&quot;,
+			Usage: &quot;parse µGo source code and print llvm-ir&quot;,
+			Action: func(c *cli.Context) error {
+				ctx := build.NewContext(build_Options(c))
+				ll, _ := ctx.ASM(c.Args().First(), nil)
+				fmt.Println(ll)
+				return nil
+			},
+		},
+	}
+
+	app.Run(os.Args)
+}
+</code></pre>
+<p>对应run、build、lex、ast和asm几个子命令，具体的实现是由build包的Context对象提供的对应方法实现。最后调用<code>app.Run(os.Args)</code>执行命令行。build_Options函数负责从全局参数解析信息，产生执行需要的上下文参数。</p>
+<h2 id="364-实现ugo命令---buildcontext对象"><a class="header" href="#364-实现ugo命令---buildcontext对象">3.6.4 实现ugo命令 - build.Context对象</a></h2>
+<p>build.Context对象是当前执行命令需要的参数包装：</p>
+<pre><code class="language-go">package build
+
+type Option struct {
+	Debug  bool
+	GOOS   string
+	GOARCH string
+	Clang  string
+}
+
+type Context struct {
+	opt  Option
+	path string
+	src  string
+}
+</code></pre>
+<p>除了目标平台信息，还包含ugo代码的路径。</p>
+<p>词法解析方法实现如下：</p>
+<pre><code class="language-go">func (p *Context) Lex(filename string, src interface{}) (tokens, comments []token.Token, err error) {
+	code, err := p.readSource(filename, src)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	l := lexer.NewLexer(filename, code)
+	tokens = l.Tokens()
+	comments = l.Comments()
+	return
+}
+</code></pre>
+<p>语法树解析方法包装：</p>
+<pre><code class="language-go">func (p *Context) AST(filename string, src interface{}) (f *ast.File, err error) {
+	code, err := p.readSource(filename, src)
+	if err != nil {
+		return nil, err
+	}
+
+	f, err = parser.ParseFile(filename, code)
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+</code></pre>
+<p>产生LLVM汇编代码的方法包装：</p>
+<pre><code class="language-go">func (p *Context) ASM(filename string, src interface{}) (ll string, err error) {
+	code, err := p.readSource(filename, src)
+	if err != nil {
+		return &quot;&quot;, err
+	}
+
+	f, err := parser.ParseFile(filename, code)
+	if err != nil {
+		return &quot;&quot;, err
+	}
+
+	ll = new(compiler.Compiler).Compile(f)
+	return ll, nil
+}
+</code></pre>
+<p>Build和Run方法定义如下（实现细节就不展开了，具体方式可以参考代码）：</p>
+<pre><code class="language-go">func (p *Context) Build(
+	filename string, src interface{}, outfile string,
+) (output []byte, err error) {
+	// ...
+}
+
+func (p *Context) Run(filename string, src interface{}) ([]byte, error) {
+	// ...
+}
+</code></pre>
+<p>辅助的readSource方法实现如下：</p>
+<pre><code class="language-go">func (p *Context) readSource(filename string, src interface{}) (string, error) {
+	if src != nil {
+		switch s := src.(type) {
+		case string:
+			return s, nil
+		case []byte:
+			return string(s), nil
+		case *bytes.Buffer:
+			if s != nil {
+				return s.String(), nil
+			}
+		case io.Reader:
+			d, err := io.ReadAll(s)
+			return string(d), err
+		}
+		return &quot;&quot;, errors.New(&quot;invalid source&quot;)
+	}
+
+	d, err := os.ReadFile(filename)
+	return string(d), err
+}
+</code></pre>
+<p>这样我们就可以通过指定不同的GOOS和GOARCH实现交叉编译。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="4-作用域和变量"><a class="header" href="#4-作用域和变量">4. 作用域和变量</a></h1>
 <p>TODO</p>
 <!--
