@@ -9,11 +9,11 @@ import (
 	"runtime"
 
 	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/builtin"
 	"github.com/chai2010/ugo/compiler"
 	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/parser"
 	"github.com/chai2010/ugo/token"
+	"github.com/chai2010/ugo/types/builtin"
 )
 
 type Option struct {

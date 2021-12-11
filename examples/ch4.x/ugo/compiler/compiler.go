@@ -6,8 +6,8 @@ import (
 	"io"
 
 	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/builtin"
 	"github.com/chai2010/ugo/token"
+	"github.com/chai2010/ugo/types/builtin"
 )
 
 type Compiler struct {

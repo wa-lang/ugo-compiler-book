@@ -1,6 +1,6 @@
 package main
 
-import "./extern.ugo"
+import "./extern"
 
 const Port = extern.DefaultPort + 1
 

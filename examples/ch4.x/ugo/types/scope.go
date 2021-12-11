@@ -1,8 +1,10 @@
-package ast
+package types
 
 import (
 	"bytes"
 	"fmt"
+
+	"github.com/chai2010/ugo/ast"
 )
 
 type Scope struct {
@@ -12,7 +14,7 @@ type Scope struct {
 
 type Object struct {
 	Name string
-	Node
+	ast.Node
 }
 
 func NewScope(outer *Scope) *Scope {
