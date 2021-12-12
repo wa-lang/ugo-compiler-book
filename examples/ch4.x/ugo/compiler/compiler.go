@@ -12,12 +12,14 @@ import (
 )
 
 type Compiler struct {
+	file   *ast.File
 	nextId int
 }
 
 func (p *Compiler) Compile(file *ast.File) string {
 	var buf bytes.Buffer
 
+	p.file = file
 	p.genHeader(&buf, file)
 	p.compileFile(&buf, file)
 	p.genMain(&buf, file)
@@ -43,6 +45,12 @@ func (p *Compiler) genMain(w io.Writer, file *ast.File) {
 }
 
 func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
+	for _, g := range file.Globals {
+		fmt.Fprintf(w, "@ugo_%s_%s = global i32 0\n", file.Pkg.Name, g.Name.Name)
+	}
+	if len(file.Globals) != 0 {
+		fmt.Fprintln(w)
+	}
 	for _, fn := range file.Funcs {
 		p.compileFunc(w, file, fn)
 	}
@@ -64,7 +72,11 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 	switch stmt := stmt.(type) {
 	case *ast.AssignStmt:
-		// TODO
+		localName := p.compileExpr(w, stmt.Value)
+		fmt.Fprintf(
+			w, "\tstore i32 %s, i32* @ugo_%s_%s\n",
+			localName, p.file.Pkg.Name, stmt.Target.Name,
+		)
 
 	case *ast.BlockStmt:
 		for _, x := range stmt.List {
@@ -80,6 +92,12 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 
 func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 	switch expr := expr.(type) {
+	case *ast.Ident:
+		localName = p.genId()
+		fmt.Fprintf(w, "\t%s = load i32, i32* @ugo_%s_%s, align 4\n",
+			localName, p.file.Pkg.Name, expr.Name,
+		)
+		return localName
 	case *ast.Number:
 		localName = p.genId()
 		fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
@@ -128,6 +146,8 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 			localName, expr.FuncName.Name, p.compileExpr(w, expr.Args[0]),
 		)
 		return localName
+	default:
+		logger.Panicf("unknown: %[1]T, %[1]v", expr)
 	}
 
 	panic("unreachable")

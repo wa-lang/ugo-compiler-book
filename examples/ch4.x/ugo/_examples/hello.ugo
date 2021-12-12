@@ -3,7 +3,8 @@ package main
 var x int
 
 func main() {
-	x = x + 1000
+	x = 1
+	x = x + 100
 	println(x)
 
 	//var x int = x+1
