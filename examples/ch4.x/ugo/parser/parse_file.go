@@ -24,9 +24,6 @@ LoopImport:
 		case token.SEMICOLON:
 			p.AcceptTokenList(token.SEMICOLON)
 
-		case token.IMPORT:
-			p.file.Imports = append(p.file.Imports, p.parseImport())
-
 		default:
 			break LoopImport
 		}
@@ -41,8 +38,6 @@ LoopImport:
 		case token.SEMICOLON:
 			p.AcceptTokenList(token.SEMICOLON)
 
-		case token.CONST:
-			p.file.Consts = append(p.file.Consts, p.parseStmt_const())
 		case token.VAR:
 			p.file.Globals = append(p.file.Globals, p.parseStmt_var())
 		case token.FUNC:

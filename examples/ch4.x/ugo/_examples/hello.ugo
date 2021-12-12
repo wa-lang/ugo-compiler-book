@@ -1,25 +1,16 @@
 package main
 
-import "./extern"
-
-const Port = extern.DefaultPort + 1
+var count int
 
 func main() {
-	var x int
-	var y int = 123
-
-	x = 1 + 2 + 3
-	println(x + 100)
-
-	x = x + 10
-	println(x + 100)
-
+	var x int = 10
 	{
-		y := y + 1
-		println(y)
+		println(x)
+		var x = x + 1
+		println(x)
 	}
-	println(y)
+	println(x)
 
-	var z = 456
-	println(z)
+	count = x + 1000
+	println(count)
 }

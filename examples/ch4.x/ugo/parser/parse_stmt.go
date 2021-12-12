@@ -25,8 +25,6 @@ Loop:
 		case token.RBRACE: // }
 			break Loop
 
-		case token.CONST:
-			block.List = append(block.List, p.parseStmt_const())
 		case token.VAR:
 			block.List = append(block.List, p.parseStmt_var())
 
@@ -39,15 +37,6 @@ Loop:
 			case token.SEMICOLON:
 				block.List = append(block.List, &ast.ExprStmt{
 					X: expr,
-				})
-			case token.DEFINE:
-				p.ReadToken()
-				exprValue := p.parseExpr()
-				block.List = append(block.List, &ast.AssignStmt{
-					Target: expr,
-					OpPos:  tok.Pos,
-					Op:     tok.Type,
-					Value:  exprValue,
 				})
 			case token.ASSIGN:
 				p.ReadToken()

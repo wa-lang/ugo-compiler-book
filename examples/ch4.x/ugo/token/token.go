@@ -15,11 +15,8 @@ const (
 
 	IDENT
 	NUMBER
-	STRING
 
 	PACKAGE
-	IMPORT
-	CONST
 	VAR
 	FUNC
 
@@ -29,14 +26,12 @@ const (
 	DIV // /
 
 	ASSIGN // =
-	DEFINE // :=
 
 	LPAREN // (
 	RPAREN // )
 	LBRACE // {
 	RBRACE // }
 
-	PERIOD    // .
 	SEMICOLON // ;
 )
 
@@ -54,11 +49,8 @@ var tokens = [...]string{
 
 	IDENT:  "IDENT",
 	NUMBER: "NUMBER",
-	STRING: "STRING",
 
 	PACKAGE: "package",
-	IMPORT:  "import",
-	CONST:   "const",
 	VAR:     "var",
 	FUNC:    "func",
 
@@ -68,14 +60,12 @@ var tokens = [...]string{
 	DIV: "/",
 
 	ASSIGN: "=",
-	DEFINE: ":=",
 
 	LPAREN: "(",
 	RPAREN: ")",
 	LBRACE: "{",
 	RBRACE: "}",
 
-	PERIOD:    ".",
 	SEMICOLON: ";",
 }
 
@@ -92,8 +82,6 @@ func (tokType TokenType) String() string {
 
 var keywords = map[string]TokenType{
 	"package": PACKAGE,
-	"import":  IMPORT,
-	"const":   CONST,
 	"var":     VAR,
 	"func":    FUNC,
 }
