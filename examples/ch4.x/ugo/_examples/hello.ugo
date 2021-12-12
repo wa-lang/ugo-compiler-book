@@ -2,7 +2,7 @@ package main
 
 import "./extern"
 
-const Port = extern.DefaultPort + 1
+const Port = 123 // extern.DefaultPort + 1
 
 func main() {
 	var x int

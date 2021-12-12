@@ -14,6 +14,7 @@ func (p *Parser) parseFile() {
 	// package xxx
 	p.file.Pkg = p.parsePackage()
 
+LoopImport:
 	for {
 		switch tok := p.PeekToken(); tok.Type {
 		case token.EOF:
@@ -23,6 +24,27 @@ func (p *Parser) parseFile() {
 		case token.SEMICOLON:
 			p.AcceptTokenList(token.SEMICOLON)
 
+		case token.IMPORT:
+			p.file.Imports = append(p.file.Imports, p.parseImport())
+
+		default:
+			break LoopImport
+		}
+	}
+
+	for {
+		switch tok := p.PeekToken(); tok.Type {
+		case token.EOF:
+			return
+		case token.ERROR:
+			panic(tok)
+		case token.SEMICOLON:
+			p.AcceptTokenList(token.SEMICOLON)
+
+		case token.CONST:
+			p.file.Consts = append(p.file.Consts, p.parseStmt_const())
+		case token.VAR:
+			p.file.Globals = append(p.file.Globals, p.parseStmt_var())
 		case token.FUNC:
 			p.file.Funcs = append(p.file.Funcs, p.parseFunc())
 

@@ -123,6 +123,12 @@ func (p *Lexer) run() (tokens []token.Token) {
 			p.src.AcceptRun(digits)
 			p.emit(token.NUMBER)
 
+		case r == '"': // "abc\n"
+			p.lexQuote()
+
+		case r == '`': // `abc`
+			p.lexRawQuote()
+
 		case r == '+': // +, +=, ++
 			p.emit(token.ADD)
 		case r == '-': // -, -=, --
@@ -148,6 +154,18 @@ func (p *Lexer) run() (tokens []token.Token) {
 				}
 			}
 
+		case r == '=': // =, ==
+			p.emit(token.ASSIGN)
+		case r == ':': // :, :=
+			nextCh := p.src.Read()
+			switch nextCh {
+			case '=':
+				p.emit(token.DEFINE)
+			default:
+				p.errorf("unrecognized character: %#U", r)
+				return
+			}
+
 		case r == '(':
 			p.emit(token.LPAREN)
 		case r == '{':
@@ -158,11 +176,41 @@ func (p *Lexer) run() (tokens []token.Token) {
 		case r == '}':
 			p.emit(token.RBRACE)
 
+		case r == '.':
+			p.emit(token.PERIOD)
 		case r == ';':
 			p.emit(token.SEMICOLON)
 
 		default:
 			p.errorf("unrecognized character: %#U", r)
+			return
+		}
+	}
+}
+
+func (l *Lexer) lexQuote() {
+	for {
+		switch l.src.Read() {
+		case rune(token.EOF):
+			l.errorf("unterminated quoted string")
+			return
+		case '\\':
+			l.src.Read()
+		case '"':
+			l.emit(token.STRING)
+			return
+		}
+	}
+}
+
+func (l *Lexer) lexRawQuote() {
+	for {
+		switch l.src.Read() {
+		case rune(token.EOF):
+			l.errorf("unterminated raw quoted string")
+			return
+		case '`':
+			l.emit(token.STRING)
 			return
 		}
 	}

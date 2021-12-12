@@ -15,8 +15,12 @@ const (
 
 	IDENT
 	NUMBER
+	STRING
 
 	PACKAGE
+	IMPORT
+	CONST
+	VAR
 	FUNC
 
 	ADD // +
@@ -24,11 +28,15 @@ const (
 	MUL // *
 	DIV // /
 
+	ASSIGN // =
+	DEFINE // :=
+
 	LPAREN // (
 	RPAREN // )
 	LBRACE // {
 	RBRACE // }
 
+	PERIOD    // .
 	SEMICOLON // ;
 )
 
@@ -46,20 +54,28 @@ var tokens = [...]string{
 
 	IDENT:  "IDENT",
 	NUMBER: "NUMBER",
+	STRING: "STRING",
 
-	PACKAGE: "PACKAGE",
-	FUNC:    "FUNC",
+	PACKAGE: "package",
+	IMPORT:  "import",
+	CONST:   "const",
+	VAR:     "var",
+	FUNC:    "func",
 
 	ADD: "+",
 	SUB: "-",
 	MUL: "*",
 	DIV: "/",
 
+	ASSIGN: "=",
+	DEFINE: ":=",
+
 	LPAREN: "(",
 	RPAREN: ")",
 	LBRACE: "{",
 	RBRACE: "}",
 
+	PERIOD:    ".",
 	SEMICOLON: ";",
 }
 
@@ -76,6 +92,9 @@ func (tokType TokenType) String() string {
 
 var keywords = map[string]TokenType{
 	"package": PACKAGE,
+	"import":  IMPORT,
+	"const":   CONST,
+	"var":     VAR,
 	"func":    FUNC,
 }
 
@@ -94,4 +113,12 @@ func (op TokenType) Precedence() int {
 		return 2
 	}
 	return 0
+}
+
+func (i Token) IntValue() int {
+	x, err := strconv.ParseInt(i.Literal, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return int(x)
 }
