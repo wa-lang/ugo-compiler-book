@@ -8,7 +8,7 @@ var (
 
 	_ Node = (*File)(nil)
 
-	_ Node = (*Package)(nil)
+	_ Node = (*PackageSpec)(nil)
 	_ Node = (*ImportSpec)(nil)
 
 	_ Stmt = (*ConstSpec)(nil)
@@ -33,9 +33,9 @@ func (p *File) Pos() token.Pos { return token.NoPos }
 func (p *File) End() token.Pos { return token.NoPos }
 func (p *File) node_type()     {}
 
-func (p *Package) Pos() token.Pos { return token.NoPos }
-func (p *Package) End() token.Pos { return token.NoPos }
-func (p *Package) node_type()     {}
+func (p *PackageSpec) Pos() token.Pos { return token.NoPos }
+func (p *PackageSpec) End() token.Pos { return token.NoPos }
+func (p *PackageSpec) node_type()     {}
 
 func (p *ImportSpec) Pos() token.Pos { return token.NoPos }
 func (p *ImportSpec) End() token.Pos { return token.NoPos }

@@ -11,12 +11,18 @@ type Node interface {
 	node_type()
 }
 
+// Package 表示一个包中全部的文件AST
+type Package struct {
+	Name  string           // 包名
+	Files map[string]*File // 文件名(不包含目录路径)
+}
+
 // File 表示 µGo 文件对应的语法树.
 type File struct {
 	Filename string // 文件名
 	Source   string // 源代码
 
-	Pkg     *Package      // 包信息
+	Pkg     *PackageSpec  // 包信息
 	Imports []*ImportSpec // 导入包信息
 	Consts  []*ConstSpec  // 常量信息
 	Globals []*VarSpec    // 全局变量
@@ -24,7 +30,7 @@ type File struct {
 }
 
 // 包信息
-type Package struct {
+type PackageSpec struct {
 	PkgPos  token.Pos // package 关键字位置
 	NamePos token.Pos // 包名位置
 	Name    string    // 包名
@@ -39,9 +45,10 @@ type ImportSpec struct {
 
 // 基础类型面值
 type BasicLit struct {
-	ValuePos token.Pos
-	Kind     token.TokenType
-	Value    string
+	ValuePos  token.Pos
+	ValueType token.TokenType
+	ValueLit  string
+	Value     interface{}
 }
 
 // 常量信息

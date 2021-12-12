@@ -54,11 +54,11 @@ LoopImport:
 	}
 }
 
-func (p *Parser) parsePackage() *ast.Package {
+func (p *Parser) parsePackage() *ast.PackageSpec {
 	tokPkg := p.MustAcceptToken(token.PACKAGE)
 	tokPkgIdent := p.MustAcceptToken(token.IDENT)
 
-	return &ast.Package{
+	return &ast.PackageSpec{
 		PkgPos:  tokPkg.Pos,
 		NamePos: tokPkgIdent.Pos,
 		Name:    tokPkgIdent.Literal,

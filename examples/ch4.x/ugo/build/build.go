@@ -13,8 +13,11 @@ import (
 	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/parser"
 	"github.com/chai2010/ugo/token"
+	"github.com/chai2010/ugo/types"
 	"github.com/chai2010/ugo/types/builtin"
 )
+
+var _ = types.Universe
 
 type Option struct {
 	Debug  bool

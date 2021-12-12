@@ -3,18 +3,11 @@ package types
 import (
 	"bytes"
 	"fmt"
-
-	"github.com/chai2010/ugo/ast"
 )
 
 type Scope struct {
 	Outer   *Scope
 	Objects map[string]*Object
-}
-
-type Object struct {
-	Name string
-	ast.Node
 }
 
 func NewScope(outer *Scope) *Scope {

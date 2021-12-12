@@ -27,9 +27,10 @@ func (p *Parser) parseImport() *ast.ImportSpec {
 	if pkgPath, ok := p.AcceptToken(token.STRING); ok {
 		path, _ := strconv.Unquote(pkgPath.Literal)
 		importSpec.Path = &ast.BasicLit{
-			ValuePos: pkgPath.Pos,
-			Kind:     token.STRING,
-			Value:    path,
+			ValuePos:  pkgPath.Pos,
+			ValueType: token.STRING,
+			ValueLit:  pkgPath.Literal,
+			Value:     path,
 		}
 	}
 
