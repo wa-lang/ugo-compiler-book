@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"strconv"
+
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/token"
 )
@@ -23,9 +25,11 @@ func (p *Parser) parseImport() *ast.ImportSpec {
 	}
 
 	if pkgPath, ok := p.AcceptToken(token.STRING); ok {
-		importSpec.Path = &ast.Ident{
-			NamePos: pkgPath.Pos,
-			Name:    pkgPath.Literal,
+		path, _ := strconv.Unquote(pkgPath.Literal)
+		importSpec.Path = &ast.BasicLit{
+			ValuePos: pkgPath.Pos,
+			Kind:     token.STRING,
+			Value:    path,
 		}
 	}
 

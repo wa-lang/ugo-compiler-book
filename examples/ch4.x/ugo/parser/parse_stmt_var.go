@@ -2,10 +2,13 @@ package parser
 
 import (
 	"github.com/chai2010/ugo/ast"
+	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
 func (p *Parser) parseStmt_var() *ast.VarSpec {
+	logger.Debugln(p.PeekToken())
+
 	tokVar := p.MustAcceptToken(token.VAR)
 	tokIdent := p.MustAcceptToken(token.IDENT)
 

@@ -4,10 +4,13 @@ import (
 	"strconv"
 
 	"github.com/chai2010/ugo/ast"
+	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
 func (p *Parser) parseExpr() ast.Expr {
+	logger.Debugln(p.PeekToken())
+
 	return p.parseExpr_binary(1)
 }
 
@@ -46,7 +49,11 @@ func (p *Parser) parseExpr_unary() ast.Expr {
 	return p.parseExpr_primary()
 }
 func (p *Parser) parseExpr_primary() ast.Expr {
+	logger.Debugln(p.PeekToken())
+
 	if _, ok := p.AcceptToken(token.LPAREN); ok {
+		logger.Debugln("22")
+
 		expr := p.parseExpr()
 		p.MustAcceptToken(token.RPAREN)
 		return expr
@@ -54,7 +61,32 @@ func (p *Parser) parseExpr_primary() ast.Expr {
 
 	switch tok := p.PeekToken(); tok.Type {
 	case token.IDENT: // call
-		return p.parseExpr_call()
+		p.ReadToken()
+		nextTok := p.PeekToken()
+		p.UnreadToken()
+
+		logger.Debugln("33")
+
+		switch nextTok.Type {
+		case token.LPAREN:
+			logger.Debugln("44")
+
+			return p.parseExpr_call()
+		case token.PERIOD:
+			logger.Debugln("55")
+
+			return p.parseExpr_selector()
+		default:
+			tokIdent := p.MustAcceptToken(token.IDENT)
+			_ = tokIdent
+			logger.Debugln("66")
+
+			return &ast.Ident{
+				NamePos: tok.Pos,
+				Name:    tok.Literal,
+			}
+		}
+
 	case token.NUMBER:
 		tokNumber := p.MustAcceptToken(token.NUMBER)
 		value, _ := strconv.Atoi(tokNumber.Literal)
@@ -83,5 +115,24 @@ func (p *Parser) parseExpr_call() *ast.CallExpr {
 		Lparen: tokLparen.Pos,
 		Args:   []ast.Expr{arg0},
 		Rparen: tokRparen.Pos,
+	}
+}
+
+func (p *Parser) parseExpr_selector() *ast.SelectorExpr {
+	logger.Debugln(p.PeekToken())
+
+	tokX := p.MustAcceptToken(token.IDENT)
+	_ = p.MustAcceptToken(token.PERIOD)
+	tokSel := p.MustAcceptToken(token.IDENT)
+
+	return &ast.SelectorExpr{
+		X: &ast.Ident{
+			NamePos: tokX.Pos,
+			Name:    tokX.Literal,
+		},
+		Sel: &ast.Ident{
+			NamePos: tokSel.Pos,
+			Name:    tokSel.Literal,
+		},
 	}
 }

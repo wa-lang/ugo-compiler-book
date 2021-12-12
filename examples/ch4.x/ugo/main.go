@@ -9,6 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/chai2010/ugo/build"
+	"github.com/chai2010/ugo/logger"
 )
 
 func main() {
@@ -22,6 +23,11 @@ func main() {
 		&cli.StringFlag{Name: "goarch", Usage: "set GOARCH", Value: runtime.GOARCH},
 		&cli.StringFlag{Name: "clang", Value: "", Usage: "set clang"},
 		&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Usage: "set debug mode"},
+	}
+
+	app.Before = func(c *cli.Context) error {
+		logger.DebugMode = c.Bool("debug")
+		return nil
 	}
 
 	app.Action = func(c *cli.Context) error {

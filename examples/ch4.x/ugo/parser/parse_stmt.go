@@ -20,11 +20,49 @@ Loop:
 		case token.SEMICOLON:
 			p.AcceptTokenList(token.SEMICOLON)
 
+		case token.LBRACE: // {}
+			block.List = append(block.List, p.parseStmt_block())
 		case token.RBRACE: // }
 			break Loop
 
+		case token.CONST:
+			block.List = append(block.List, p.parseStmt_const())
+		case token.VAR:
+			block.List = append(block.List, p.parseStmt_var())
+
 		default:
-			block.List = append(block.List, p.parseStmt_expr())
+			// exprList ;
+			// exprList := exprList;
+			// exprList = exprList;
+			expr := p.parseExpr()
+			switch tok := p.PeekToken(); tok.Type {
+			case token.SEMICOLON:
+				block.List = append(block.List, &ast.ExprStmt{
+					X: expr,
+				})
+			case token.DEFINE:
+				p.ReadToken()
+				exprValue := p.parseExpr()
+				block.List = append(block.List, &ast.AssignStmt{
+					Target: expr,
+					OpPos:  tok.Pos,
+					Op:     tok.Type,
+					Value:  exprValue,
+				})
+			case token.ASSIGN:
+				p.ReadToken()
+				exprValue := p.parseExpr()
+				block.List = append(block.List, &ast.AssignStmt{
+					Target: expr,
+					OpPos:  tok.Pos,
+					Op:     tok.Type,
+					Value:  exprValue,
+				})
+
+			default:
+				panic("aa")
+			}
+
 		}
 	}
 

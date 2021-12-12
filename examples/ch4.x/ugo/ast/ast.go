@@ -34,7 +34,14 @@ type Package struct {
 type ImportSpec struct {
 	ImportPos token.Pos
 	Name      *Ident
-	Path      *Ident
+	Path      *BasicLit
+}
+
+// 基础类型面值
+type BasicLit struct {
+	ValuePos token.Pos
+	Kind     token.TokenType
+	Value    string
 }
 
 // 常量信息
@@ -81,9 +88,10 @@ type ExprStmt struct {
 
 // AssignStmt 表示一个赋值语句节点.
 type AssignStmt struct {
-	Target Expr      // 要赋值的目标
-	TokPos token.Pos // ':=' 的位置
-	Value  Expr      // 值
+	Target Expr            // 要赋值的目标
+	OpPos  token.Pos       // ':=' 的位置
+	Op     token.TokenType // '=' or ':='
+	Value  Expr            // 值
 }
 
 // Expr 表示一个表达式节点。
@@ -131,4 +139,10 @@ type CallExpr struct {
 	Lparen   token.Pos // '(' 位置
 	Args     []Expr    // 调用参数列表
 	Rparen   token.Pos // ')' 位置
+}
+
+// SelectorExpr 表示 x.Name 属性选择表达式
+type SelectorExpr struct {
+	X   Expr
+	Sel *Ident
 }

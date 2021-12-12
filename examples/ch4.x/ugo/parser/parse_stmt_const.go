@@ -2,6 +2,7 @@ package parser
 
 import (
 	"github.com/chai2010/ugo/ast"
+	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
@@ -9,6 +10,8 @@ import (
 // const x int = 1+2
 
 func (p *Parser) parseStmt_const() *ast.ConstSpec {
+	logger.Debugln(p.PeekToken())
+
 	tokConst := p.MustAcceptToken(token.CONST)
 	tokIdent := p.MustAcceptToken(token.IDENT)
 
@@ -29,7 +32,7 @@ func (p *Parser) parseStmt_const() *ast.ConstSpec {
 	}
 
 	if _, ok := p.AcceptToken(token.ASSIGN); ok {
-		constSpec.Value = p.parseExpr_const()
+		constSpec.Value = p.parseExpr()
 	}
 
 	p.AcceptTokenList(token.SEMICOLON)

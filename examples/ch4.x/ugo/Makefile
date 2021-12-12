@@ -1,4 +1,4 @@
 default:
-	go run main.go run ./_examples/hello.ugo
+	go run main.go ast ./_examples/hello.ugo
 
 clean:
