@@ -1,16 +1,16 @@
 package main
 
-var count int
+var x int
 
 func main() {
-	var x int = 10
-	{
-		println(x)
-		var x = x + 1
-		println(x)
-	}
+	x = x + 1000
 	println(x)
 
-	count = x + 1000
-	println(count)
+	//var x int = x+1
+	//{
+	//	println(x)
+	//	var x = x + 1
+	//	println(x)
+	//}
+	//println(x)
 }

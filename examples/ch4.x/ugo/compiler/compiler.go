@@ -6,8 +6,9 @@ import (
 	"io"
 
 	"github.com/chai2010/ugo/ast"
+	"github.com/chai2010/ugo/builtin"
+	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
-	"github.com/chai2010/ugo/types/builtin"
 )
 
 type Compiler struct {
@@ -62,6 +63,9 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 
 func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 	switch stmt := stmt.(type) {
+	case *ast.AssignStmt:
+		// TODO
+
 	case *ast.BlockStmt:
 		for _, x := range stmt.List {
 			p.compileStmt(w, x)
@@ -70,7 +74,7 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 		p.compileExpr(w, stmt.X)
 
 	default:
-		panic("unreachable")
+		logger.Panicf("unknown: %[1]T, %[1]v", stmt)
 	}
 }
 

@@ -116,3 +116,15 @@ func Printf(format string, a ...interface{}) {
 	msg := fmt.Sprintf(format, a...)
 	fmt.Printf("%s:%d: %s", filename, line, msg)
 }
+
+func Panicln(a ...interface{}) {
+	_, filename, line := callerInfo(1)
+	msg := fmt.Sprintln(a...)
+	panic(fmt.Sprintf("%s:%d: %s", filename, line, msg))
+}
+
+func Panicf(format string, a ...interface{}) {
+	_, filename, line := callerInfo(1)
+	msg := fmt.Sprintf(format, a...)
+	panic(fmt.Sprintf("%s:%d: %s", filename, line, msg))
+}

@@ -42,7 +42,7 @@ Loop:
 				p.ReadToken()
 				exprValue := p.parseExpr()
 				block.List = append(block.List, &ast.AssignStmt{
-					Target: expr,
+					Target: expr.(*ast.Ident),
 					OpPos:  tok.Pos,
 					Op:     tok.Type,
 					Value:  exprValue,
