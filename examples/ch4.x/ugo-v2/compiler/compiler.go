@@ -13,6 +13,7 @@ import (
 
 type Compiler struct {
 	file   *ast.File
+	scope  *Scope
 	nextId int
 }
 
@@ -20,6 +21,8 @@ func (p *Compiler) Compile(file *ast.File) string {
 	var buf bytes.Buffer
 
 	p.file = file
+	p.scope = NewScope(Universe)
+
 	p.genHeader(&buf, file)
 	p.compileFile(&buf, file)
 	p.genMain(&buf, file)
