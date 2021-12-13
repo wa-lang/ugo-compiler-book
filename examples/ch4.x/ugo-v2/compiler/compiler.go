@@ -30,6 +30,14 @@ func (p *Compiler) Compile(file *ast.File) string {
 	return buf.String()
 }
 
+func (p *Compiler) enterScope() {
+	p.scope = NewScope(p.scope)
+}
+
+func (p *Compiler) leaveScope() {
+	p.scope = p.scope.Outer
+}
+
 func (p *Compiler) genHeader(w io.Writer, file *ast.File) {
 	fmt.Fprintf(w, "; package %s\n", file.Pkg.Name)
 	fmt.Fprintln(w, builtin.Header)
@@ -74,7 +82,24 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 
 func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 	switch stmt := stmt.(type) {
+	case *ast.VarSpec:
+		var llName string
+		if p.scope.Outer == nil || p.scope.Outer == Universe {
+			llName = fmt.Sprintf("@ugo_%s_%s", p.file.Pkg.Name, stmt.Name.Name)
+		} else {
+			llName = fmt.Sprintf("@ugo_%s_%s_pos%d", p.file.Pkg.Name, stmt.Name.Name, stmt.VarPos)
+		}
+		p.scope.Insert(&Object{
+			Name:   stmt.Name.Name,
+			LLName: llName,
+			Node:   stmt,
+		})
+
+	// case *ast.Ident:
+	// TODO: p.scope.Lookup(name)
+
 	case *ast.AssignStmt:
+		// TODO: target: p.scope.Lookup(name)
 		localName := p.compileExpr(w, stmt.Value)
 		fmt.Fprintf(
 			w, "\tstore i32 %s, i32* @ugo_%s_%s\n",
@@ -82,6 +107,9 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 		)
 
 	case *ast.BlockStmt:
+		p.enterScope()
+		defer p.leaveScope()
+
 		for _, x := range stmt.List {
 			p.compileStmt(w, x)
 		}

@@ -13,7 +13,8 @@ type Scope struct {
 }
 
 type Object struct {
-	Name string
+	Name   string
+	LLName string
 	ast.Node
 }
 
