@@ -79,6 +79,13 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 		return
 	}
 
+	var llName = fmt.Sprintf("@ugo_%s_%s", file.Pkg.Name, fn.Name)
+	p.scope.Insert(&Object{
+		Name:   fn.Name,
+		LLName: llName,
+		Node:   fn,
+	})
+
 	p.enterScope()
 	defer p.leaveScope()
 
