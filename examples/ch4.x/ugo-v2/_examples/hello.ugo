@@ -3,15 +3,14 @@ package main
 var x int
 
 func main() {
-	x = 1
-	x = x + 100
+	x = x + 1
 	println(x)
 
-	//var x int = x+1
-	//{
-	//	println(x)
-	//	var x = x + 1
-	//	println(x)
-	//}
-	//println(x)
+	var x int = x + 10
+	{
+		println(x)
+		var x = x + 100
+		println(x)
+	}
+	println(x)
 }

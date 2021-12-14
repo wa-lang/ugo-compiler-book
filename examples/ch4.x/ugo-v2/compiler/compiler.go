@@ -57,7 +57,13 @@ func (p *Compiler) genMain(w io.Writer, file *ast.File) {
 
 func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
 	for _, g := range file.Globals {
-		fmt.Fprintf(w, "@ugo_%s_%s = global i32 0\n", file.Pkg.Name, g.Name.Name)
+		var llName = fmt.Sprintf("@ugo_%s_%s", file.Pkg.Name, g.Name.Name)
+		p.scope.Insert(&Object{
+			Name:   g.Name.Name,
+			LLName: llName,
+			Node:   g,
+		})
+		fmt.Fprintf(w, "%s = global i32 0\n", llName)
 	}
 	if len(file.Globals) != 0 {
 		fmt.Fprintln(w)
@@ -73,6 +79,9 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 		return
 	}
 
+	p.enterScope()
+	defer p.leaveScope()
+
 	fmt.Fprintf(w, "define i32 @ugo_%s_%s() {\n", file.Pkg.Name, fn.Name)
 	p.compileStmt(w, fn.Body)
 
@@ -83,27 +92,38 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 	switch stmt := stmt.(type) {
 	case *ast.VarSpec:
-		var llName string
-		if p.scope.Outer == nil || p.scope.Outer == Universe {
-			llName = fmt.Sprintf("@ugo_%s_%s", p.file.Pkg.Name, stmt.Name.Name)
-		} else {
-			llName = fmt.Sprintf("@ugo_%s_%s_pos%d", p.file.Pkg.Name, stmt.Name.Name, stmt.VarPos)
+		var localName = "0"
+		if stmt.Value != nil {
+			localName = p.compileExpr(w, stmt.Value)
 		}
+
+		var llName = fmt.Sprintf("%%local_%s.pos.%d", stmt.Name.Name, stmt.VarPos)
 		p.scope.Insert(&Object{
 			Name:   stmt.Name.Name,
 			LLName: llName,
 			Node:   stmt,
 		})
 
-	// case *ast.Ident:
-	// TODO: p.scope.Lookup(name)
+		fmt.Fprintf(w, "\t%s = alloca i32, align 4\n", llName)
+		fmt.Fprintf(
+			w, "\tstore i32 %s, i32* %s\n",
+			localName, llName,
+		)
 
 	case *ast.AssignStmt:
-		// TODO: target: p.scope.Lookup(name)
+		var varName string
+		if obj := p.scope.Lookup(stmt.Target.Name); obj != nil {
+			varName = obj.LLName
+		} else if _, obj := p.scope.LookupParent(stmt.Target.Name); obj != nil {
+			varName = obj.LLName
+		} else {
+			logger.Panicf("var %s undefined", stmt.Target.Name)
+		}
+
 		localName := p.compileExpr(w, stmt.Value)
 		fmt.Fprintf(
-			w, "\tstore i32 %s, i32* @ugo_%s_%s\n",
-			localName, p.file.Pkg.Name, stmt.Target.Name,
+			w, "\tstore i32 %s, i32* %s\n",
+			localName, varName,
 		)
 
 	case *ast.BlockStmt:
@@ -124,9 +144,18 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 	switch expr := expr.(type) {
 	case *ast.Ident:
+		var varName string
+		if obj := p.scope.Lookup(expr.Name); obj != nil {
+			varName = obj.LLName
+		} else if _, obj := p.scope.LookupParent(expr.Name); obj != nil {
+			varName = obj.LLName
+		} else {
+			logger.Panicf("var %s undefined", expr.Name)
+		}
+
 		localName = p.genId()
-		fmt.Fprintf(w, "\t%s = load i32, i32* @ugo_%s_%s, align 4\n",
-			localName, p.file.Pkg.Name, expr.Name,
+		fmt.Fprintf(w, "\t%s = load i32, i32* %s, align 4\n",
+			localName, varName,
 		)
 		return localName
 	case *ast.Number:
