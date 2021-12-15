@@ -20,7 +20,7 @@
   - [打印AST语法树](./ch3-hello-ugo/ch3-05.md)
   - [命令行界面](./ch3-hello-ugo/ch3-06.md)
 - [变量和作用域](./ch4-block-and-var/readme.md)
-  - [赋值和词法域例子](./ch4-block-and-var/ch4-01.md)
+  - [完善token包](./ch4-block-and-var/ch4-01.md)
   - [完善AST和解析器](./ch4-block-and-var/ch4-02.md)
   - [Scope处理符号表](./ch4-block-and-var/ch4-03.md)
   - [完善LLIR输出](./ch4-block-and-var/ch4-04.md)

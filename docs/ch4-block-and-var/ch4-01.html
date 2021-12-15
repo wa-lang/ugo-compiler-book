@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>赋值和词法域例子 - µGo语言实现</title>
+        <title>完善token包 - µGo语言实现</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="如何从头开发一个迷你Go语言编译器">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../book.html">µGo语言实现</a></li><li class="chapter-item expanded affix "><a href="../preface.html">前言</a></li><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-parser-v2.html"><strong aria-hidden="true">2.4.</strong> 重构解析器</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/index.html"><strong aria-hidden="true">3.</strong> 最小µGo程序</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-01.html"><strong aria-hidden="true">3.1.</strong> AST视角的µGo程序</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-02.html"><strong aria-hidden="true">3.2.</strong> AST到LLVM汇编</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 完善词法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-04.html"><strong aria-hidden="true">3.4.</strong> 完善语法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-05.html"><strong aria-hidden="true">3.5.</strong> 打印AST语法树</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-06.html"><strong aria-hidden="true">3.6.</strong> 命令行界面</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/index.html"><strong aria-hidden="true">4.</strong> 变量和作用域</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-01.html" class="active"><strong aria-hidden="true">4.1.</strong> 赋值和词法域例子</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-02.html"><strong aria-hidden="true">4.2.</strong> 完善AST和解析器</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-03.html"><strong aria-hidden="true">4.3.</strong> Scope处理符号表</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-04.html"><strong aria-hidden="true">4.4.</strong> 完善LLIR输出</a></li></ol></li><li class="chapter-item expanded "><a href="../ch5-if-for/index.html"><strong aria-hidden="true">5.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch6-func/index.html"><strong aria-hidden="true">6.</strong> 函数和递归</a></li><li class="chapter-item expanded "><a href="../ch7-pkgs-files/index.html"><strong aria-hidden="true">7.</strong> 多文件和多包支持</a></li><li class="chapter-item expanded "><a href="../ch8-string/index.html"><strong aria-hidden="true">8.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch9-array/index.html"><strong aria-hidden="true">9.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch10-map/index.html"><strong aria-hidden="true">10.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch11-struct/index.html"><strong aria-hidden="true">11.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch12-method/index.html"><strong aria-hidden="true">12.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch13-closure/index.html"><strong aria-hidden="true">13.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch14-interface/index.html"><strong aria-hidden="true">14.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch15-panic/index.html"><strong aria-hidden="true">15.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch16-reflect/index.html"><strong aria-hidden="true">16.</strong> 反射</a></li><li class="chapter-item expanded "><a href="../ch17-cgo/index.html"><strong aria-hidden="true">17.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch18-wasm/index.html"><strong aria-hidden="true">18.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch19-type-system/index.html"><strong aria-hidden="true">19.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch20-bootstrap/index.html"><strong aria-hidden="true">20.</strong> 自举</a></li><li class="chapter-item expanded "><a href="../ch21-lsp/index.html"><strong aria-hidden="true">21.</strong> LSP服务</a></li><li class="chapter-item expanded "><a href="../appendix/index.html"><strong aria-hidden="true">22.</strong> 附录</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../book.html">µGo语言实现</a></li><li class="chapter-item expanded affix "><a href="../preface.html">前言</a></li><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-parser-v2.html"><strong aria-hidden="true">2.4.</strong> 重构解析器</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/index.html"><strong aria-hidden="true">3.</strong> 最小µGo程序</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-01.html"><strong aria-hidden="true">3.1.</strong> AST视角的µGo程序</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-02.html"><strong aria-hidden="true">3.2.</strong> AST到LLVM汇编</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 完善词法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-04.html"><strong aria-hidden="true">3.4.</strong> 完善语法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-05.html"><strong aria-hidden="true">3.5.</strong> 打印AST语法树</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-06.html"><strong aria-hidden="true">3.6.</strong> 命令行界面</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/index.html"><strong aria-hidden="true">4.</strong> 变量和作用域</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-01.html" class="active"><strong aria-hidden="true">4.1.</strong> 完善token包</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-02.html"><strong aria-hidden="true">4.2.</strong> 完善AST和解析器</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-03.html"><strong aria-hidden="true">4.3.</strong> Scope处理符号表</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-04.html"><strong aria-hidden="true">4.4.</strong> 完善LLIR输出</a></li></ol></li><li class="chapter-item expanded "><a href="../ch5-if-for/index.html"><strong aria-hidden="true">5.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch6-func/index.html"><strong aria-hidden="true">6.</strong> 函数和递归</a></li><li class="chapter-item expanded "><a href="../ch7-pkgs-files/index.html"><strong aria-hidden="true">7.</strong> 多文件和多包支持</a></li><li class="chapter-item expanded "><a href="../ch8-string/index.html"><strong aria-hidden="true">8.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch9-array/index.html"><strong aria-hidden="true">9.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch10-map/index.html"><strong aria-hidden="true">10.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch11-struct/index.html"><strong aria-hidden="true">11.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch12-method/index.html"><strong aria-hidden="true">12.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch13-closure/index.html"><strong aria-hidden="true">13.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch14-interface/index.html"><strong aria-hidden="true">14.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch15-panic/index.html"><strong aria-hidden="true">15.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch16-reflect/index.html"><strong aria-hidden="true">16.</strong> 反射</a></li><li class="chapter-item expanded "><a href="../ch17-cgo/index.html"><strong aria-hidden="true">17.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch18-wasm/index.html"><strong aria-hidden="true">18.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch19-type-system/index.html"><strong aria-hidden="true">19.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch20-bootstrap/index.html"><strong aria-hidden="true">20.</strong> 自举</a></li><li class="chapter-item expanded "><a href="../ch21-lsp/index.html"><strong aria-hidden="true">21.</strong> LSP服务</a></li><li class="chapter-item expanded "><a href="../appendix/index.html"><strong aria-hidden="true">22.</strong> 附录</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -140,31 +140,73 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="41-赋值和词法域例子"><a class="header" href="#41-赋值和词法域例子">4.1 赋值和词法域例子</a></h1>
-<p>赋值涉及变量的定义和赋值，词法域则对应嵌套的大括弧。本章我们尝试支持以下代码的编译：</p>
+                        <h1 id="41-完善token包"><a class="header" href="#41-完善token包">4.1 完善token包</a></h1>
+<p>在开始改造编译器之前，我们先深刻理解本章新出现语法的细节。</p>
+<h2 id="411-变量定义"><a class="header" href="#411-变量定义">4.1.1 变量定义</a></h2>
+<p>为了简化问题，我们目前只支持以下几种形式的变量定义：</p>
+<pre><code class="language-go">var x1 int
+var x2 int = 134
+var x3 = 456
+</code></pre>
+<p>其中x1只有类型，没有初始化值，初始为0值。x2指定类型并通过一个表达式初始化。x3则忽略类型，只有一个初始化表达式。每个var只能定义一个变量。目前假设变量全部都是int类型，底层为32bit的整数。因为涉及全局变量的初始化，最终需要隐式产生一个init函数用于全局变量的初始化工作。</p>
+<h2 id="412-嵌套作用域"><a class="header" href="#412-嵌套作用域">4.1.2 嵌套作用域</a></h2>
+<p>遍历支持嵌套作用域，内层同名的变量自动屏蔽外层的变量：</p>
 <pre><code class="language-go">package main
 
+var x int
+
 func main() {
-	var x int
-	var y int = 123
+	x = x + 1
 
-	x = 1 + 2 + 3
-	println(x+100)
-
-	x = x + 10
-	println(x+100)
-
+	var x int = x + 10
 	{
-		y := y + 1
-		println(y)
+		println(x)
+		var x = x + 100
+		println(x)
 	}
-	println(y)
-
-	var z = 456
-	println(z)
+	println(x)
 }
 </code></pre>
-<p>main函数首先第一x、y、z三个局部变量，然后以不同的形式初始化。然后通过修改x变量的值并输出查看其状态变化。其中嵌套的大括弧在内层词法域定义了一个同名的y变量，修改内部y后分别输出内部y和外部同名的y查看其状态。</p>
+<p>其中<code>x = x + 1</code>是对main包的x变量加一。<code>var x int = x + 10</code>则是在main函数内重新定义一个局部变量，并用外层的包级的x变量进行初始化。最后一个<code>var x = x + 100</code>是在内层定义一个同名的x变量，并用main函数之前定义x变量进行初始化。</p>
+<h2 id="413-定义新的token类型"><a class="header" href="#413-定义新的token类型">4.1.3 定义新的Token类型</a></h2>
+<p>本章的例子只新增加了<code>var</code>关键字和<code>=</code>赋值操作符。token包增加以下定义：</p>
+<pre><code class="language-go">package token
+
+// 记号类型
+type TokenType int
+
+// ch3中 µGo程序用到的记号类型
+const (
+	EOF TokenType = iota // = 0
+
+	...
+	VAR    // var
+	ASSIGN // =
+	...
+)
+</code></pre>
+<p>同时需要将VAR注册为关键字类型，便于配合<code>token.Lookup</code>函数工作。</p>
+<h2 id="414-完善token方法"><a class="header" href="#414-完善token方法">4.1.4 完善Token方法</a></h2>
+<p>token.Token表示一个记号的纸：</p>
+<pre><code class="language-go">type Token struct {
+	Pos     Pos       // 记号所在的位置(从1开始)
+	Type    TokenType // 记号的类型
+	Literal string    // 程序中原始的字符串
+}
+</code></pre>
+<p>主要是Token出现的位置、Token类型和对应的面值字符串。</p>
+<p>对于整数类型的Token，我们还需要将其面值字符串解析为整数值。因此为其定义一个IntValue方法：</p>
+<pre><code class="language-go">func (i Token) IntValue() int {
+	x, err := strconv.ParseInt(i.Literal, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return int(x)
+}
+</code></pre>
+<p>如果后面要支持float和string类型时，我们也可以增加对应的辅助方法。</p>
+<h2 id="415-完善lex包"><a class="header" href="#415-完善lex包">4.1.5 完善lex包</a></h2>
+<p>两个记号的词法解析比较简单，这里就展开了。</p>
 
                     </main>
 
