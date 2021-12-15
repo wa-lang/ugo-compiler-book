@@ -1,7 +1,14 @@
 package compiler
 
-var Universe *Scope
+var Universe *Scope = NewScope(nil)
+
+var builtinObjects = []*Object{
+	{Name: "println", LLName: "@ugo_builtin_println"},
+	{Name: "exit", LLName: "@ugo_builtin_exit"},
+}
 
 func init() {
-	Universe = NewScope(nil)
+	for _, obj := range builtinObjects {
+		Universe.Insert(obj)
+	}
 }

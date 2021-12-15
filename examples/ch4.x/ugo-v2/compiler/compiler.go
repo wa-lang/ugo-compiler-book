@@ -207,12 +207,21 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 	case *ast.ParenExpr:
 		return p.compileExpr(w, expr.X)
 	case *ast.CallExpr:
-		// call i32(i32) @ugo_builtin_exit(i32 %t2)
+		var fnName string
+		if obj := p.scope.Lookup(expr.FuncName.Name); obj != nil {
+			fnName = obj.LLName
+		} else if _, obj := p.scope.LookupParent(expr.FuncName.Name); obj != nil {
+			fnName = obj.LLName
+		} else {
+			logger.Panicf("func %s undefined", expr.FuncName.Name)
+		}
+
 		localName = p.genId()
-		fmt.Fprintf(w, "\t%s = call i32(i32) @ugo_builtin_%s(i32 %v)\n",
-			localName, expr.FuncName.Name, p.compileExpr(w, expr.Args[0]),
+		fmt.Fprintf(w, "\t%s = call i32(i32) %s(i32 %v)\n",
+			localName, fnName, p.compileExpr(w, expr.Args[0]),
 		)
 		return localName
+
 	default:
 		logger.Panicf("unknown: %[1]T, %[1]v", expr)
 	}
