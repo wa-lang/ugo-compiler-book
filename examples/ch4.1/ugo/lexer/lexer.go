@@ -148,6 +148,9 @@ func (p *Lexer) run() (tokens []token.Token) {
 				}
 			}
 
+		case r == '=': // =, ==
+			p.emit(token.ASSIGN)
+
 		case r == '(':
 			p.emit(token.LPAREN)
 		case r == '{':
