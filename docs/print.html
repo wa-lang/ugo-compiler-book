@@ -2835,7 +2835,34 @@ const (
 </code></pre>
 <p>如果后面要支持float和string类型时，我们也可以增加对应的辅助方法。</p>
 <h2 id="415-完善lex包"><a class="header" href="#415-完善lex包">4.1.5 完善lex包</a></h2>
-<p>两个记号的词法解析比较简单，这里就展开了。</p>
+<p>两个记号的词法解析比较简单。补全词法解析后，解析以下代码：</p>
+<pre><code class="language-go">package main
+
+func main() {
+	var x = 1 + 2
+}
+</code></pre>
+<p>输出结果如下：</p>
+<pre><code class="language-shell">$ go run main.go -debug=false lex ./_examples/hello.ugo
+00: package     : &quot;package&quot;            // ./_examples/hello.ugo:1:1
+01: IDENT       : &quot;main&quot;               // ./_examples/hello.ugo:1:9
+02: ;           : &quot;&quot;                   // ./_examples/hello.ugo:2:1
+03: func        : &quot;func&quot;               // ./_examples/hello.ugo:3:1
+04: IDENT       : &quot;main&quot;               // ./_examples/hello.ugo:3:6
+05: (           : &quot;(&quot;                  // ./_examples/hello.ugo:3:10
+06: )           : &quot;)&quot;                  // ./_examples/hello.ugo:3:11
+07: {           : &quot;{&quot;                  // ./_examples/hello.ugo:3:13
+08: var         : &quot;var&quot;                // ./_examples/hello.ugo:4:2
+09: IDENT       : &quot;x&quot;                  // ./_examples/hello.ugo:4:6
+10: =           : &quot;=&quot;                  // ./_examples/hello.ugo:4:8
+11: NUMBER      : &quot;1&quot;                  // ./_examples/hello.ugo:4:10
+12: +           : &quot;+&quot;                  // ./_examples/hello.ugo:4:12
+13: NUMBER      : &quot;2&quot;                  // ./_examples/hello.ugo:4:14
+14: ;           : &quot;&quot;                   // ./_examples/hello.ugo:5:1
+15: }           : &quot;}&quot;                  // ./_examples/hello.ugo:5:1
+16: EOF         : &quot;&quot;                   // ./_examples/hello.ugo:6:1
+</code></pre>
+<p>其中<code>var</code>和<code>=</code>已经成功解析。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="42-完善ast和解析器"><a class="header" href="#42-完善ast和解析器">4.2 完善AST和解析器</a></h1>
 <p>Token类型和词法解析的准备工作都就绪了，本节我们将继续完善AST结点定义和语法树的解析工作。</p>
 <h2 id="421-完善ast结点"><a class="header" href="#421-完善ast结点">4.2.1 完善AST结点</a></h2>
