@@ -3187,11 +3187,56 @@ func main() {
 <p>有了AST之后，我们就可以考虑如何将变量转化为汇编代码了。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="43-scope处理符号表"><a class="header" href="#43-scope处理符号表">4.3 Scope处理符号表</a></h1>
 <p>基于新的AST语法树翻译到LLVM-IR需要处理嵌套的词法域问题。本节尝试通过Scope实现对嵌套的词法域支持。</p>
-<h2 id="431-buitin词法域"><a class="header" href="#431-buitin词法域">4.3.1 buitin词法域</a></h2>
-<p>TODO</p>
-<h2 id="432-文件级词法域"><a class="header" href="#432-文件级词法域">4.3.2 文件级词法域</a></h2>
-<p>TODO</p>
-<h2 id="433-局部嵌套词法域"><a class="header" href="#433-局部嵌套词法域">4.3.3 局部嵌套词法域</a></h2>
+<h2 id="431-词法域等例子"><a class="header" href="#431-词法域等例子">4.3.1 词法域等例子</a></h2>
+<p>在不同的词法域空间，同一个名字表示不同的对象。比如：</p>
+<pre><code class="language-go">package main
+
+var x int
+
+func main() {
+	var x = x + 1
+}
+</code></pre>
+<p>有2个变量名字都是x，最外层的x是包级变量，main函数中新定义1个x局部变量。但是main函数内x变量初始化时，右侧的表达式中的x表示的是外层的包变量x。再向外层还有一个builtin词法域空间。词法域表示基于当前上下文环境检索名字的规则，以及配套的名字符号表。</p>
+<h2 id="432-定义词法域"><a class="header" href="#432-定义词法域">4.3.2 定义词法域</a></h2>
+<p>词法域属于语义解析，目前只有compiler包产生LLVM汇编代码时需要。因此在compiler包定义Scope管理词法域：</p>
+<pre><code class="language-go">package compiler
+
+import &quot;github.com/chai2010/ugo/ast&quot;
+
+type Scope struct {
+	Outer   *Scope
+	Objects map[string]*Object
+}
+
+type Object struct {
+	Name   string
+	LLName string
+	ast.Node
+}
+
+func NewScope(outer *Scope) *Scope {
+	return &amp;Scope{outer, make(map[string]*Object)}
+}
+</code></pre>
+<p>Scope内的Outer指向外层的Scope，比如main函数的外层Scope是文件，文件的外层是builtin（目前为了简化忽略了Package级别的Scope）。</p>
+<p>Object表示一个命名对象，其中Name是实体在uGo代码中词法域的名字，LLName是映射到LLVM汇编语言的名字。其中还有指向的AST节点，可以用于识别更多的信息。</p>
+<p>builtin的Scope对应最外层的宇宙空间：</p>
+<pre><code class="language-go">var Universe *Scope = NewScope(nil)
+
+var builtinObjects = []*Object{
+	{Name: &quot;println&quot;, LLName: &quot;@ugo_builtin_println&quot;},
+	{Name: &quot;exit&quot;, LLName: &quot;@ugo_builtin_exit&quot;},
+}
+
+func init() {
+	for _, obj := range builtinObjects {
+		Universe.Insert(obj)
+	}
+}
+</code></pre>
+<p>Universe是一个包级别的变量，Universe之外就没有词法域了。我们在包初始化时，向Universe注入了内置的println和exit函数信息。</p>
+<h2 id="433-scope在编译器中的作用"><a class="header" href="#433-scope在编译器中的作用">4.3.3 Scope在编译器中的作用</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="44-完善llir输出"><a class="header" href="#44-完善llir输出">4.4 完善LLIR输出</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="5-if分支和for循环"><a class="header" href="#5-if分支和for循环">5. if分支和for循环</a></h1>
