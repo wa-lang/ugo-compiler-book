@@ -175,6 +175,18 @@ type VarSpec struct {
 </code></pre>
 <p>为了好区分，我们将Package类型改名为PackageSpec类型。Globals表示全局变量列表。Funcs依然是函数列表。</p>
 <h2 id="422-完善嵌套的块语句解析"><a class="header" href="#422-完善嵌套的块语句解析">4.2.2 完善嵌套的块语句解析</a></h2>
+<p>在第3章的例子中我们已经可以实现多个语句的解析，但是还不支持嵌套块语句的解析。比如以下的代码：</p>
+<pre><code class="language-go">func main() {
+	println(1)
+	{
+		println(1000 + 123)
+	}
+	println(40 + 2)
+}
+</code></pre>
+<p>在解析内层的块语句时会出现<code>unknown tok: type={, lit=&quot;{&quot;</code>错误。</p>
+<p>TODO</p>
+<h2 id="423-变量定义解析"><a class="header" href="#423-变量定义解析">4.2.3 变量定义解析</a></h2>
 <p>TODO</p>
 
                     </main>

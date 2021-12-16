@@ -2871,8 +2871,27 @@ type VarSpec struct {
 </code></pre>
 <p>为了好区分，我们将Package类型改名为PackageSpec类型。Globals表示全局变量列表。Funcs依然是函数列表。</p>
 <h2 id="422-完善嵌套的块语句解析"><a class="header" href="#422-完善嵌套的块语句解析">4.2.2 完善嵌套的块语句解析</a></h2>
+<p>在第3章的例子中我们已经可以实现多个语句的解析，但是还不支持嵌套块语句的解析。比如以下的代码：</p>
+<pre><code class="language-go">func main() {
+	println(1)
+	{
+		println(1000 + 123)
+	}
+	println(40 + 2)
+}
+</code></pre>
+<p>在解析内层的块语句时会出现<code>unknown tok: type={, lit=&quot;{&quot;</code>错误。</p>
+<p>TODO</p>
+<h2 id="423-变量定义解析"><a class="header" href="#423-变量定义解析">4.2.3 变量定义解析</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="43-scope处理符号表"><a class="header" href="#43-scope处理符号表">4.3 Scope处理符号表</a></h1>
+<p>基于新的AST语法树翻译到LLVM-IR需要处理嵌套的词法域问题。本节尝试通过Scope实现对嵌套的词法域支持。</p>
+<h2 id="431-buitin词法域"><a class="header" href="#431-buitin词法域">4.3.1 buitin词法域</a></h2>
+<p>TODO</p>
+<h2 id="432-文件级词法域"><a class="header" href="#432-文件级词法域">4.3.2 文件级词法域</a></h2>
+<p>TODO</p>
+<h2 id="433-局部嵌套词法域"><a class="header" href="#433-局部嵌套词法域">4.3.3 局部嵌套词法域</a></h2>
+<p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="44-完善llir输出"><a class="header" href="#44-完善llir输出">4.4 完善LLIR输出</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="5-if分支和for循环"><a class="header" href="#5-if分支和for循环">5. if分支和for循环</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="6-函数和递归"><a class="header" href="#6-函数和递归">6. 函数和递归</a></h1>
