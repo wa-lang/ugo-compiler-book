@@ -54,7 +54,21 @@ func (p *Parser) parseExpr_primary() ast.Expr {
 
 	switch tok := p.PeekToken(); tok.Type {
 	case token.IDENT: // call
-		return p.parseExpr_call()
+		p.ReadToken()
+		nextTok := p.PeekToken()
+		p.UnreadToken()
+
+		switch nextTok.Type {
+		case token.LPAREN:
+			return p.parseExpr_call()
+		default:
+			p.MustAcceptToken(token.IDENT)
+			return &ast.Ident{
+				NamePos: tok.Pos,
+				Name:    tok.Literal,
+			}
+		}
+
 	case token.NUMBER:
 		tokNumber := p.MustAcceptToken(token.NUMBER)
 		value, _ := strconv.Atoi(tokNumber.Literal)

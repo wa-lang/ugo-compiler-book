@@ -23,6 +23,8 @@ func (p *Parser) parseFile() {
 		case token.SEMICOLON:
 			p.AcceptTokenList(token.SEMICOLON)
 
+		case token.VAR:
+			p.file.Globals = append(p.file.Globals, p.parseStmt_var())
 		case token.FUNC:
 			p.file.Funcs = append(p.file.Funcs, p.parseFunc())
 
@@ -32,11 +34,11 @@ func (p *Parser) parseFile() {
 	}
 }
 
-func (p *Parser) parsePackage() *ast.Package {
+func (p *Parser) parsePackage() *ast.PackageSpec {
 	tokPkg := p.MustAcceptToken(token.PACKAGE)
 	tokPkgIdent := p.MustAcceptToken(token.IDENT)
 
-	return &ast.Package{
+	return &ast.PackageSpec{
 		PkgPos:  tokPkg.Pos,
 		NamePos: tokPkgIdent.Pos,
 		Name:    tokPkgIdent.Literal,

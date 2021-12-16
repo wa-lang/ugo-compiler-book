@@ -8,6 +8,8 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
+var DebugMode = false
+
 func ParseFile(filename, src string) (*ast.File, error) {
 	p := NewParser(filename, src)
 	return p.ParseFile()
@@ -28,8 +30,10 @@ func NewParser(filename, src string) *Parser {
 
 func (p *Parser) ParseFile() (file *ast.File, err error) {
 	defer func() {
-		if r := recover(); r != p.err {
-			panic(r)
+		if !DebugMode {
+			if r := recover(); r != p.err {
+				panic(r)
+			}
 		}
 		file, err = p.file, p.err
 	}()

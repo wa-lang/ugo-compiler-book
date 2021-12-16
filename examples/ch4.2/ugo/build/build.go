@@ -50,6 +50,8 @@ func NewContext(opt *Option) *Context {
 	if p.opt.GOARCH == "" {
 		p.opt.GOARCH = runtime.GOARCH
 	}
+
+	parser.DebugMode = p.opt.Debug
 	return p
 }
 

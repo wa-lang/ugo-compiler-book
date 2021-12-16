@@ -16,15 +16,24 @@ type File struct {
 	Filename string // 文件名
 	Source   string // 源代码
 
-	Pkg   *Package // 包信息
-	Funcs []*Func  // 函数列表
+	Pkg     *PackageSpec // 包信息
+	Globals []*VarSpec   // 全局变量
+	Funcs   []*Func      // 函数列表
 }
 
 // 包信息
-type Package struct {
+type PackageSpec struct {
 	PkgPos  token.Pos // package 关键字位置
 	NamePos token.Pos // 包名位置
 	Name    string    // 包名
+}
+
+// 变量信息
+type VarSpec struct {
+	VarPos token.Pos // var 关键字位置
+	Name   *Ident    // 变量名字
+	Type   *Ident    // 变量类型, 可省略
+	Value  Expr      // 变量表达式
 }
 
 // 函数信息
@@ -51,6 +60,14 @@ type Stmt interface {
 // 表达式语句
 type ExprStmt struct {
 	X Expr
+}
+
+// AssignStmt 表示一个赋值语句节点.
+type AssignStmt struct {
+	Target *Ident          // 要赋值的目标
+	OpPos  token.Pos       // ':=' 的位置
+	Op     token.TokenType // '=' or ':='
+	Value  Expr            // 值
 }
 
 // Expr 表示一个表达式节点。
