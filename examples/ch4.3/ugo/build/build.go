@@ -92,7 +92,7 @@ func (p *Context) ASM(filename string, src interface{}) (ll string, err error) {
 		return "", err
 	}
 
-	ll = new(compiler.Compiler).Compile(f)
+	ll = compiler.NewCompiler().Compile(f)
 	return ll, nil
 }
 
@@ -126,7 +126,7 @@ func (p *Context) build(filename string, src interface{}, outfile, goos, goarch 
 		return nil, err
 	}
 
-	ll := new(compiler.Compiler).Compile(f)
+	ll := compiler.NewCompiler().Compile(f)
 	err = os.WriteFile(_a_out_ll, []byte(ll), 0666)
 	if err != nil {
 		return nil, err

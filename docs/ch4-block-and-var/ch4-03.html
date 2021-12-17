@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Scope处理符号表 - µGo语言实现</title>
+        <title>完善LLIR输出 - µGo语言实现</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="如何从头开发一个迷你Go语言编译器">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../book.html">µGo语言实现</a></li><li class="chapter-item expanded affix "><a href="../preface.html">前言</a></li><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-parser-v2.html"><strong aria-hidden="true">2.4.</strong> 重构解析器</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/index.html"><strong aria-hidden="true">3.</strong> 最小µGo程序</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-01.html"><strong aria-hidden="true">3.1.</strong> AST视角的µGo程序</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-02.html"><strong aria-hidden="true">3.2.</strong> AST到LLVM汇编</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 完善词法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-04.html"><strong aria-hidden="true">3.4.</strong> 完善语法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-05.html"><strong aria-hidden="true">3.5.</strong> 打印AST语法树</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-06.html"><strong aria-hidden="true">3.6.</strong> 命令行界面</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/index.html"><strong aria-hidden="true">4.</strong> 变量和作用域</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-01.html"><strong aria-hidden="true">4.1.</strong> 完善token包</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-02.html"><strong aria-hidden="true">4.2.</strong> 完善AST和解析器</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-03.html" class="active"><strong aria-hidden="true">4.3.</strong> Scope处理符号表</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-04.html"><strong aria-hidden="true">4.4.</strong> 完善LLIR输出</a></li></ol></li><li class="chapter-item expanded "><a href="../ch5-if-for/index.html"><strong aria-hidden="true">5.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch6-func/index.html"><strong aria-hidden="true">6.</strong> 函数和递归</a></li><li class="chapter-item expanded "><a href="../ch7-pkgs-files/index.html"><strong aria-hidden="true">7.</strong> 多文件和多包支持</a></li><li class="chapter-item expanded "><a href="../ch8-string/index.html"><strong aria-hidden="true">8.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch9-array/index.html"><strong aria-hidden="true">9.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch10-map/index.html"><strong aria-hidden="true">10.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch11-struct/index.html"><strong aria-hidden="true">11.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch12-method/index.html"><strong aria-hidden="true">12.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch13-closure/index.html"><strong aria-hidden="true">13.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch14-interface/index.html"><strong aria-hidden="true">14.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch15-panic/index.html"><strong aria-hidden="true">15.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch16-reflect/index.html"><strong aria-hidden="true">16.</strong> 反射</a></li><li class="chapter-item expanded "><a href="../ch17-cgo/index.html"><strong aria-hidden="true">17.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch18-wasm/index.html"><strong aria-hidden="true">18.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch19-type-system/index.html"><strong aria-hidden="true">19.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch20-bootstrap/index.html"><strong aria-hidden="true">20.</strong> 自举</a></li><li class="chapter-item expanded "><a href="../ch21-lsp/index.html"><strong aria-hidden="true">21.</strong> LSP服务</a></li><li class="chapter-item expanded "><a href="../appendix/index.html"><strong aria-hidden="true">22.</strong> 附录</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../book.html">µGo语言实现</a></li><li class="chapter-item expanded affix "><a href="../preface.html">前言</a></li><li class="chapter-item expanded "><a href="../ch1-basic/index.html"><strong aria-hidden="true">1.</strong> 基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch1-basic/ch1-01-ugo.html"><strong aria-hidden="true">1.1.</strong> µGo简介</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-02-mini-compiler.html"><strong aria-hidden="true">1.2.</strong> 最小编译器</a></li><li class="chapter-item expanded "><a href="../ch1-basic/ch1-03-llvm-ir.html"><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a></li></ol></li><li class="chapter-item expanded "><a href="../ch2-expr/index.html"><strong aria-hidden="true">2.</strong> 表达式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch2-expr/ch2-01-add-sub.html"><strong aria-hidden="true">2.1.</strong> 加减法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-02-mul-div.html"><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-03-parser.html"><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a></li><li class="chapter-item expanded "><a href="../ch2-expr/ch2-04-parser-v2.html"><strong aria-hidden="true">2.4.</strong> 重构解析器</a></li></ol></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/index.html"><strong aria-hidden="true">3.</strong> 最小µGo程序</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-01.html"><strong aria-hidden="true">3.1.</strong> AST视角的µGo程序</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-02.html"><strong aria-hidden="true">3.2.</strong> AST到LLVM汇编</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-03.html"><strong aria-hidden="true">3.3.</strong> 完善词法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-04.html"><strong aria-hidden="true">3.4.</strong> 完善语法解析器</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-05.html"><strong aria-hidden="true">3.5.</strong> 打印AST语法树</a></li><li class="chapter-item expanded "><a href="../ch3-hello-ugo/ch3-06.html"><strong aria-hidden="true">3.6.</strong> 命令行界面</a></li></ol></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/index.html"><strong aria-hidden="true">4.</strong> 变量和作用域</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-01.html"><strong aria-hidden="true">4.1.</strong> 完善token包</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-02.html"><strong aria-hidden="true">4.2.</strong> 完善AST和解析器</a></li><li class="chapter-item expanded "><a href="../ch4-block-and-var/ch4-03.html" class="active"><strong aria-hidden="true">4.3.</strong> 完善LLIR输出</a></li></ol></li><li class="chapter-item expanded "><a href="../ch5-if-for/index.html"><strong aria-hidden="true">5.</strong> if分支和for循环</a></li><li class="chapter-item expanded "><a href="../ch6-func/index.html"><strong aria-hidden="true">6.</strong> 函数和递归</a></li><li class="chapter-item expanded "><a href="../ch7-pkgs-files/index.html"><strong aria-hidden="true">7.</strong> 多文件和多包支持</a></li><li class="chapter-item expanded "><a href="../ch8-string/index.html"><strong aria-hidden="true">8.</strong> 字符串</a></li><li class="chapter-item expanded "><a href="../ch9-array/index.html"><strong aria-hidden="true">9.</strong> 数组</a></li><li class="chapter-item expanded "><a href="../ch10-map/index.html"><strong aria-hidden="true">10.</strong> map</a></li><li class="chapter-item expanded "><a href="../ch11-struct/index.html"><strong aria-hidden="true">11.</strong> 结构体</a></li><li class="chapter-item expanded "><a href="../ch12-method/index.html"><strong aria-hidden="true">12.</strong> 方法</a></li><li class="chapter-item expanded "><a href="../ch13-closure/index.html"><strong aria-hidden="true">13.</strong> 闭包</a></li><li class="chapter-item expanded "><a href="../ch14-interface/index.html"><strong aria-hidden="true">14.</strong> 接口</a></li><li class="chapter-item expanded "><a href="../ch15-panic/index.html"><strong aria-hidden="true">15.</strong> 异常</a></li><li class="chapter-item expanded "><a href="../ch16-reflect/index.html"><strong aria-hidden="true">16.</strong> 反射</a></li><li class="chapter-item expanded "><a href="../ch17-cgo/index.html"><strong aria-hidden="true">17.</strong> CGO</a></li><li class="chapter-item expanded "><a href="../ch18-wasm/index.html"><strong aria-hidden="true">18.</strong> WASM</a></li><li class="chapter-item expanded "><a href="../ch19-type-system/index.html"><strong aria-hidden="true">19.</strong> 类型系统</a></li><li class="chapter-item expanded "><a href="../ch20-bootstrap/index.html"><strong aria-hidden="true">20.</strong> 自举</a></li><li class="chapter-item expanded "><a href="../ch21-lsp/index.html"><strong aria-hidden="true">21.</strong> LSP服务</a></li><li class="chapter-item expanded "><a href="../appendix/index.html"><strong aria-hidden="true">22.</strong> 附录</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -140,8 +140,8 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="43-scope处理符号表"><a class="header" href="#43-scope处理符号表">4.3 Scope处理符号表</a></h1>
-<p>基于新的AST语法树翻译到LLVM-IR需要处理嵌套的词法域问题。本节尝试通过Scope实现对嵌套的词法域支持。</p>
+                        <h1 id="43-完善llir输出"><a class="header" href="#43-完善llir输出">4.3 完善LLIR输出</a></h1>
+<p>基于新的AST语法树翻译到LLVM-IR需要处理嵌套的词法域问题。本节尝试通过Scope实现对嵌套的词法域支持，并完善LLIR输出。</p>
 <h2 id="431-词法域等例子"><a class="header" href="#431-词法域等例子">4.3.1 词法域等例子</a></h2>
 <p>在不同的词法域空间，同一个名字表示不同的对象。比如：</p>
 <pre><code class="language-go">package main
@@ -165,8 +165,8 @@ type Scope struct {
 }
 
 type Object struct {
-	Name   string
-	LLName string
+	Name        string
+	MangledName string
 	ast.Node
 }
 
@@ -176,12 +176,36 @@ func NewScope(outer *Scope) *Scope {
 </code></pre>
 <p>Scope内的Outer指向外层的Scope，比如main函数的外层Scope是文件，文件的外层是builtin（目前为了简化忽略了Package级别的Scope）。</p>
 <p>Object表示一个命名对象，其中Name是实体在uGo代码中词法域的名字，LLName是映射到LLVM汇编语言的名字。其中还有指向的AST节点，可以用于识别更多的信息。</p>
+<p>Scope还需要几个辅助方法：</p>
+<pre><code class="language-go">func (s *Scope) HasName(name string) bool {
+	_, ok := s.Objects[name]
+	return ok
+}
+
+func (s *Scope) Lookup(name string) (*Scope, *Object) {
+	for ; s != nil; s = s.Outer {
+		if obj := s.Objects[name]; obj != nil {
+			return s, obj
+		}
+	}
+	return nil, nil
+}
+
+func (s *Scope) Insert(obj *Object) (alt *Object) {
+	if alt = s.Objects[obj.Name]; alt == nil {
+		s.Objects[obj.Name] = obj
+	}
+	return
+}
+</code></pre>
+<p>其中HasName判断当前词法空间是否包含Name，Lookup则是从内向外层查询符号，Insert用于添加一个新的符号。</p>
+<h2 id="433-builtin内置函数"><a class="header" href="#433-builtin内置函数">4.3.3 Builtin内置函数</a></h2>
 <p>builtin的Scope对应最外层的宇宙空间：</p>
 <pre><code class="language-go">var Universe *Scope = NewScope(nil)
 
 var builtinObjects = []*Object{
-	{Name: &quot;println&quot;, LLName: &quot;@ugo_builtin_println&quot;},
-	{Name: &quot;exit&quot;, LLName: &quot;@ugo_builtin_exit&quot;},
+	{Name: &quot;println&quot;, MangledName: &quot;@ugo_builtin_println&quot;},
+	{Name: &quot;exit&quot;, MangledName: &quot;@ugo_builtin_exit&quot;},
 }
 
 func init() {
@@ -191,8 +215,245 @@ func init() {
 }
 </code></pre>
 <p>Universe是一个包级别的变量，Universe之外就没有词法域了。我们在包初始化时，向Universe注入了内置的println和exit函数信息。</p>
-<h2 id="433-scope在编译器中的作用"><a class="header" href="#433-scope在编译器中的作用">4.3.3 Scope在编译器中的作用</a></h2>
-<p>TODO</p>
+<p>然后向Compiler对象添加Scope成员：</p>
+<pre><code class="language-go">type Compiler struct {
+	file   *ast.File
+	scope  *Scope
+	nextId int
+}
+</code></pre>
+<p>并在编译方法中初始化scope对象：</p>
+<pre><code class="language-go">func NewCompiler() *Compiler {
+	return &amp;Compiler{
+		scope: NewScope(Universe),
+	}
+}
+</code></pre>
+<p><code>NewScope(Universe)</code> 基于 Universe 构建，因此也就具备了Builtin预先定义的println和exit内置函数。</p>
+<p>内置函数调用翻译现在可以从scope查询了：</p>
+<pre><code class="language-go">func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
+	switch expr := expr.(type) {
+	...
+	case *ast.CallExpr:
+		var fnName string
+		if _, obj := p.scope.Lookup(expr.FuncName.Name); obj != nil {
+			fnName = obj.MangledName
+		} else {
+			panic(fmt.Sprintf(&quot;func %s undefined&quot;, expr.FuncName.Name))
+		}
+
+		localName = p.genId()
+		fmt.Fprintf(w, &quot;\t%s = call i32(i32) %s(i32 %v)\n&quot;,
+			localName, fnName, p.compileExpr(w, expr.Args[0]),
+		)
+		return localName
+	...
+	}
+}
+</code></pre>
+<p>现在<code>p.scope</code>只有一个Scope，也就是Universe，但是已经可以支持获取内置函数真实的名称了。</p>
+<h2 id="434-嵌套scope"><a class="header" href="#434-嵌套scope">4.3.4 嵌套Scope</a></h2>
+<p>每个可以定义新变量的词法域都对应一个嵌套的Scope，目前全局变量和每个块语句都对应一个Scope。因此Compiler对象可以定义辅助函数用于进入和退出内层的Scope：</p>
+<pre><code class="language-go">func (p *Compiler) enterScope() {
+	p.scope = NewScope(p.scope)
+}
+
+func (p *Compiler) leaveScope() {
+	p.scope = p.scope.Outer
+}
+</code></pre>
+<p>enterScope表示进入新的词法域，leaveScope表示退出当前词法域。</p>
+<p>我们需要在编译文件、块语句时进入新的Scope，以便于存储新词法域定义的新变量：</p>
+<pre><code class="language-go">func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
+	p.enterScope()
+	defer p.leaveScope()
+	...
+}
+
+func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
+	switch stmt := stmt.(type) {
+	...
+	case *ast.BlockStmt:
+		p.enterScope()
+		defer p.leaveScope()
+	...
+	}
+}
+</code></pre>
+<p>当处理完成退出函数时通过defer语句离开嵌套的词法域。</p>
+<h2 id="435-定义全局变量"><a class="header" href="#435-定义全局变量">4.3.5 定义全局变量</a></h2>
+<p>定义变量就是向当前的Scope添加新的命名对象，全局变量在编译文件时处理：</p>
+<pre><code class="language-go">func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
+	p.enterScope()
+	defer p.leaveScope()
+
+	for _, g := range file.Globals {
+		var mangledName = fmt.Sprintf(&quot;@ugo_%s_%s&quot;, file.Pkg.Name, g.Name.Name)
+		p.scope.Insert(&amp;Object{
+			Name:        g.Name.Name,
+			MangledName: mangledName,
+			Node:        g,
+		})
+		fmt.Fprintf(w, &quot;%s = global i32 0\n&quot;, mangledName)
+	}
+	...
+}
+</code></pre>
+<p>通过遍历<code>file.Globals</code>处理每个全局变量。mangledName是全局变量修饰后在LLVM汇编中的名字，以<code>@ugo_</code>开头连接包名和变量名组成（包名有冲突的风险，更安全的做法是用唯一的包路径替代）。</p>
+<h2 id="436-全局函数对象"><a class="header" href="#436-全局函数对象">4.3.6 全局函数对象</a></h2>
+<p>全局函数是和全局变量类似的命名对象，可以在compileFunc中处理：</p>
+<pre><code class="language-go">func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
+	p.enterScope()
+	defer p.leaveScope()
+
+	var mangledName = fmt.Sprintf(&quot;@ugo_%s_%s&quot;, file.Pkg.Name, fn.Name)
+	p.scope.Insert(&amp;Object{
+		Name:        fn.Name,
+		MangledName: mangledName,
+		Node:        fn,
+	})
+	...
+}
+</code></pre>
+<p>虽然目前还不支持调用自定义函数，但是有了Scope之后自定义的函数已经可以通过名字查询到了。</p>
+<h2 id="437-定义局部变量"><a class="header" href="#437-定义局部变量">4.3.7 定义局部变量</a></h2>
+<p>Compiler对象的compileStmt方法用于编译语句，在其中增加对<code>*ast.VarSpec</code>变量定义的处理：</p>
+<pre><code class="language-go">func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
+	switch stmt := stmt.(type) {
+	case *ast.VarSpec:
+		var localName = &quot;0&quot;
+		if stmt.Value != nil {
+			localName = p.compileExpr(w, stmt.Value)
+		}
+
+		var mangledName = fmt.Sprintf(&quot;%%local_%s.pos.%d&quot;, stmt.Name.Name, stmt.VarPos)
+		p.scope.Insert(&amp;Object{
+			Name:        stmt.Name.Name,
+			MangledName: mangledName,
+			Node:        stmt,
+		})
+
+		fmt.Fprintf(w, &quot;\t%s = alloca i32, align 4\n&quot;, mangledName)
+		fmt.Fprintf(
+			w, &quot;\tstore i32 %s, i32* %s\n&quot;,
+			localName, mangledName,
+		)
+	...
+	}
+}
+</code></pre>
+<p>需要注意的是，如果变量定义有初始化表达式，一定要先编译表达式。比如在处理<code>var x = x</code>变量定义时，先编译右边表达式则x获取的是外层的定义（因为此时左边的x尚未定义）。处理完右边的初始化表达式之后，再将左边的变量添加到Scope中。然后通过LLVM的alloca指令在栈上分配空间，并进行初始化（如果没有初始化表达式则用0初始化）。</p>
+<h2 id="438-变量标识符检索"><a class="header" href="#438-变量标识符检索">4.3.8 变量标识符检索</a></h2>
+<p>在处理内置函数调用时我们已经见识过基于Scope的名字检索。对于变量我们只需要增加<code>*ast.Ident</code>类型的表达式处理即可：</p>
+<pre><code class="language-go">func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
+	switch expr := expr.(type) {
+	case *ast.Ident:
+		var varName string
+		if _, obj := p.scope.Lookup(expr.Name); obj != nil {
+			varName = obj.MangledName
+		} else {
+			panic(fmt.Sprintf(&quot;var %s undefined&quot;, expr.Name))
+		}
+
+		localName = p.genId()
+		fmt.Fprintf(w, &quot;\t%s = load i32, i32* %s, align 4\n&quot;,
+			localName, varName,
+		)
+		return localName
+	...
+	}
+}
+</code></pre>
+<p><code>p.scope.Lookup(expr.Name)</code>根据名字查询LLVM汇编中对应的局部变量的名字，然后通过LLVM的load指令加载到一个新的变量并返回。</p>
+<h2 id="439-赋值变量"><a class="header" href="#439-赋值变量">4.3.9 赋值变量</a></h2>
+<p>赋值变量和变量读取到机制差不多，第一步都是要从Scope查询被赋值变量对应的LLVM的名字。compileStmt方法增加对<code>*ast.AssignStmt</code>赋值语句的处理：</p>
+<pre><code class="language-go">func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
+	switch stmt := stmt.(type) {
+	...
+	case *ast.AssignStmt:
+		var varName string
+		if _, obj := p.scope.Lookup(stmt.Target.Name); obj != nil {
+			varName = obj.MangledName
+		} else {
+			panic(fmt.Sprintf(&quot;var %s undefined&quot;, stmt.Target.Name))
+		}
+
+		localName := p.compileExpr(w, stmt.Value)
+		fmt.Fprintf(
+			w, &quot;\tstore i32 %s, i32* %s\n&quot;,
+			localName, varName,
+		)
+	...
+	}
+}
+</code></pre>
+<p>查询到LLVM对应的变量名之后，通过LLVM的store指令赋值。</p>
+<h2 id="4310-全局变量的初始化"><a class="header" href="#4310-全局变量的初始化">4.3.10 全局变量的初始化</a></h2>
+<p>到此我们已经基本完成了嵌套变量的支持，现在还需要对全局变量的初始化增加支持。全局变量的初始化语句需要放入一个init函数，builtin包做以下调整：</p>
+<pre><code class="language-go">const MainMain = `
+define i32 @main() {
+	call i32() @ugo_main_init()
+	call i32() @ugo_main_main()
+	ret i32 0
+}
+`
+</code></pre>
+<p>在main函数调用<code>@ugo_main_main()</code>之前先调用<code>@ugo_main_init()</code>进行初始化。</p>
+<p>Compiler对象增加genInit方法用于生成全局变量初始化的代码：</p>
+<pre><code class="language-go">func (p *Compiler) genInit(w io.Writer, file *ast.File) {
+	fmt.Fprintf(w, &quot;define i32 @ugo_%s_init() {\n&quot;, file.Pkg.Name)
+
+	for _, g := range file.Globals {
+		var localName = &quot;0&quot;
+		if g.Value != nil {
+			localName = p.compileExpr(w, g.Value)
+		}
+
+		var varName string
+		if _, obj := p.scope.Lookup(g.Name.Name); obj != nil {
+			varName = obj.MangledName
+		} else {
+			panic(fmt.Sprintf(&quot;var %s undefined&quot;, g))
+		}
+
+		fmt.Fprintf(w, &quot;\tstore i32 %s, i32* %s\n&quot;, localName, varName)
+	}
+	fmt.Fprintln(w, &quot;\tret i32 0&quot;)
+	fmt.Fprintln(w, &quot;}&quot;)
+}
+</code></pre>
+<p>然后在compileFile方法完成全局变量定义之后生成用于初始化的init函数：</p>
+<pre><code class="language-go">func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
+	...
+	for _, g := range file.Globals {}
+	p.genInit(w, file)
+	...
+}
+</code></pre>
+<h2 id="4311-测试"><a class="header" href="#4311-测试">4.3.11 测试</a></h2>
+<p>构造测试用例：</p>
+<pre><code class="language-go">package main
+
+var x1 int
+var x2 int = 134
+
+func main() {
+	{
+		var x2 = x2
+		x2 = x2 + 1000
+		println(x2)
+	}
+	println(x1)
+	println(x2)
+}
+</code></pre>
+<p>蔬菜结果如下：</p>
+<pre><code>$ go run main.go -debug=true run ./_examples/hello.ugo
+1134
+0
+134
+</code></pre>
+<p>结果正常。</p>
 
                     </main>
 
@@ -201,7 +462,7 @@ func init() {
                             <a rel="prev" href="../ch4-block-and-var/ch4-02.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                            <a rel="next" href="../ch4-block-and-var/ch4-04.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../ch5-if-for/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -213,7 +474,7 @@ func init() {
                     <a rel="prev" href="../ch4-block-and-var/ch4-02.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                    <a rel="next" href="../ch4-block-and-var/ch4-04.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../ch5-if-for/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
