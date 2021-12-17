@@ -3501,6 +3501,8 @@ func main() {
 <p>结果正常。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="44-输出wasm模块"><a class="header" href="#44-输出wasm模块">4.4 输出WASM模块</a></h1>
 <p>我们的后端输出的是LLVM汇编代码。从LLVM-8之后内置了对WebAssembly的支持，因此我们可以借助LLVM工具链产生WASM模块。</p>
+<p>WebAssembly的基础知识可以参考作者的《WebAssembly标准入门》：</p>
+<p><img src="ch4-block-and-var/../images/wasm-book.jpg" alt="" /></p>
 <h2 id="441-导入builtin函数"><a class="header" href="#441-导入builtin函数">4.4.1 导入Builtin函数</a></h2>
 <p>之前是基于C语言构造了Builtin的println和exit函数，在WASM环境我们可以从宿主导入。可以基于Node.js构造宿主需要的函数：</p>
 <pre><code class="language-js">// run_wasm.js
