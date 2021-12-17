@@ -3,10 +3,12 @@ package build
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/builtin"
@@ -17,10 +19,12 @@ import (
 )
 
 type Option struct {
-	Debug  bool
-	GOOS   string
-	GOARCH string
-	Clang  string
+	Debug   bool
+	GOOS    string
+	GOARCH  string
+	Clang   string
+	WasmLLC string
+	WasmLD  string
 }
 
 type Context struct {
@@ -42,6 +46,26 @@ func NewContext(opt *Option) *Context {
 		}
 		if p.opt.Clang == "" {
 			p.opt.Clang = "clang"
+		}
+	}
+	if p.opt.WasmLLC == "" {
+		if runtime.GOOS == "windows" {
+			p.opt.WasmLLC, _ = exec.LookPath("llc.exe")
+		} else {
+			p.opt.WasmLLC, _ = exec.LookPath("llc")
+		}
+		if p.opt.WasmLLC == "" {
+			p.opt.WasmLLC = "llc"
+		}
+	}
+	if p.opt.WasmLD == "" {
+		if runtime.GOOS == "windows" {
+			p.opt.WasmLD, _ = exec.LookPath("wasm-ld.exe")
+		} else {
+			p.opt.WasmLD, _ = exec.LookPath("wasm-ld")
+		}
+		if p.opt.WasmLD == "" {
+			p.opt.WasmLD = "wasm-ld"
 		}
 	}
 	if p.opt.GOOS == "" {
@@ -113,10 +137,12 @@ func (p *Context) build(filename string, src interface{}, outfile, goos, goarch 
 
 	const (
 		_a_out_ll     = "_a.out.ll"
+		_a_out_ll_o   = "_a.out.ll.o"
 		_a_builtin_ll = "_a_builtin.out.ll"
 	)
 	if !p.opt.Debug {
 		defer os.Remove(_a_out_ll)
+		defer os.Remove(_a_out_ll_o)
 		defer os.Remove(_a_builtin_ll)
 	}
 
@@ -135,6 +161,33 @@ func (p *Context) build(filename string, src interface{}, outfile, goos, goarch 
 	if outfile == "" {
 		outfile = "a.out"
 	}
+	if p.opt.GOOS == "wasm" {
+		if !strings.HasSuffix(outfile, ".wasm") {
+			outfile += ".wasm"
+		}
+
+		cmdLLC := exec.Command(
+			p.opt.WasmLLC,
+			"-march=wasm32",
+			"-filetype=obj",
+			"-o", _a_out_ll_o,
+			_a_out_ll,
+		)
+		if data, err := cmdLLC.CombinedOutput(); err != nil {
+			return data, err
+		}
+
+		cmdWasmLD := exec.Command(
+			p.opt.WasmLD,
+			"--entry=main",
+			"--allow-undefined",
+			"--export-all",
+			_a_out_ll_o,
+			"-o", outfile,
+		)
+		data, err := cmdWasmLD.CombinedOutput()
+		return data, err
+	}
 
 	cmd := exec.Command(
 		p.opt.Clang, "-Wno-override-module", "-o", outfile,
@@ -146,6 +199,10 @@ func (p *Context) build(filename string, src interface{}, outfile, goos, goarch 
 }
 
 func (p *Context) Run(filename string, src interface{}) ([]byte, error) {
+	if p.opt.GOOS == "wasm" {
+		return nil, fmt.Errorf("donot support run wasm")
+	}
+
 	a_out := "./a.out"
 	if runtime.GOOS == "windows" {
 		a_out = `.\a.out.exe`

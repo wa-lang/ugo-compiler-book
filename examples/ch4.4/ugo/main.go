@@ -21,6 +21,8 @@ func main() {
 		&cli.StringFlag{Name: "goos", Usage: "set GOOS", Value: runtime.GOOS},
 		&cli.StringFlag{Name: "goarch", Usage: "set GOARCH", Value: runtime.GOARCH},
 		&cli.StringFlag{Name: "clang", Value: "", Usage: "set clang"},
+		&cli.StringFlag{Name: "wasm-llc", Value: "", Usage: "set wasm-llc"},
+		&cli.StringFlag{Name: "wasm-ld", Value: "", Usage: "set wasm-ld"},
 		&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Usage: "set debug mode"},
 	}
 
@@ -188,9 +190,11 @@ func main() {
 
 func build_Options(c *cli.Context) *build.Option {
 	return &build.Option{
-		Debug:  c.Bool("debug"),
-		GOOS:   c.String("goos"),
-		GOARCH: c.String("goarch"),
-		Clang:  c.String("clang"),
+		Debug:   c.Bool("debug"),
+		GOOS:    c.String("goos"),
+		GOARCH:  c.String("goarch"),
+		Clang:   c.String("clang"),
+		WasmLLC: c.String("wasm-llc"),
+		WasmLD:  c.String("wasm-ld"),
 	}
 }
