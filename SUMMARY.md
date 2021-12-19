@@ -24,6 +24,7 @@
   - [完善AST和解析器](./ch4-block-and-var/ch4-02.md)
   - [完善LLIR输出](./ch4-block-and-var/ch4-03.md)
   - [输出WASM模块](./ch4-block-and-var/ch4-04.md)
+  - [简短定义和多赋值](./ch4-block-and-var/ch4-05.md)
 - [if分支和for循环](./ch5-if-for/readme.md)
 - [函数和递归](./ch6-func/readme.md)
 - [多文件和多包支持](./ch7-pkgs-files/readme.md)
