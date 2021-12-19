@@ -2,6 +2,10 @@ package parser
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/lexer"
@@ -52,9 +56,25 @@ func (p *Parser) ParseFile() (file *ast.File, err error) {
 }
 
 func (p *Parser) errorf(pos token.Pos, format string, args ...interface{}) {
-	p.err = fmt.Errorf("%s: %s",
+	_, filename, line := p.callerInfo(1)
+	p.err = fmt.Errorf("%s: %s (%s:%d)",
 		pos.Position(p.filename, p.src),
 		fmt.Sprintf(format, args...),
+		filename, line,
 	)
 	panic(p.err)
+}
+
+func (p *Parser) callerInfo(skip int) (fn, filename string, line int) {
+	pc, filename, line, _ := runtime.Caller(skip + 1)
+	fn = runtime.FuncForPC(pc).Name()
+	if idx := strings.LastIndex(fn, "/"); idx >= 0 {
+		fn = fn[idx+1:]
+	}
+	if wd, _ := os.Getwd(); wd != "" {
+		if rel, err := filepath.Rel(wd, filename); err == nil {
+			filename = rel
+		}
+	}
+	return
 }

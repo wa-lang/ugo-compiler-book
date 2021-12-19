@@ -29,28 +29,38 @@ Loop:
 			block.List = append(block.List, p.parseStmt_var())
 
 		default:
-			// expr ;
-			// target = expr;
-			expr := p.parseExpr()
+			// exprList ;
+			// exprList := exprList;
+			// exprList = exprList;
+			exprList := p.parseExprList()
 			switch tok := p.PeekToken(); tok.Type {
 			case token.SEMICOLON:
+				if len(exprList) != 1 {
+					p.errorf(tok.Pos, "unknown token: %v", tok.Type)
+				}
 				block.List = append(block.List, &ast.ExprStmt{
-					X: expr,
+					X: exprList[0],
 				})
-			case token.ASSIGN:
+			case token.DEFINE, token.ASSIGN:
 				p.ReadToken()
-				exprValue := p.parseExpr()
-				block.List = append(block.List, &ast.AssignStmt{
-					Target: expr.(*ast.Ident),
+				exprValueList := p.parseExprList()
+				if len(exprList) != len(exprValueList) {
+					p.errorf(tok.Pos, "unknown token: %v", tok)
+				}
+				var assignStmt = &ast.AssignStmt{
+					Target: make([]*ast.Ident, len(exprList)),
 					OpPos:  tok.Pos,
 					Op:     tok.Type,
-					Value:  exprValue,
-				})
-
+					Value:  make([]ast.Expr, len(exprList)),
+				}
+				for i, target := range exprList {
+					assignStmt.Target[i] = target.(*ast.Ident)
+					assignStmt.Value[i] = exprValueList[i]
+				}
+				block.List = append(block.List, assignStmt)
 			default:
 				p.errorf(tok.Pos, "unknown token: %v", tok)
 			}
-
 		}
 	}
 

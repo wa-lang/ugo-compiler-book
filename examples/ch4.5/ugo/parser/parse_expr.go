@@ -7,6 +7,18 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
+// x, y :=
+func (p *Parser) parseExprList() (exprs []ast.Expr) {
+	for {
+		exprs = append(exprs, p.parseExpr())
+		if p.PeekToken().Type != token.COMMA {
+			break
+		}
+		p.ReadToken()
+	}
+	return
+}
+
 func (p *Parser) parseExpr() ast.Expr {
 	return p.parseExpr_binary(1)
 }

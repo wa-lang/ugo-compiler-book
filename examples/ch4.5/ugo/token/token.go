@@ -26,12 +26,14 @@ const (
 	DIV // /
 
 	ASSIGN // =
+	DEFINE // :=
 
 	LPAREN // (
 	RPAREN // )
 	LBRACE // {
 	RBRACE // }
 
+	COMMA     // ,
 	SEMICOLON // ;
 )
 
@@ -60,6 +62,7 @@ var tokens = [...]string{
 	DIV: "/",
 
 	ASSIGN: "=",
+	DEFINE: ":=",
 
 	LPAREN: "(",
 	RPAREN: ")",

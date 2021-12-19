@@ -151,6 +151,14 @@ func (p *Lexer) run() (tokens []token.Token) {
 		case r == '=': // =, ==
 			p.emit(token.ASSIGN)
 
+		case r == ':': // :, :=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.DEFINE)
+			default:
+				p.errorf("unrecognized character: %#U", r)
+			}
+
 		case r == '(':
 			p.emit(token.LPAREN)
 		case r == '{':
@@ -161,6 +169,8 @@ func (p *Lexer) run() (tokens []token.Token) {
 		case r == '}':
 			p.emit(token.RBRACE)
 
+		case r == ',':
+			p.emit(token.COMMA)
 		case r == ';':
 			p.emit(token.SEMICOLON)
 

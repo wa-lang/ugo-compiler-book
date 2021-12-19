@@ -150,18 +150,37 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 		)
 
 	case *ast.AssignStmt:
-		var varName string
-		if _, obj := p.scope.Lookup(stmt.Target.Name); obj != nil {
-			varName = obj.MangledName
-		} else {
-			panic(fmt.Sprintf("var %s undefined", stmt.Target.Name))
+		var valueNameList = make([]string, len(stmt.Value))
+		for i := range stmt.Target {
+			valueNameList[i] = p.compileExpr(w, stmt.Value[i])
 		}
 
-		localName := p.compileExpr(w, stmt.Value)
-		fmt.Fprintf(
-			w, "\tstore i32 %s, i32* %s\n",
-			localName, varName,
-		)
+		if stmt.Op == token.DEFINE {
+			for _, target := range stmt.Target {
+				if _, obj := p.scope.Lookup(target.Name); obj == nil {
+					var mangledName = fmt.Sprintf("%%local_%s.pos.%d", target.Name, target.NamePos)
+					p.scope.Insert(&Object{
+						Name:        target.Name,
+						MangledName: mangledName,
+						Node:        target,
+					})
+					fmt.Fprintf(w, "\t%s = alloca i32, align 4\n", mangledName)
+				}
+			}
+		}
+		for i := range stmt.Target {
+			var varName string
+			if _, obj := p.scope.Lookup(stmt.Target[i].Name); obj != nil {
+				varName = obj.MangledName
+			} else {
+				panic(fmt.Sprintf("var %s undefined", stmt.Target[0].Name))
+			}
+
+			fmt.Fprintf(
+				w, "\tstore i32 %s, i32* %s\n",
+				valueNameList[i], varName,
+			)
+		}
 
 	case *ast.BlockStmt:
 		p.enterScope()

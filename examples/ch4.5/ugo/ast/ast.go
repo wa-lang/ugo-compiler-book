@@ -64,10 +64,10 @@ type ExprStmt struct {
 
 // AssignStmt 表示一个赋值语句节点.
 type AssignStmt struct {
-	Target *Ident          // 要赋值的目标
+	Target []*Ident        // 要赋值的目标
 	OpPos  token.Pos       // ':=' 的位置
 	Op     token.TokenType // '=' or ':='
-	Value  Expr            // 值
+	Value  []Expr          // 值
 }
 
 // Expr 表示一个表达式节点。
