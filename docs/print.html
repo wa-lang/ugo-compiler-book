@@ -3715,7 +3715,182 @@ func main() {
 <p>输出结果和本地执行一致。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="45-简短定义和多赋值"><a class="header" href="#45-简短定义和多赋值">4.5 简短定义和多赋值</a></h1>
 <p>简短定义和多赋值是Go中最常用的语法糖，类似<code>x2, x3 := x2+1, 1+2</code>这种语法，本节我们将实现这个特性。</p>
-<p>TODO</p>
+<h2 id="451-完善token包"><a class="header" href="#451-完善token包">4.5.1 完善token包</a></h2>
+<p>简短定义和多赋值出现了2个新的Token类型：<code>:=</code>和<code>,</code>。token包增加相应的定义：</p>
+<pre><code class="language-go">const (
+	EOF TokenType = iota // = 0
+	...
+	DEFINE // :=
+	COMMA  // ,
+	...
+)
+
+var tokens = [...]string{
+	DEFINE: &quot;:=&quot;,
+	COMMA:  &quot;,&quot;,
+}
+</code></pre>
+<p>其他定义保持不变。</p>
+<h2 id="452-完善lexer"><a class="header" href="#452-完善lexer">4.5.2 完善lexer</a></h2>
+<p>Token的解析可以看作是简化版本的语法解析，在switch扩展相应的case即可：</p>
+<pre><code class="language-go">func (p *Lexer) run() (tokens []token.Token) {
+	...
+	for {
+		r := p.src.Read()
+		...
+
+		switch {
+		case r == ':': // :, :=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.DEFINE)
+			default:
+				p.errorf(&quot;unrecognized character: %#U&quot;, r)
+			}
+		case r == ',':
+			p.emit(token.COMMA)
+		...
+		}
+	}
+}
+</code></pre>
+<p>完成后可以自行通过<code>go run main.go lex file.ugo</code>命令测试。</p>
+<h2 id="453-完善astassignstmt"><a class="header" href="#453-完善astassignstmt">4.5.3 完善<code>ast.AssignStmt</code></a></h2>
+<p>修改如下：</p>
+<pre><code class="language-go">type AssignStmt struct {
+	Target []*Ident        // 要赋值的目标
+	OpPos  token.Pos       // ':=' 的位置
+	Op     token.TokenType // '=' or ':='
+	Value  []Expr          // 值
+}
+</code></pre>
+<p>将<code>Target</code>和<code>Value</code>属性改成了切片以支持多赋值。如果<code>Op</code>为<code>token.DEFINE</code>类型则表示简短定义。</p>
+<h2 id="454-完善语法解析"><a class="header" href="#454-完善语法解析">4.5.4 完善语法解析</a></h2>
+<p>新增多表达式的解析方法：</p>
+<pre><code class="language-go">// x, y :=
+func (p *Parser) parseExprList() (exprs []ast.Expr) {
+	for {
+		exprs = append(exprs, p.parseExpr())
+		if p.PeekToken().Type != token.COMMA {
+			break
+		}
+		p.ReadToken()
+	}
+	return
+}
+</code></pre>
+<p>然后调整<code>Parser.parseStmt_block</code>方法：</p>
+<pre><code class="language-go">func (p *Parser) parseStmt_block() *ast.BlockStmt {
+	...
+Loop:
+	for {
+		...
+		switch tok := p.PeekToken(); tok.Type {
+		...
+		default:
+			// exprList ;
+			// exprList := exprList;
+			// exprList = exprList;
+			exprList := p.parseExprList()
+			switch tok := p.PeekToken(); tok.Type {
+			case token.SEMICOLON:
+				if len(exprList) != 1 {
+					p.errorf(tok.Pos, &quot;unknown token: %v&quot;, tok.Type)
+				}
+				block.List = append(block.List, &amp;ast.ExprStmt{
+					X: exprList[0],
+				})
+			case token.DEFINE, token.ASSIGN:
+				p.ReadToken()
+				exprValueList := p.parseExprList()
+				if len(exprList) != len(exprValueList) {
+					p.errorf(tok.Pos, &quot;unknown token: %v&quot;, tok)
+				}
+				var assignStmt = &amp;ast.AssignStmt{
+					Target: make([]*ast.Ident, len(exprList)),
+					OpPos:  tok.Pos,
+					Op:     tok.Type,
+					Value:  make([]ast.Expr, len(exprList)),
+				}
+				for i, target := range exprList {
+					assignStmt.Target[i] = target.(*ast.Ident)
+					assignStmt.Value[i] = exprValueList[i]
+				}
+				block.List = append(block.List, assignStmt)
+			default:
+				p.errorf(tok.Pos, &quot;unknown token: %v&quot;, tok)
+			}
+		}
+	}
+	...
+}
+</code></pre>
+<p>将之前的单赋值解析改造为多赋值解析，并支持简短定义。</p>
+<h2 id="455-完善代码生成"><a class="header" href="#455-完善代码生成">4.5.5 完善代码生成</a></h2>
+<p><code>ast.AssignStmt</code>节点的翻译在<code>Compiler.compileStmt</code>方法，改造后的代码：</p>
+<pre><code class="language-go">func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
+	switch stmt := stmt.(type) {
+	case *ast.AssignStmt:
+		var valueNameList = make([]string, len(stmt.Value))
+		for i := range stmt.Target {
+			valueNameList[i] = p.compileExpr(w, stmt.Value[i])
+		}
+
+		if stmt.Op == token.DEFINE {
+			for _, target := range stmt.Target {
+				if _, obj := p.scope.Lookup(target.Name); obj == nil {
+					var mangledName = fmt.Sprintf(&quot;%%local_%s.pos.%d&quot;, target.Name, target.NamePos)
+					p.scope.Insert(&amp;Object{
+						Name:        target.Name,
+						MangledName: mangledName,
+						Node:        target,
+					})
+					fmt.Fprintf(w, &quot;\t%s = alloca i32, align 4\n&quot;, mangledName)
+				}
+			}
+		}
+		for i := range stmt.Target {
+			var varName string
+			if _, obj := p.scope.Lookup(stmt.Target[i].Name); obj != nil {
+				varName = obj.MangledName
+			} else {
+				panic(fmt.Sprintf(&quot;var %s undefined&quot;, stmt.Target[0].Name))
+			}
+
+			fmt.Fprintf(
+				w, &quot;\tstore i32 %s, i32* %s\n&quot;,
+				valueNameList[i], varName,
+			)
+		}
+	...
+	}
+</code></pre>
+<p>首先计算右侧的表达式列表（记住不能先处理表达式左边的目标）。然后判断是否为简短定义，如果是并且赋值的目标在当前Scope没有定义则定义新的局部变量（全局变量不支持简短定义）。最后处理表达式左边的目标，将右边的值依次保存到目标中。</p>
+<h2 id="456-测试"><a class="header" href="#456-测试">4.5.6 测试</a></h2>
+<p>构造以下测试代码：</p>
+<pre><code class="language-go">package main
+
+var x1 int
+var x2 int = 134
+
+func main() {
+	{
+		x2, x3 := x2+1, 456
+		println(x2)
+		println(x3)
+	}
+	println(x1)
+	println(x2)
+}
+</code></pre>
+<p>执行结果如下：</p>
+<pre><code>$ go run main.go run ./_examples/hello.ugo 
+135
+456
+0
+135
+</code></pre>
+<p>结果正常。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="5-if分支和for循环"><a class="header" href="#5-if分支和for循环">5. if分支和for循环</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="6-函数和递归"><a class="header" href="#6-函数和递归">6. 函数和递归</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="7-多文件和多包支持"><a class="header" href="#7-多文件和多包支持">7. 多文件和多包支持</a></h1>

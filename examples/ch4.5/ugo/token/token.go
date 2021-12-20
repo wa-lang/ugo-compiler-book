@@ -69,6 +69,7 @@ var tokens = [...]string{
 	LBRACE: "{",
 	RBRACE: "}",
 
+	COMMA:     ",",
 	SEMICOLON: ";",
 }
 
