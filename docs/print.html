@@ -3892,6 +3892,23 @@ func main() {
 </code></pre>
 <p>结果正常。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="5-if分支和for循环"><a class="header" href="#5-if分支和for循环">5. if分支和for循环</a></h1>
+<p>for循环的例子：</p>
+<pre><code class="language-go">package main
+
+func main() {
+	for i := 5; i &lt; 10; i = i + 1 {
+		println(i)
+	}
+}
+</code></pre>
+<p>执行：</p>
+<pre><code>$ go run main.go run ./_examples/hello.ugo
+5
+6
+7
+8
+9
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="51-完善token包和lex包"><a class="header" href="#51-完善token包和lex包">5.1 完善token包和lex包</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="52-完善ast和解析器"><a class="header" href="#52-完善ast和解析器">5.2 完善AST和解析器</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="53-if分支到llir汇编"><a class="header" href="#53-if分支到llir汇编">5.3 if分支到LLIR汇编</a></h1>
