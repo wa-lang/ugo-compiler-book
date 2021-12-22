@@ -19,11 +19,19 @@ const (
 	PACKAGE
 	VAR
 	FUNC
+	FOR
 
 	ADD // +
 	SUB // -
 	MUL // *
 	DIV // /
+
+	EQL // ==
+	NEQ // !=
+	LSS // <
+	LEQ // <=
+	GTR // >
+	GEQ // >=
 
 	ASSIGN // =
 	DEFINE // :=
@@ -55,11 +63,19 @@ var tokens = [...]string{
 	PACKAGE: "package",
 	VAR:     "var",
 	FUNC:    "func",
+	FOR:     "for",
 
 	ADD: "+",
 	SUB: "-",
 	MUL: "*",
 	DIV: "/",
+
+	EQL: "==",
+	NEQ: "!=",
+	LSS: "<",
+	LEQ: "<=",
+	GTR: ">",
+	GEQ: ">=",
 
 	ASSIGN: "=",
 	DEFINE: ":=",
@@ -88,6 +104,7 @@ var keywords = map[string]TokenType{
 	"package": PACKAGE,
 	"var":     VAR,
 	"func":    FUNC,
+	"for":     FOR,
 }
 
 func Lookup(ident string) TokenType {
@@ -99,10 +116,12 @@ func Lookup(ident string) TokenType {
 
 func (op TokenType) Precedence() int {
 	switch op {
-	case ADD, SUB:
+	case EQL, NEQ, LSS, LEQ, GTR, GEQ:
 		return 1
-	case MUL, DIV:
+	case ADD, SUB:
 		return 2
+	case MUL, DIV:
+		return 3
 	}
 	return 0
 }

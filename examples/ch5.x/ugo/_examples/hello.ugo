@@ -1,14 +1,7 @@
 package main
 
-var x1 int
-var x2 int = 134
-
 func main() {
-	{
-		x2, x3 := x2+1, 456
-		println(x2)
-		println(x3)
+	for i := 5; i < 10; i = i + 1 {
+		println(i)
 	}
-	println(x1)
-	println(x2)
 }

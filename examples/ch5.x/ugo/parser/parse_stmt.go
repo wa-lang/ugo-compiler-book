@@ -5,6 +5,60 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
+func (p *Parser) parseStmt() ast.Stmt {
+	switch tok := p.PeekToken(); tok.Type {
+	case token.EOF:
+		return nil
+	case token.ERROR:
+		p.errorf(tok.Pos, "invalid token: %s", tok.Literal)
+	case token.SEMICOLON:
+		p.AcceptTokenList(token.SEMICOLON)
+		return nil
+
+	case token.LBRACE: // {}
+		return p.parseStmt_block()
+
+	case token.VAR:
+		return p.parseStmt_var()
+
+	default:
+		// exprList ;
+		// exprList := exprList;
+		// exprList = exprList;
+		exprList := p.parseExprList()
+		switch tok := p.PeekToken(); tok.Type {
+		case token.SEMICOLON:
+			if len(exprList) != 1 {
+				p.errorf(tok.Pos, "unknown token: %v", tok.Type)
+			}
+			return &ast.ExprStmt{
+				X: exprList[0],
+			}
+		case token.DEFINE, token.ASSIGN:
+			p.ReadToken()
+			exprValueList := p.parseExprList()
+			if len(exprList) != len(exprValueList) {
+				p.errorf(tok.Pos, "unknown token: %v", tok)
+			}
+			var assignStmt = &ast.AssignStmt{
+				Target: make([]*ast.Ident, len(exprList)),
+				OpPos:  tok.Pos,
+				Op:     tok.Type,
+				Value:  make([]ast.Expr, len(exprList)),
+			}
+			for i, target := range exprList {
+				assignStmt.Target[i] = target.(*ast.Ident)
+				assignStmt.Value[i] = exprValueList[i]
+			}
+			return assignStmt
+		default:
+			p.errorf(tok.Pos, "unknown token: %v", tok)
+		}
+	}
+
+	panic("unreachable")
+}
+
 func (p *Parser) parseStmt_block() *ast.BlockStmt {
 	block := &ast.BlockStmt{}
 
@@ -27,6 +81,8 @@ Loop:
 
 		case token.VAR:
 			block.List = append(block.List, p.parseStmt_var())
+		case token.FOR:
+			block.List = append(block.List, p.parseStmt_for())
 
 		default:
 			// exprList ;

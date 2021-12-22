@@ -117,9 +117,10 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 	})
 
 	if fn.Body == nil {
-		fmt.Fprintf(w, "declare i32 @ugo_%s_%s() {\n", file.Pkg.Name, fn.Name)
+		fmt.Fprintf(w, "declare i32 @ugo_%s_%s()\n", file.Pkg.Name, fn.Name)
 		return
 	}
+	fmt.Fprintln(w)
 
 	fmt.Fprintf(w, "define i32 @ugo_%s_%s() {\n", file.Pkg.Name, fn.Name)
 	p.compileStmt(w, fn.Body)
@@ -150,37 +151,49 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 		)
 
 	case *ast.AssignStmt:
-		var valueNameList = make([]string, len(stmt.Value))
-		for i := range stmt.Target {
-			valueNameList[i] = p.compileExpr(w, stmt.Value[i])
+		p.compileStmt_assign(w, stmt)
+	case *ast.ForStmt:
+		p.enterScope()
+		defer p.leaveScope()
+
+		forPos := fmt.Sprintf("%d", stmt.For)
+		forInit := p.genLabelId("for.init.pos" + forPos)
+		forCond := p.genLabelId("for.cond.pos" + forPos)
+		forBody := p.genLabelId("for.body.pos" + forPos)
+		forEnd := p.genLabelId("for.end.pos" + forPos)
+
+		// for.init
+		fmt.Fprintf(w, "\n%s:\n", forInit)
+		if stmt.Init != nil {
+			p.compileStmt(w, stmt.Init)
+		}
+		// br %forCond
+		fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
+
+		fmt.Fprintf(w, "\n%s:\n", forCond)
+		if stmt.Cond != nil {
+			condValue := p.compileExpr(w, stmt.Cond)
+			fmt.Fprintf(w, "\tbr i1 %s , label %%%s, label %%%s\n", condValue, forBody, forEnd)
+		} else {
+			fmt.Fprintf(w, "\tbr label %%%s\n", forBody)
 		}
 
-		if stmt.Op == token.DEFINE {
-			for _, target := range stmt.Target {
-				if _, obj := p.scope.Lookup(target.Name); obj == nil {
-					var mangledName = fmt.Sprintf("%%local_%s.pos.%d", target.Name, target.NamePos)
-					p.scope.Insert(&Object{
-						Name:        target.Name,
-						MangledName: mangledName,
-						Node:        target,
-					})
-					fmt.Fprintf(w, "\t%s = alloca i32, align 4\n", mangledName)
-				}
-			}
-		}
-		for i := range stmt.Target {
-			var varName string
-			if _, obj := p.scope.Lookup(stmt.Target[i].Name); obj != nil {
-				varName = obj.MangledName
-			} else {
-				panic(fmt.Sprintf("var %s undefined", stmt.Target[0].Name))
-			}
+		// Body
+		p.enterScope()
+		fmt.Fprintf(w, "\n%s:\n", forBody)
+		p.compileStmt(w, stmt.Body)
+		p.leaveScope()
 
-			fmt.Fprintf(
-				w, "\tstore i32 %s, i32* %s\n",
-				valueNameList[i], varName,
-			)
+		// post
+		if stmt.Post != nil {
+			p.compileStmt(w, stmt.Post)
 		}
+
+		// br %forCond
+		fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
+
+		// end
+		fmt.Fprintf(w, "\n%s:\n", forEnd)
 
 	case *ast.BlockStmt:
 		p.enterScope()
@@ -194,6 +207,40 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 
 	default:
 		panic(fmt.Sprintf("unknown: %[1]T, %[1]v", stmt))
+	}
+}
+
+func (p *Compiler) compileStmt_assign(w io.Writer, stmt *ast.AssignStmt) {
+	var valueNameList = make([]string, len(stmt.Value))
+	for i := range stmt.Target {
+		valueNameList[i] = p.compileExpr(w, stmt.Value[i])
+	}
+
+	if stmt.Op == token.DEFINE {
+		for _, target := range stmt.Target {
+			if _, obj := p.scope.Lookup(target.Name); obj == nil {
+				var mangledName = fmt.Sprintf("%%local_%s.pos.%d", target.Name, target.NamePos)
+				p.scope.Insert(&Object{
+					Name:        target.Name,
+					MangledName: mangledName,
+					Node:        target,
+				})
+				fmt.Fprintf(w, "\t%s = alloca i32, align 4\n", mangledName)
+			}
+		}
+	}
+	for i := range stmt.Target {
+		var varName string
+		if _, obj := p.scope.Lookup(stmt.Target[i].Name); obj != nil {
+			varName = obj.MangledName
+		} else {
+			panic(fmt.Sprintf("var %s undefined", stmt.Target[0].Name))
+		}
+
+		fmt.Fprintf(
+			w, "\tstore i32 %s, i32* %s\n",
+			valueNameList[i], varName,
+		)
 	}
 }
 
@@ -241,6 +288,39 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 				localName, "div", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
 			)
 			return localName
+
+		// https://llvm.org/docs/LangRef.html#icmp-instruction
+
+		case token.EQL: // ==
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "icmp eq", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.NEQ: // !=
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "icmp ne", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.LSS: // <
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "icmp slt", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.LEQ: // <=
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "icmp sle", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.GTR: // >
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "icmp sgt", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.GEQ: // >=
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "icmp sge", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
 		default:
 			panic(fmt.Sprintf("unknown: %[1]T, %[1]v", expr))
 		}
@@ -276,6 +356,12 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 
 func (p *Compiler) genId() string {
 	id := fmt.Sprintf("%%t%d", p.nextId)
+	p.nextId++
+	return id
+}
+
+func (p *Compiler) genLabelId(name string) string {
+	id := fmt.Sprintf("%s.%d", name, p.nextId)
 	p.nextId++
 	return id
 }
