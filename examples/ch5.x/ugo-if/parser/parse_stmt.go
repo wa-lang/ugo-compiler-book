@@ -81,6 +81,8 @@ Loop:
 
 		case token.VAR:
 			block.List = append(block.List, p.parseStmt_var())
+		case token.IF:
+			block.List = append(block.List, p.parseStmt_if())
 		case token.FOR:
 			block.List = append(block.List, p.parseStmt_for())
 

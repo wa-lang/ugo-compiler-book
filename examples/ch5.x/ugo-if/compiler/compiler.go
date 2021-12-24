@@ -123,13 +123,16 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 	fmt.Fprintln(w)
 
 	fmt.Fprintf(w, "define i32 @ugo_%s_%s() {\n", file.Pkg.Name, fn.Name)
-	p.compileStmt(w, fn.Body)
 
+	retLabel := "ret_label"
+	p.compileStmt(w, fn.Body, retLabel)
+
+	fmt.Fprintf(w, "\n%s:\n", retLabel)
 	fmt.Fprintln(w, "\tret i32 0")
 	fmt.Fprintln(w, "}")
 }
 
-func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
+func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt, nextLabel string) {
 	switch stmt := stmt.(type) {
 	case *ast.VarSpec:
 		var localName = "0"
@@ -152,6 +155,62 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 
 	case *ast.AssignStmt:
 		p.compileStmt_assign(w, stmt)
+
+	case *ast.IfStmt:
+		p.enterScope()
+		defer p.leaveScope()
+
+		ifPos := fmt.Sprintf("%d", stmt.If)
+		ifInit := p.genLabelId("if.init.pos" + ifPos)
+		ifCond := p.genLabelId("if.cond.pos" + ifPos)
+		ifBody := p.genLabelId("if.body.pos" + ifPos)
+		ifElse := p.genLabelId("if.else.pos" + ifPos)
+		ifEnd := p.genLabelId("if.end.pos" + ifPos)
+
+		// br if.init
+		fmt.Fprintf(w, "\tbr label %%%s\n", ifInit)
+
+		// if.init
+		fmt.Fprintf(w, "\n%s:\n", ifInit)
+		if stmt.Init != nil {
+			p.compileStmt(w, stmt.Init, ifCond)
+		}
+
+		// br %ifCond
+		fmt.Fprintf(w, "\tbr label %%%s\n", ifCond)
+
+		fmt.Fprintf(w, "\n%s:\n", ifCond)
+		condValue := p.compileExpr(w, stmt.Cond)
+		if stmt.Else != nil {
+			fmt.Fprintf(w, "\tbr i1 %s , label %%%s, label %%%s\n", condValue, ifBody, ifElse)
+		} else {
+			fmt.Fprintf(w, "\tbr i1 %s , label %%%s, label %%%s\n", condValue, ifBody, ifEnd)
+		}
+
+		// if.body
+		p.enterScope()
+		fmt.Fprintf(w, "\n%s:\n", ifBody)
+		if stmt.Else != nil {
+			p.compileStmt(w, stmt.Body, ifElse)
+			fmt.Fprintf(w, "\tbr label %%%s\n", ifElse)
+		} else {
+			p.compileStmt(w, stmt.Body, ifEnd)
+			fmt.Fprintf(w, "\tbr label %%%s\n", ifEnd)
+		}
+		p.leaveScope()
+
+		// if.else
+		if stmt.Else != nil {
+			p.enterScope()
+			fmt.Fprintf(w, "\n%s:\n", ifElse)
+			p.compileStmt(w, stmt.Else, ifEnd)
+			p.leaveScope()
+		}
+
+		// end
+		fmt.Fprintf(w, "\n%s:\n", ifEnd)
+		fmt.Fprintf(w, "\tbr label %%%s\n", nextLabel)
+
 	case *ast.ForStmt:
 		p.enterScope()
 		defer p.leaveScope()
@@ -159,13 +218,14 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 		forPos := fmt.Sprintf("%d", stmt.For)
 		forInit := p.genLabelId("for.init.pos" + forPos)
 		forCond := p.genLabelId("for.cond.pos" + forPos)
+		forPost := p.genLabelId("for.post.pos" + forPos)
 		forBody := p.genLabelId("for.body.pos" + forPos)
 		forEnd := p.genLabelId("for.end.pos" + forPos)
 
 		// for.init
 		fmt.Fprintf(w, "\n%s:\n", forInit)
 		if stmt.Init != nil {
-			p.compileStmt(w, stmt.Init)
+			p.compileStmt(w, stmt.Init, forCond)
 		}
 		// br %forCond
 		fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
@@ -181,26 +241,29 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 		// Body
 		p.enterScope()
 		fmt.Fprintf(w, "\n%s:\n", forBody)
-		p.compileStmt(w, stmt.Body)
+		p.compileStmt(w, stmt.Body, forPost)
+		fmt.Fprintf(w, "\tbr label %%%s\n", forPost)
 		p.leaveScope()
 
 		// post
+		fmt.Fprintf(w, "\n%s:\n", forPost)
 		if stmt.Post != nil {
-			p.compileStmt(w, stmt.Post)
+			p.compileStmt(w, stmt.Post, forCond)
+			fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
+		} else {
+			fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
 		}
-
-		// br %forCond
-		fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
 
 		// end
 		fmt.Fprintf(w, "\n%s:\n", forEnd)
+		fmt.Fprintf(w, "\tbr label %%%s\n", nextLabel)
 
 	case *ast.BlockStmt:
 		p.enterScope()
 		defer p.leaveScope()
 
 		for _, x := range stmt.List {
-			p.compileStmt(w, x)
+			p.compileStmt(w, x, nextLabel)
 		}
 	case *ast.ExprStmt:
 		p.compileExpr(w, stmt.X)
@@ -286,6 +349,11 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 		case token.DIV:
 			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
 				localName, "div", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
+			)
+			return localName
+		case token.MOD:
+			fmt.Fprintf(w, "\t%s = %s i32 %v, %v\n",
+				localName, "srem", p.compileExpr(w, expr.X), p.compileExpr(w, expr.Y),
 			)
 			return localName
 

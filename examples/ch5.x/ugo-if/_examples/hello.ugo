@@ -2,6 +2,9 @@ package main
 
 func main() {
 	for i := 5; i < 10; i = i + 1 {
+		if v := i % 2; v == 0 {
+			//
+		}
 		println(i)
 	}
 }

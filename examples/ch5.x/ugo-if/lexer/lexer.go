@@ -147,6 +147,8 @@ func (p *Lexer) run() (tokens []token.Token) {
 					}
 				}
 			}
+		case r == '%': // %
+			p.emit(token.MOD)
 
 		case r == '=': // =, ==
 			switch p.src.Read() {

@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -19,12 +20,15 @@ const (
 	PACKAGE
 	VAR
 	FUNC
+	IF
+	ELSE
 	FOR
 
 	ADD // +
 	SUB // -
 	MUL // *
 	DIV // /
+	MOD // %
 
 	EQL // ==
 	NEQ // !=
@@ -63,12 +67,14 @@ var tokens = [...]string{
 	PACKAGE: "package",
 	VAR:     "var",
 	FUNC:    "func",
+	IF:      "if",
 	FOR:     "for",
 
 	ADD: "+",
 	SUB: "-",
 	MUL: "*",
 	DIV: "/",
+	MOD: "%",
 
 	EQL: "==",
 	NEQ: "!=",
@@ -89,6 +95,10 @@ var tokens = [...]string{
 	SEMICOLON: ";",
 }
 
+func (tok Token) String() string {
+	return fmt.Sprintf("%v:%q", tok.Type, tok.Literal)
+}
+
 func (tokType TokenType) String() string {
 	s := ""
 	if 0 <= tokType && tokType < TokenType(len(tokens)) {
@@ -104,6 +114,8 @@ var keywords = map[string]TokenType{
 	"package": PACKAGE,
 	"var":     VAR,
 	"func":    FUNC,
+	"if":      IF,
+	"else":    ELSE,
 	"for":     FOR,
 }
 
@@ -120,7 +132,7 @@ func (op TokenType) Precedence() int {
 		return 1
 	case ADD, SUB:
 		return 2
-	case MUL, DIV:
+	case MUL, DIV, MOD:
 		return 3
 	}
 	return 0
