@@ -19,8 +19,8 @@ func (p *Parser) parseStmt_if() *ast.IfStmt {
 		ifStmt.Body = p.parseStmt_block()
 	} else {
 		ifStmt.Init = nil
-		if cond, ok := stmt.(ast.Expr); ok {
-			ifStmt.Cond = cond
+		if cond, ok := stmt.(*ast.ExprStmt); ok {
+			ifStmt.Cond = cond.X
 		} else {
 			p.errorf(tokIf.Pos, "if cond expect expr: %#v", stmt)
 		}

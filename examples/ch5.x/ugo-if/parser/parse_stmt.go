@@ -27,7 +27,7 @@ func (p *Parser) parseStmt() ast.Stmt {
 		// exprList = exprList;
 		exprList := p.parseExprList()
 		switch tok := p.PeekToken(); tok.Type {
-		case token.SEMICOLON:
+		case token.SEMICOLON, token.LBRACE:
 			if len(exprList) != 1 {
 				p.errorf(tok.Pos, "unknown token: %v", tok.Type)
 			}
