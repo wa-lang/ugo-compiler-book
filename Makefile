@@ -9,6 +9,7 @@ build:
 	-rm -rf docs/.git
 	-rm -rf docs/docs
 	-rm -rf docs/examples
+	-rm -rf docs/talks
 	-rm -rf docs/ugo
 
 clean:

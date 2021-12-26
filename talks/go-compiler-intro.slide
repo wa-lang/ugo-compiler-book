@@ -1,0 +1,52 @@
+
+# -----------------------------------------------------------------------------
+
+Go编译器定制简介
+
+chai2010
+chaishushan@gmail.com
+https://github.com/chai2010/ugo-compiler-book
+
+# 感谢 Go+ 社区的支持
+
+# -----------------------------------------------------------------------------
+
+* 自我介绍(chai2010)
+
+- 凹(Wa)语言作者(设计中...)
+- Go代码贡献者([[https://github.com/golang/go/commits?author=chai2010][golang]], [[https://github.com/golang/image/commits?author=chai2010][image]])
+- 蚂蚁集团从事云原生、蚂蚁链DSL语言设计和研发工作([[https://github.com/chai2010/ugo-compiler-book/blob/master/jobs.md][招贤纳士]])
+- [[https://github.com/chai2010/ugo-compiler-book][《µGo语言实现(从头开发一个迷你Go语言编译器)》]] 作者
+- [[https://github.com/chai2010/go-ast-book][《Go语法树入门(出版名:Go语言定制指南)》]] 作者
+- [[https://github.com/chai2010/advanced-go-programming-book][《Go语言高级编程》]] 作者
+
+.image go-compiler-intro/images/chai2010.png
+
+* 我的图书(原创)
+
+.image go-compiler-intro/images/mybooks-01.png 580 800
+
+* 我的图书(翻译)
+
+.image go-compiler-intro/images/mybooks-02.png
+
+# -----------------------------------------------------------------------------
+* 主题大纲
+# -----------------------------------------------------------------------------
+
+* 主题大纲
+
+- 最简编译器
+- 编译器后门八卦
+- Go和Rust的选择
+- Go衍生的语言
+- Go语法树
+- SSA和LLVM
+- µGo案例
+
+# -----------------------------------------------------------------------------
+
+* Q&A
+
+# -----------------------------------------------------------------------------
+# by chaishushan{TA}gmail.com
