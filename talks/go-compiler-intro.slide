@@ -58,6 +58,7 @@ https://github.com/chai2010/ugo-compiler-book
 - 编译器一般是某种编程语言的翻译程序, 因此也就包含了编程语言的外延
 - 现代编程语言不仅仅是翻译, 还有内置的运行时调度
 - 编译器可以很复杂, 甚至可以内置 OS ...
+- 编译器也可以很简单...
 
 ## 人肉编译器
 
@@ -126,10 +127,60 @@ Go语言重新实现如下人肉编译器:
 ## Go和Rust的选择
 // -----------------------------------------------------------------------------
 
+## Go 开发的编译器
+
+- [https://github.com/topics/compiler?l=Go](https://github.com/topics/compiler?l=Go)
+
+---
+
+- [esbuild](https://github.com/evanw/esbuild) 29.5K Star
+
+---
+
+- [Google/Grumpy](https://github.com/google/grumpy) 10.4K Star: Python 翻译到 Go
+- [Google/SkyLark](https://github.com/google/skylark) 1.2K Star: Python 子集
+- [Google/Jsonnet](https://github.com/google/go-jsonnet) 1.1K Star
+- [Google/CEL](https://github.com/google/cel-go) 1K Star: 表达式语言
+
+---
+
+- [OPA/Rego](https://github.com/open-policy-agent/opa) 6K Star: 策略语言
+- [GopherLua](https://github.com/yuin/gopher-lua) 4.5K Star: Lua实现
+- [CUE](https://github.com/cuelang/cue) 3.2K Star: 配置语言
+
+
+## Rust 开发的编译器
+
+- [https://github.com/topics/compiler?l=rust](https://github.com/topics/compiler?l=rust)
+
+---
+
+- [SWC](https://github.com/swc-project/swc) 19K Star: TypeScript 编译器
+- [Facebook/Move](https://github.com/diem/diem/tree/main/language) 16.3K Star: 区块链语言
+- [RustPython](https://github.com/RustPython/RustPython/) 10.3K Star
+- [solang](https://github.com/hyperledger-labs/solang) 500 Star: Solidity 编译器
+- [ulisp](https://github.com/jolisper/ulisp) 30 Star
+
+---
+
+- 目前 Rust 社区对 VM 和 Compiler 的开发比较活跃
+
+
 ## Go和Rust的选择
 
-TODO
+- Go编译快, GC简化开发, 运行较快, 非常适合写编译器
+- Rust编译慢, 开发繁琐, 运行时稍快(但过早释放内存影响性能), 不是编译器的最佳选择
+- 如果真有死磕 Rust 语言的毅力/能力/精力, 建议去写 Rust 编译器本身
 
+---
+
+- Rust 比较适合开发长时间稳定运行的 VM 系统, 比如各种 WASM 虚拟机
+- Go 比较适合开发快速迭代, 一次完成 AOT 编译的编译器, GC 一次回收效率更高
+
+---
+
+- [esbuild为什么不用Rust，而使用了Go?](https://www.zhihu.com/question/439945314)
+- [写Rust的我们丢掉了什么](https://zhuanlan.zhihu.com/p/405160594)
 
 // -----------------------------------------------------------------------------
 ## Go衍生的语言
@@ -137,16 +188,29 @@ TODO
 
 ## Go衍生的语言
 
+- [TinyGo](https://github.com/tinygo-org/tinygo) 9.1K Star: 单片机环境的Go
+- [Go+](https://github.com/goplus/gop) 7.9K Star: Go之上增加了新的特性
+- [CUE](https://github.com/cuelang/cue) 3.2K Star: 配置语言
+- [Tengo](https://github.com/d5/tengo) 2.5K Star: Go类似语法的脚本语言
+- [Emgo](https://github.com/ziutek/emgo) 950 Star: 面向嵌入式环境的Go
+- [µGo](https://github.com/chai2010/ugo-compiler-book) 700 Star: 如何从头定制Go子集
+
+---
+
+- CUE 在配置语言领域已经形成影响力, 作者是Go团队成员, 前BCL成员
+- 阿里开源的 [KubeVela](https://github.com/oam-dev/kubevela) 基于 CUE 构建
+
+## TinyGo的编译器架构
+
 TODO
 
-
 // -----------------------------------------------------------------------------
 ## Go语法树
 // -----------------------------------------------------------------------------
 
 ## Go语法树
 
-TODOå
+TODO
 
 // -----------------------------------------------------------------------------
 ## Go类型系统
@@ -180,6 +244,11 @@ TODO
 
 - [https://www.sigbus.info/compilerbook](https://www.sigbus.info/compilerbook)
 - [Reflections on Trusting Trust - by Ken Thompson](http://cm.bell-labs.co/who/ken/trust.html)
+
+---
+
+- [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/chai2010/ugo-compiler-book)
+- [《Go语法树入门——开启自制编程语言和编译器之旅》](https://github.com/chai2010/go-ast-book)
 
 // -----------------------------------------------------------------------------
 
