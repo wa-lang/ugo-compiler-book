@@ -202,31 +202,97 @@ Go语言重新实现如下人肉编译器:
 
 ## TinyGo的编译器架构
 
-TODO
+.image go-compiler-intro/images/tinygo-01.drawio.png 500 800
 
 // -----------------------------------------------------------------------------
 ## Go语法树
 // -----------------------------------------------------------------------------
 
-## Go语法树
+## FileSet 文件集模型
 
-TODO
+.image go-compiler-intro/images/ch1-file-set-01.ditaa.png
+
+1. 全部Go文件根据文件名排序
+2. 全部Go文件映射到连续的抽象内存, 每个文件对应一个区间
+3. `token.Pos` 表示一个指针, 0 对应 `token.NoPos` 空指针
+4. 这样设计的目的是为了压缩和性能, 通过一个 uint32 可以映射到文件位置
+
+
+## 全部的 Token 类型
+
+.image go-compiler-intro/images/ch1-token-01.png 500 900
+
+## 表达式的语法树
+
+.image go-compiler-intro/images/ch3-expr-01.png 500 900
+
+.caption 1+2*3
+
+## 语法解析器接口
+
+.image go-compiler-intro/images/ch4-file-struct-01.png 500 900
+
+.caption parser.ParseDir, parser.ParseFile
+
+## 方法声明的语法树结构
+
+.image go-compiler-intro/images/ch6-func-decl-01.png 500 900
+
+.caption func (p *xType) Hello(arg1, arg2 int) (bool, error)
 
 // -----------------------------------------------------------------------------
 ## Go类型系统
 // -----------------------------------------------------------------------------
 
-## Go类型系统
+## Scope 词法域 - 01
 
-TODO
+.image go-compiler-intro/images/ch12-go-types-scope-01.uml.png 500 900
+
+.caption builtin -> package -> file -> func
+
+## Scope 词法域 - 02
+
+.image go-compiler-intro/images/ch12-go-types-scope-02.uml.png 500 900
+
+.caption func -> args -> block
+
+## Scope 词法域 - 03
+
+.image go-compiler-intro/images/ch12-scope-01.png 500 900
+
+.caption 特殊的地方: Pkg 内 File 之间的命名实体可见(但不包含 import)
+
+
+## Go类型检查
+
+- bool/int/float/string/slice/struct/interface 排序
+- 遍历AST, 判断 赋值/函数参数/返回值/表达式 类型匹配
+
+.code go-compiler-intro/code/check-type-01/main.go /func main/,
+
+## Go类型信息
+
+- `go/types.Config.Check` 可为 AST 每个表达式节点标注类型信息
+
+.code go-compiler-intro/code/check-type-02/main.go /func main/,/^}/
 
 // -----------------------------------------------------------------------------
 ## SSA和LLVM
 // -----------------------------------------------------------------------------
 
+## AST 到 SSA
+
+- SSA 是一种有着严格限制的汇编语言
+
+.code go-compiler-intro/code/ssa-01/main.go /func main/,/^}/
+
+
+
 ## SSA和LLVM
 
-TODO
+- SSA 可以被解释执行: [go/ssa/interp/interp.go](https://github.com/golang/tools/blob/master/go/ssa/interp/interp.go)
+- SSA 可以被翻译到 LLVM-IR: [tinygo/compiler/compiler.go](https://github.com/tinygo-org/tinygo/blob/release/compiler/compiler.go)
+
 
 // -----------------------------------------------------------------------------
 ## µGo案例
@@ -249,6 +315,17 @@ TODO
 
 - [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/chai2010/ugo-compiler-book)
 - [《Go语法树入门——开启自制编程语言和编译器之旅》](https://github.com/chai2010/go-ast-book)
+
+
+.image go-compiler-intro/images/mybooks-03.drawio.png 350 600
+
+## 感谢 Ian 推荐序
+
+.image go-compiler-intro/images/go-talks-2014-compiling-ian.jpg
+
+## 感谢 Ian 推荐序
+
+.image go-compiler-intro/images/preface-ian.png
 
 // -----------------------------------------------------------------------------
 
