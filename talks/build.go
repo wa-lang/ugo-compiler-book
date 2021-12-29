@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -39,12 +40,21 @@ func download(url, filename string) (err error) {
 	}
 	defer resp.Body.Close()
 
-	f, err := os.Create(filename)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
-	defer f.Close()
 
-	_, err = io.Copy(f, resp.Body)
+	data = bytes.TrimSpace(data)
+	data = bytes.Replace(data,
+		[]byte(`src='/static/slides.js'`),
+		[]byte(`src='static/slides.js'`),
+		-1,
+	)
+
+	err = os.WriteFile(filename, data, 0666)
+	if err != nil {
+		return
+	}
 	return
 }
