@@ -280,15 +280,27 @@ Go语言重新实现如下人肉编译器:
 ## SSA和LLVM
 // -----------------------------------------------------------------------------
 
-## AST 到 SSA
+## SSA 基本结构
 
-- SSA 是一种有着严格限制的汇编语言
+.image go-compiler-intro/images/ssa-arch-01.png 300 1000
+
+- 模块内部有全局变量和全局函数
+- 函数内部有单层的 Block 列表组成(由一个Label定义)
+- 每个 Block 内由单层的 指令列表组成
+- 每个 Block 结尾必须跳转到其他 Block, 最后一个 Block 返回
+- 每个虚拟寄存器只能被初始化一次
+
+
+
+## Go AST 到 Go SSA
+
+- Go SSA 和  LLVM-IR 并不完全等价
+- Go SSA 抽象层次更高, 同时 SSA 只涉及语句, 不含类型和结构拆分
 
 .code go-compiler-intro/code/ssa-01/main.go /func main/,/^}/
 
 
-
-## SSA和LLVM
+## Go SSA 的执行和再编译
 
 - SSA 可以被解释执行: [go/ssa/interp/interp.go](https://github.com/golang/tools/blob/master/go/ssa/interp/interp.go)
 - SSA 可以被翻译到 LLVM-IR: [tinygo/compiler/compiler.go](https://github.com/tinygo-org/tinygo/blob/release/compiler/compiler.go)
@@ -298,9 +310,10 @@ Go语言重新实现如下人肉编译器:
 ## µGo案例
 // -----------------------------------------------------------------------------
 
-## µGo案例
+## µGo 架构
 
-TODO
+.image go-compiler-intro/images/ugo-arch.drawio.png 500 900
+
 
 // -----------------------------------------------------------------------------
 ## 参考链接
