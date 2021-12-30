@@ -133,6 +133,10 @@ Go语言重新实现如下人肉编译器:
 
 ---
 
+- Go语法衍生: [TinyGo 9.1K](https://github.com/tinygo-org/tinygo), [Go+ 7.9K](https://github.com/goplus/gop), [CUE 3.2K](https://github.com/cuelang/cue)
+
+---
+
 - [Terraform](https://github.com/hashicorp/terraform) 30.6K Star
 - [esbuild](https://github.com/evanw/esbuild) 29.5K Star
 
@@ -147,7 +151,6 @@ Go语言重新实现如下人肉编译器:
 
 - [OPA/Rego](https://github.com/open-policy-agent/opa) 6K Star: 策略语言
 - [GopherLua](https://github.com/yuin/gopher-lua) 4.5K Star: Lua实现
-- [CUE](https://github.com/cuelang/cue) 3.2K Star: 配置语言
 
 
 ## Rust 开发的编译器
@@ -293,13 +296,20 @@ Go语言重新实现如下人肉编译器:
 
 
 
-## Go AST 到 Go SSA
+## Go AST 到 Go SSA - 01
 
 - Go SSA 和  LLVM-IR 并不完全等价
 - Go SSA 抽象层次更高, 同时 SSA 只涉及语句, 不含类型和结构拆分
 
 .code go-compiler-intro/code/ssa-01/main.go /func main/,/^}/
 
+## Go AST 到 Go SSA - 02
+
+.code go-compiler-intro/code/ssa-01/main.go /const src/,
+
+## Go AST 到 Go SSA - 03
+
+.code go-compiler-intro/code/ssa-01/main-ssa.txt
 
 ## Go SSA 的执行和再编译
 
@@ -310,6 +320,21 @@ Go语言重新实现如下人肉编译器:
 // -----------------------------------------------------------------------------
 ## µGo案例
 // -----------------------------------------------------------------------------
+
+## 为什么是 Go ?
+
+- 有人曾说 Shell 也能开发 Docker, 因此 Go 语言也不怎么样...
+
+---
+
+- Go 语言够简单, 25 个关键字
+- Go 语言的 `go/*` 包太好用
+- 少是指数级的多 (Less is exponentially more)
+- 因此 Go 社区诞生了很多衍生的定制语言
+
+---
+
+- 未来 10 年, 国内的 Gopher 可以 Go 的更远
 
 ## µGo 例子
 
@@ -348,6 +373,10 @@ Go语言重新实现如下人肉编译器:
 ## 感谢 Ian 推荐序
 
 .image go-compiler-intro/images/preface-ian.png
+
+## 感谢 许大 (Go 和 Go+ 的全部工作)
+
+.image go-compiler-intro/images/xu-gobook.jpg 500 900
 
 // -----------------------------------------------------------------------------
 

@@ -30,7 +30,9 @@ func main() {
 
 const src = `
 package main
+
 var s = "hello ssa"
+
 func main() {
 	for i := 0; i < 3; i++ {
 		println(s)

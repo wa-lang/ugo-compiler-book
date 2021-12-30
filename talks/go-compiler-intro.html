@@ -362,6 +362,10 @@
 </ul>
 <hr>
 <ul>
+<li>Go语法衍生: <a href="https://github.com/tinygo-org/tinygo" target="_blank" rel="noopener">TinyGo 9.1K</a>, <a href="https://github.com/goplus/gop" target="_blank" rel="noopener">Go+ 7.9K</a>, <a href="https://github.com/cuelang/cue" target="_blank" rel="noopener">CUE 3.2K</a></li>
+</ul>
+<hr>
+<ul>
 <li><a href="https://github.com/hashicorp/terraform" target="_blank" rel="noopener">Terraform</a> 30.6K Star</li>
 <li><a href="https://github.com/evanw/esbuild" target="_blank" rel="noopener">esbuild</a> 29.5K Star</li>
 </ul>
@@ -376,7 +380,6 @@
 <ul>
 <li><a href="https://github.com/open-policy-agent/opa" target="_blank" rel="noopener">OPA/Rego</a> 6K Star: 策略语言</li>
 <li><a href="https://github.com/yuin/gopher-lua" target="_blank" rel="noopener">GopherLua</a> 4.5K Star: Lua实现</li>
-<li><a href="https://github.com/cuelang/cue" target="_blank" rel="noopener">CUE</a> 3.2K Star: 配置语言</li>
 </ul>
 
       
@@ -721,7 +724,7 @@
   
       <article >
       
-        <h3>Go AST 到 Go SSA</h3>
+        <h3>Go AST 到 Go SSA - 01</h3>
         <ul>
 <li>Go SSA 和  LLVM-IR 并不完全等价</li>
 <li>Go SSA 抽象层次更高, 同时 SSA 只涉及语句, 不含类型和结构拆分</li>
@@ -756,11 +759,22 @@
   
       <article >
       
-        <h3>Go SSA 的执行和再编译</h3>
-        <ul>
-<li>SSA 可以被解释执行: <a href="https://github.com/golang/tools/blob/master/go/ssa/interp/interp.go" target="_blank" rel="noopener">go/ssa/interp/interp.go</a></li>
-<li>SSA 可以被翻译到 LLVM-IR: <a href="https://github.com/tinygo-org/tinygo/blob/release/compiler/compiler.go" target="_blank" rel="noopener">tinygo/compiler/compiler.go</a></li>
-</ul>
+        <h3>Go AST 到 Go SSA - 02</h3>
+        
+  <div class="code" >
+<pre><span num="31">const src = `</span>
+<span num="32">package main</span>
+<span num="33"></span>
+<span num="34">var s = &#34;hello ssa&#34;</span>
+<span num="35"></span>
+<span num="36">func main() {</span>
+<span num="37">    for i := 0; i &lt; 3; i&#43;&#43; {</span>
+<span num="38">        println(s)</span>
+<span num="39">    }</span>
+<span num="40">}</span>
+<span num="41">`</span>
+</pre>
+</div>
 
       
       <span class="pagenumber">39</span>
@@ -770,9 +784,81 @@
   
       <article >
       
-        <h2>µGo案例</h2>
+        <h3>Go AST 到 Go SSA - 03</h3>
+        
+  <div class="code" >
+<pre><span num="1">package hello.go:</span>
+<span num="2">  <b>func  init       func()</b></span>
+<span num="3">  var   init$guard bool</span>
+<span num="4">  <b>func  main       func()</b></span>
+<span num="5"># Name: hello.go.main</span>
+<span num="6"># Package: hello.go</span>
+<span num="7"># Location: hello.go:4:6</span>
+<span num="8"><b>func main():</b></span>
+<span num="9">0:                                                                entry P:0 S:1</span>
+<span num="10">        <b>jump 3</b></span>
+<span num="11">1:                                                             for.body P:1 S:1</span>
+<span num="12">        t0 = println(&#34;hello ssa -- chai...&#34;:string)                          ()</span>
+<span num="13">        t1 = t2 &#43; 1:int                                                     int</span>
+<span num="14">        <b>jump 3</b></span>
+<span num="15">2:                                                             for.done P:1 S:0</span>
+<span num="16">        <b>return</b></span>
+<span num="17">3:                                                             for.loop P:2 S:2</span>
+<span num="18">        t2 = phi [0: 0:int, 1: t1] #i                                       int</span>
+<span num="19">        t3 = t2 &lt; 3:int                                                    bool</span>
+<span num="20">        <b>if t3 goto 1 else 2</b></span>
+</pre>
+</div>
+
       
       <span class="pagenumber">40</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>Go SSA 的执行和再编译</h3>
+        <ul>
+<li>SSA 可以被解释执行: <a href="https://github.com/golang/tools/blob/master/go/ssa/interp/interp.go" target="_blank" rel="noopener">go/ssa/interp/interp.go</a></li>
+<li>SSA 可以被翻译到 LLVM-IR: <a href="https://github.com/tinygo-org/tinygo/blob/release/compiler/compiler.go" target="_blank" rel="noopener">tinygo/compiler/compiler.go</a></li>
+</ul>
+
+      
+      <span class="pagenumber">41</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h2>µGo案例</h2>
+      
+      <span class="pagenumber">42</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>为什么是 Go ?</h3>
+        <ul>
+<li>有人曾说 Shell 也能开发 Docker, 因此 Go 语言也不怎么样...</li>
+</ul>
+<hr>
+<ul>
+<li>Go 语言够简单, 25 个关键字</li>
+<li>Go 语言的 <code>go/*</code> 包太好用</li>
+<li>少是指数级的多 (Less is exponentially more)</li>
+<li>因此 Go 社区诞生了很多衍生的定制语言</li>
+</ul>
+<hr>
+<ul>
+<li>未来 10 年, 国内的 Gopher 可以 Go 的更远</li>
+</ul>
+
+      
+      <span class="pagenumber">43</span>
       </article>
   
   
@@ -804,7 +890,7 @@
 </ul>
 
       
-      <span class="pagenumber">41</span>
+      <span class="pagenumber">44</span>
       </article>
   
   
@@ -818,7 +904,7 @@
 </div>
 
       
-      <span class="pagenumber">42</span>
+      <span class="pagenumber">45</span>
       </article>
   
   
@@ -827,7 +913,7 @@
       
         <h2>参考链接</h2>
       
-      <span class="pagenumber">43</span>
+      <span class="pagenumber">46</span>
       </article>
   
   
@@ -850,7 +936,7 @@
 </div>
 
       
-      <span class="pagenumber">44</span>
+      <span class="pagenumber">47</span>
       </article>
   
   
@@ -864,7 +950,7 @@
 </div>
 
       
-      <span class="pagenumber">45</span>
+      <span class="pagenumber">48</span>
       </article>
   
   
@@ -878,7 +964,21 @@
 </div>
 
       
-      <span class="pagenumber">46</span>
+      <span class="pagenumber">49</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>感谢 许大 (Go 和 Go&#43; 的全部工作)</h3>
+        
+<div class="image">
+  <img src="go-compiler-intro/images/xu-gobook.jpg" height="500" width="900">
+</div>
+
+      
+      <span class="pagenumber">50</span>
       </article>
   
   
@@ -887,7 +987,7 @@
       
         <h2>Q&amp;A</h2>
       
-      <span class="pagenumber">47</span>
+      <span class="pagenumber">51</span>
       </article>
   
   
