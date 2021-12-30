@@ -133,6 +133,7 @@ Go语言重新实现如下人肉编译器:
 
 ---
 
+- [Terraform](https://github.com/hashicorp/terraform) 30.6K Star
 - [esbuild](https://github.com/evanw/esbuild) 29.5K Star
 
 ---
@@ -310,10 +311,18 @@ Go语言重新实现如下人肉编译器:
 ## µGo案例
 // -----------------------------------------------------------------------------
 
+## µGo 例子
+
+µGo 是 Go 语言的子集(不含标准库部分), 可以直接作为Go代码编译执行.
+
+.code go-compiler-intro/code/ugo-01/hello.ugo /func main/,/^}/
+
+- 安装: `go get github.com/chai2010/ugo`
+- 执行: `ugo run hello.ugo`
+
 ## µGo 架构
 
 .image go-compiler-intro/images/ugo-arch.drawio.png 500 900
-
 
 // -----------------------------------------------------------------------------
 ## 参考链接
