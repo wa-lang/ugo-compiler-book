@@ -362,6 +362,7 @@
 </ul>
 <hr>
 <ul>
+<li><a href="https://github.com/hashicorp/terraform" target="_blank" rel="noopener">Terraform</a> 30.6K Star</li>
 <li><a href="https://github.com/evanw/esbuild" target="_blank" rel="noopener">esbuild</a> 29.5K Star</li>
 </ul>
 <hr>
@@ -778,11 +779,29 @@
   
       <article >
       
-        <h3>µGo 架构</h3>
-        
-<div class="image">
-  <img src="go-compiler-intro/images/ugo-arch.drawio.png" height="500" width="900">
+        <h3>µGo 例子</h3>
+        <p>µGo 是 Go 语言的子集(不含标准库部分), 可以直接作为Go代码编译执行.</p>
+
+  <div class="code" >
+<pre><span num="3">func main() {</span>
+<span num="4">    for n := 2; n &lt;= 30; n = n &#43; 1 {</span>
+<span num="5">        var isPrime int = 1</span>
+<span num="6">        for i := 2; i*i &lt;= n; i = i &#43; 1 {</span>
+<span num="7">            if x := n % i; x == 0 {</span>
+<span num="8">                isPrime = 0</span>
+<span num="9">            }</span>
+<span num="10">        }</span>
+<span num="11">        if isPrime != 0 {</span>
+<span num="12">            println(n)</span>
+<span num="13">        }</span>
+<span num="14">    }</span>
+<span num="15">}</span>
+</pre>
 </div>
+<ul>
+<li>安装: <code>go get github.com/chai2010/ugo</code></li>
+<li>执行: <code>ugo run hello.ugo</code></li>
+</ul>
 
       
       <span class="pagenumber">41</span>
@@ -792,9 +811,23 @@
   
       <article >
       
-        <h2>参考链接</h2>
+        <h3>µGo 架构</h3>
+        
+<div class="image">
+  <img src="go-compiler-intro/images/ugo-arch.drawio.png" height="500" width="900">
+</div>
+
       
       <span class="pagenumber">42</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h2>参考链接</h2>
+      
+      <span class="pagenumber">43</span>
       </article>
   
   
@@ -817,7 +850,7 @@
 </div>
 
       
-      <span class="pagenumber">43</span>
+      <span class="pagenumber">44</span>
       </article>
   
   
@@ -831,7 +864,7 @@
 </div>
 
       
-      <span class="pagenumber">44</span>
+      <span class="pagenumber">45</span>
       </article>
   
   
@@ -845,7 +878,7 @@
 </div>
 
       
-      <span class="pagenumber">45</span>
+      <span class="pagenumber">46</span>
       </article>
   
   
@@ -854,7 +887,7 @@
       
         <h2>Q&amp;A</h2>
       
-      <span class="pagenumber">46</span>
+      <span class="pagenumber">47</span>
       </article>
   
   

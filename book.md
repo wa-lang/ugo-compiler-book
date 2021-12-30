@@ -5,6 +5,7 @@
 ![](cover.png)
 
 - 仓库地址: [https://chai2010.cn/ugo-compiler-book/](https://chai2010.cn/ugo-compiler-book/)
+- 社区分享: [Go编译器定制简介](https://chai2010.cn/ugo-compiler-book/talks/go-compiler-intro.html)
 
 ---
 

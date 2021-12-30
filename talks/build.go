@@ -19,11 +19,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	<-make(chan bool)
 }
 
 func startServer() {
 	// present -base=. -play=false
 	cmd := exec.Command("present", "-base=.", "-play=false")
+	go func() {
+		time.Sleep(time.Second * 6)
+		cmd.Process.Kill()
+		os.Exit(0)
+	}()
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
