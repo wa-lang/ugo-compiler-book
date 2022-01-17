@@ -8,7 +8,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/chai2010/ugo/build"
+	"github.com/wa-lang/ugo/build"
 )
 
 func main() {

@@ -3,8 +3,8 @@ package parser
 import (
 	"strconv"
 
-	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/token"
+	"github.com/wa-lang/ugo/ast"
+	"github.com/wa-lang/ugo/token"
 )
 
 // x, y :=

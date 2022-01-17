@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/logger"
-	"github.com/chai2010/ugo/token"
+	"github.com/wa-lang/ugo/ast"
+	"github.com/wa-lang/ugo/logger"
+	"github.com/wa-lang/ugo/token"
 )
 
 // const x = 1+2

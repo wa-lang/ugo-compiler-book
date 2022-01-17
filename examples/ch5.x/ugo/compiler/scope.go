@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/chai2010/ugo/ast"
+	"github.com/wa-lang/ugo/ast"
 )
 
 type Scope struct {

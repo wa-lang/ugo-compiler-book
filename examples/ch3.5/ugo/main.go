@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/compiler"
-	"github.com/chai2010/ugo/parser"
+	"github.com/wa-lang/ugo/ast"
+	"github.com/wa-lang/ugo/compiler"
+	"github.com/wa-lang/ugo/parser"
 )
 
 func main() {

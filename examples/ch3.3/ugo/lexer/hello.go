@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	lexpkg "github.com/chai2010/ugo/lexer"
+	lexpkg "github.com/wa-lang/ugo/lexer"
 )
 
 func main() {

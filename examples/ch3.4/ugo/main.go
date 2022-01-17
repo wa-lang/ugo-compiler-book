@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chai2010/ugo/compiler"
-	"github.com/chai2010/ugo/parser"
+	"github.com/wa-lang/ugo/compiler"
+	"github.com/wa-lang/ugo/parser"
 )
 
 func main() {

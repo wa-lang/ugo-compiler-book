@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/chai2010/ugo/token"
+	"github.com/wa-lang/ugo/token"
 )
 
 // File 表示 µGo 文件对应的语法树.

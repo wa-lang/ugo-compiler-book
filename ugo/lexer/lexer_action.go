@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"github.com/chai2010/ugo/token"
+	"github.com/wa-lang/ugo/token"
 )
 
 func (l *lexer) run() {

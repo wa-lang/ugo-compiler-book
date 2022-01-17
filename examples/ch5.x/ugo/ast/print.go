@@ -8,7 +8,7 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/chai2010/ugo/token"
+	"github.com/wa-lang/ugo/token"
 )
 
 // Print 打印语法树到 stdout

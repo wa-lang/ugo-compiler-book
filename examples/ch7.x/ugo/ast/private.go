@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/chai2010/ugo/token"
+import "github.com/wa-lang/ugo/token"
 
 var (
 	_ Node = Expr(nil)

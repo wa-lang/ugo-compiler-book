@@ -1,6 +1,6 @@
 package types
 
-import "github.com/chai2010/ugo/ast"
+import "github.com/wa-lang/ugo/ast"
 
 type PackageInfo struct {
 	Pkg    *ast.Package

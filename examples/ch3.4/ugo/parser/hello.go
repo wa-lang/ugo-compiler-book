@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chai2010/ugo/parser"
+	"github.com/wa-lang/ugo/parser"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package lexer
 import (
 	"fmt"
 
-	"github.com/chai2010/ugo/token"
+	"github.com/wa-lang/ugo/token"
 )
 
 type Lexer struct {

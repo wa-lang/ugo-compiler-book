@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/builtin"
-	"github.com/chai2010/ugo/token"
+	"github.com/wa-lang/ugo/ast"
+	"github.com/wa-lang/ugo/builtin"
+	"github.com/wa-lang/ugo/token"
 )
 
 type Compiler struct {
