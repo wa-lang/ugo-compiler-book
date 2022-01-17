@@ -110,10 +110,10 @@
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://github.com/chai2010/ugo-compiler-book" title="Git repository" aria-label="Git repository">
+                        <a href="https://github.com/wa-lang/ugo-compiler-book" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/chai2010/ugo-compiler-book/edit/master/./ch3-hello-ugo/ch3-01.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/wa-lang/ugo-compiler-book/edit/master/./ch3-hello-ugo/ch3-01.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
                     </div>
@@ -245,8 +245,8 @@ type ParenExpr struct {
 <p>其中Pkg表示包信息，Funcs则表示文件中顺序出现的函数列表。</p>
 <h2 id="319-ast表示的µgo程序"><a class="header" href="#319-ast表示的µgo程序">3.1.9 AST表示的µGo程序</a></h2>
 <p>现在我们尝试通过AST表示µGo程序（为了方便表示，我们暂时忽略位置信息）：</p>
-<pre><code class="language-go">import &quot;github.com/chai2010/ugo/ast&quot;
-import &quot;github.com/chai2010/ugo/token&quot;
+<pre><code class="language-go">import &quot;github.com/wa-lang/ugo/ast&quot;
+import &quot;github.com/wa-lang/ugo/token&quot;
 
 var ugoProg = &amp;ast.File {
 	Pkg: &amp;ast.Package{

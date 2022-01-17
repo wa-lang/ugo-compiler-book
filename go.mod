@@ -1,3 +1,3 @@
-module github.com/chai2010/ugo-compiler-book
+module github.com/wa-lang/ugo-compiler-book
 
 go 1.17

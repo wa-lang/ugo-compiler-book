@@ -3,7 +3,7 @@
 
 chai2010
 chaishushan@gmail.com
-https://github.com/chai2010/ugo-compiler-book
+https://github.com/wa-lang/ugo-compiler-book
 
 // 感谢 Go+ 社区的支持
 
@@ -13,8 +13,8 @@ https://github.com/chai2010/ugo-compiler-book
 
 - 凹(Wa)语言作者(设计中...)
 - Go代码贡献者([golang](https://github.com/golang/go/commits?author=chai2010), [go.image](https://github.com/golang/image/commits?author=chai2010))
-- 蚂蚁集团从事云原生、蚂蚁链DSL语言设计和研发工作([招贤纳士](https://github.com/chai2010/ugo-compiler-book/blob/master/jobs.md))
-- [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/chai2010/ugo-compiler-book) 作者
+- 蚂蚁集团从事云原生、蚂蚁链DSL语言设计和研发工作([招贤纳士](https://github.com/wa-lang/ugo-compiler-book/blob/master/jobs.md))
+- [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/wa-lang/ugo-compiler-book) 作者
 - [《Go语法树入门(出版名:Go语言定制指南)》](https://github.com/chai2010/go-ast-book) 作者
 - [《Go语言高级编程》](https://github.com/chai2010/advanced-go-programming-book) 作者
 
@@ -197,7 +197,7 @@ Go语言重新实现如下人肉编译器:
 - [CUE](https://github.com/cuelang/cue) 3.2K Star: 配置语言
 - [Tengo](https://github.com/d5/tengo) 2.5K Star: Go类似语法的脚本语言
 - [Emgo](https://github.com/ziutek/emgo) 950 Star: 面向嵌入式环境的Go
-- [µGo](https://github.com/chai2010/ugo-compiler-book) 700 Star: 如何从头定制Go子集
+- [µGo](https://github.com/wa-lang/ugo-compiler-book) 700 Star: 如何从头定制Go子集
 
 ---
 
@@ -342,7 +342,7 @@ Go语言重新实现如下人肉编译器:
 
 .code go-compiler-intro/code/ugo-01/hello.ugo /func main/,/^}/
 
-- 安装: `go get github.com/chai2010/ugo`
+- 安装: `go get github.com/wa-lang/ugo`
 - 执行: `ugo run hello.ugo`
 
 ## µGo 架构
@@ -360,7 +360,7 @@ Go语言重新实现如下人肉编译器:
 
 ---
 
-- [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/chai2010/ugo-compiler-book)
+- [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/wa-lang/ugo-compiler-book)
 - [《Go语法树入门——开启自制编程语言和编译器之旅》](https://github.com/chai2010/go-ast-book)
 
 

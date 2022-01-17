@@ -12,9 +12,9 @@
 ![](cover.png)
 
 - [µGo 简介](ugo) - ugo 子目录是正在实现中的代码
-- 在线阅读: https://chai2010.cn/ugo-compiler-book/
+- 在线阅读: https://wa-lang.org/ugo-compiler-book/
 - µGo 输出C语言: https://github.com/3dgen/ugo-c-book
-- 社区分享: [Go编译器定制简介](https://chai2010.cn/ugo-compiler-book/talks/go-compiler-intro.html)
+- 社区分享: [Go编译器定制简介](https://wa-lang.org/ugo-compiler-book/talks/go-compiler-intro.html)
 
 ---
 

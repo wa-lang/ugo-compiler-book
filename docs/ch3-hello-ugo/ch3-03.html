@@ -110,10 +110,10 @@
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://github.com/chai2010/ugo-compiler-book" title="Git repository" aria-label="Git repository">
+                        <a href="https://github.com/wa-lang/ugo-compiler-book" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/chai2010/ugo-compiler-book/edit/master/./ch3-hello-ugo/ch3-03.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/wa-lang/ugo-compiler-book/edit/master/./ch3-hello-ugo/ch3-03.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
                     </div>
@@ -153,7 +153,7 @@ func main() {
 }
 </code></pre>
 <p>对应的Token序列如下（忽略注释部分）：</p>
-<pre><code class="language-go">import &quot;github.com/chai2010/ugo/token&quot;
+<pre><code class="language-go">import &quot;github.com/wa-lang/ugo/token&quot;
 
 var ugoTokens = []token.Token {
 	{Type: token.PACKAGE},              // package
@@ -517,7 +517,7 @@ func main() {
 }
 </code></pre>
 <p>词法解析程序如下：</p>
-<pre><code class="language-go">import  &quot;github.com/chai2010/ugo/lexer&quot;
+<pre><code class="language-go">import  &quot;github.com/wa-lang/ugo/lexer&quot;
 
 func main() {
 	// 构造词法解析器

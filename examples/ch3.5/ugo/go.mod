@@ -1,3 +1,3 @@
-module github.com/chai2010/ugo
+module github.com/wa-lang/ugo
 
 go 1.17

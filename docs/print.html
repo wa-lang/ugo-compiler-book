@@ -111,7 +111,7 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://github.com/chai2010/ugo-compiler-book" title="Git repository" aria-label="Git repository">
+                        <a href="https://github.com/wa-lang/ugo-compiler-book" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
                     </div>
@@ -142,8 +142,8 @@
 <p>本书尝试以实现 µGo 编译器为线索，以边学习边完善的自举方式实现一个玩具语言。</p>
 <p><img src="cover.png" alt="" /></p>
 <ul>
-<li>仓库地址: <a href="https://chai2010.cn/ugo-compiler-book/">https://chai2010.cn/ugo-compiler-book/</a></li>
-<li>社区分享: <a href="https://chai2010.cn/ugo-compiler-book/talks/go-compiler-intro.html">Go编译器定制简介</a></li>
+<li>仓库地址: <a href="https://wa-lang.org/ugo-compiler-book/">https://wa-lang.org/ugo-compiler-book/</a></li>
+<li>社区分享: <a href="https://wa-lang.org/ugo-compiler-book/talks/go-compiler-intro.html">Go编译器定制简介</a></li>
 </ul>
 <hr />
 <ul>
@@ -1075,8 +1075,8 @@ type ParenExpr struct {
 <p>其中Pkg表示包信息，Funcs则表示文件中顺序出现的函数列表。</p>
 <h2 id="319-ast表示的µgo程序"><a class="header" href="#319-ast表示的µgo程序">3.1.9 AST表示的µGo程序</a></h2>
 <p>现在我们尝试通过AST表示µGo程序（为了方便表示，我们暂时忽略位置信息）：</p>
-<pre><code class="language-go">import &quot;github.com/chai2010/ugo/ast&quot;
-import &quot;github.com/chai2010/ugo/token&quot;
+<pre><code class="language-go">import &quot;github.com/wa-lang/ugo/ast&quot;
+import &quot;github.com/wa-lang/ugo/token&quot;
 
 var ugoProg = &amp;ast.File {
 	Pkg: &amp;ast.Package{
@@ -1193,7 +1193,7 @@ define i32 @main() {
 <pre><code class="language-go">package compiler
 
 import (
-	&quot;github.com/chai2010/ugo/builtin&quot;
+	&quot;github.com/wa-lang/ugo/builtin&quot;
 )
 
 func (p *Compiler) genHeader(w io.Writer, file *ast.File) {
@@ -1338,8 +1338,8 @@ func (p *Compiler) genMain(w io.Writer, file *ast.File) {
 import (
 	&quot;fmt&quot;
 
-	&quot;github.com/chai2010/ugo/ast&quot;
-	&quot;github.com/chai2010/ugo/compiler&quot;
+	&quot;github.com/wa-lang/ugo/ast&quot;
+	&quot;github.com/wa-lang/ugo/compiler&quot;
 )
 
 func main() {
@@ -1380,7 +1380,7 @@ func main() {
 }
 </code></pre>
 <p>对应的Token序列如下（忽略注释部分）：</p>
-<pre><code class="language-go">import &quot;github.com/chai2010/ugo/token&quot;
+<pre><code class="language-go">import &quot;github.com/wa-lang/ugo/token&quot;
 
 var ugoTokens = []token.Token {
 	{Type: token.PACKAGE},              // package
@@ -1744,7 +1744,7 @@ func main() {
 }
 </code></pre>
 <p>词法解析程序如下：</p>
-<pre><code class="language-go">import  &quot;github.com/chai2010/ugo/lexer&quot;
+<pre><code class="language-go">import  &quot;github.com/wa-lang/ugo/lexer&quot;
 
 func main() {
 	// 构造词法解析器
@@ -1807,7 +1807,7 @@ func main() {
 </code></pre>
 <p>基于前一章的词法解析程序将产生以下的token.Token列表：</p>
 <pre><code class="language-go">
-import &quot;github.com/chai2010/ugo/token&quot;
+import &quot;github.com/wa-lang/ugo/token&quot;
 
 var ugoTokens = []token.Token {
 	{Type: token.PACKAGE},                          // package
@@ -2590,7 +2590,7 @@ $
 <pre><code class="language-go">package main
 
 import &quot;github.com/urfave/cli/v2&quot;
-import &quot;github.com/chai2010/ugo/build&quot;
+import &quot;github.com/wa-lang/ugo/build&quot;
 
 func main() {
 	app := cli.NewApp()
@@ -3203,7 +3203,7 @@ func main() {
 <p>词法域属于语义解析，目前只有compiler包产生LLVM汇编代码时需要。因此在compiler包定义Scope管理词法域：</p>
 <pre><code class="language-go">package compiler
 
-import &quot;github.com/chai2010/ugo/ast&quot;
+import &quot;github.com/wa-lang/ugo/ast&quot;
 
 type Scope struct {
 	Outer   *Scope
