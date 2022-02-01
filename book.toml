@@ -7,7 +7,7 @@ multilingual = false
 src = "."
 
 [build]
-build-dir = "docs"
+build-dir = "book"
 
 [output.html]
 git-repository-url = "https://github.com/wa-lang/ugo-compiler-book"

@@ -2,22 +2,22 @@ default:
 	mdbook serve
 
 build:
-	-rm docs
+	-rm book
 	mdbook build
-	-rm docs/.gitignore
-	-rm docs/.nojekyll
-	-rm -rf docs/.git
-	-rm -rf docs/docs
-	-rm -rf docs/examples
-	-rm -rf docs/talks
-	-rm -rf docs/ugo
+	-rm book/.gitignore
+	-rm book/.nojekyll
+	-rm -rf book/.git
+	-rm -rf book/docs
+	-rm -rf book/examples
+	-rm -rf book/talks
+	-rm -rf book/ugo
 
 	make build-talks
 
 build-talks:
-	mkdir -p ./docs/talks
-	cp -r ./talks/static-fix-prefix ./docs/talks/static
-	cp -r ./talks/go-compiler-intro ./docs/talks/go-compiler-intro
-	cp ./talks/go-compiler-intro.html ./docs/talks/go-compiler-intro.html
+	mkdir -p ./book/talks
+	cp -r ./talks/static-fix-prefix ./book/talks/static
+	cp -r ./talks/go-compiler-intro ./book/talks/go-compiler-intro
+	cp ./talks/go-compiler-intro.html ./book/talks/go-compiler-intro.html
 
 clean:
