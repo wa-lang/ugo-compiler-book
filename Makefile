@@ -7,10 +7,7 @@ build:
 	-rm book/.gitignore
 	-rm book/.nojekyll
 	-rm -rf book/.git
-	-rm -rf book/docs
-	-rm -rf book/examples
 	-rm -rf book/talks
-	-rm -rf book/ugo
 
 	make build-talks
 
