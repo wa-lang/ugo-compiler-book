@@ -1,24 +1,3 @@
 # 5. if分支和for循环
 
-for循环的例子：
-
-```go
-package main
-
-func main() {
-	for i := 5; i < 10; i = i + 1 {
-		println(i)
-	}
-}
-```
-
-执行：
-
-```
-$ go run main.go run ./_examples/hello.ugo
-5
-6
-7
-8
-9
-```
+在第4章我们已经实现了对变量的支持，并且可以通过赋值语句来改变变量状态。本章我们将通过支持if分支和for循环来为uGo程序提供更强的编程能力，其中if分支在判断条件前支持可选的声明语句，for是C语言风格迭代循环但是不支持continue和break特性。本章最终的目标是通过if和for构造一个打印素数列表的程序。
