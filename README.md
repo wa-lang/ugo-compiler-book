@@ -11,8 +11,8 @@
 
 ![](cover.png)
 
-- [µGo 简介](ugo) - ugo 子目录是正在实现中的代码
 - 在线阅读: https://wa-lang.org/ugo-compiler-book/
+- 示例代码: [https://github.com/wa-lang/ugo](https://github.com/wa-lang/ugo) (和章节对应的分支)
 - µGo 输出C语言: https://github.com/3dgen/ugo-c-book
 - 社区分享: [Go编译器定制简介](https://wa-lang.org/ugo-compiler-book/talks/go-compiler-intro.html)
 
@@ -22,6 +22,7 @@
 
 - 因为坑就在那里
 - 不希望被Rxxx语言把脸摁在地上摩擦
+- 与其把有限的生命浪费在和Rxxx编译器海量错误的肉搏中, 还不如整一个自己的编译器
 - 凹坑的工具差不多齐全了
 - ？
 
