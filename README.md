@@ -11,7 +11,8 @@
 
 ![](cover.png)
 
-- 在线阅读: https://wa-lang.org/ugo-compiler-book/
+- 在线阅读(Go版本): https://wa-lang.org/ugo-compiler-book/
+- 在线阅读(Rust版本): http://wa-lang.org/ugo-compiler-book/ugo-rust-book
 - 示例代码: [https://github.com/wa-lang/ugo](https://github.com/wa-lang/ugo) (和章节对应的分支)
 - µGo 输出C语言: https://github.com/3dgen/ugo-c-book
 - 社区分享: [Go编译器定制简介](https://wa-lang.org/ugo-compiler-book/talks/go-compiler-intro.html)
