@@ -1,0 +1,15 @@
+[book]
+title = "µGo语言实现(Rust版本)"
+authors = ["chai2010"]
+description = "如何从头开发一个迷你Go语言编译器"
+language = "zh"
+multilingual = false
+src = "."
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/wa-lang/ugo-compiler-book"
+edit-url-template = "https://github.com/wa-lang/ugo-compiler-book/edit/master/ugo-rust-book/{path}"
+git-repository-icon = "fa-github"
