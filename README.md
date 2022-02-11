@@ -53,4 +53,4 @@ func main() int {}
 
 ## License 版权
 
-学习目的可自由使用。
+学习目的可在 Github 平台免费阅读。
