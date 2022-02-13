@@ -109,7 +109,7 @@ impl Compiler {
 }
 ```
 
-其中 `Compiler.gen_value` 方法用于边缘每个内部节点，并返回结果：
+其中 `Compiler.gen_value` 方法用于遍历每个内部节点，并返回结果：
 
 ```rust,noplayground
 impl Compiler {

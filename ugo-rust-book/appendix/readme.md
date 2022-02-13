@@ -32,7 +32,7 @@ define void @main() {
 @main.count.$type = ....
 ```
 
-其中`@main.count`可以表示为`main`包下面的`count`全局变量，而`@std.math.pi`可以表示为`std.math`包下面的`pi`变量。最后的`@main.count.$type`带有`$`字符，可以用户表示和`count`全局变量相关的其它信息。
+其中`@main.count`可以表示为`main`包下面的`count`全局变量，而`@std.math.pi`可以表示为`std.math`包下面的`pi`变量。最后的`@main.count.$type`带有`$`字符，可以用于表示和`count`全局变量相关的其它信息。
 
 关于全局变量的其它细节可以暂时忽略，在后文会详细解释。
 
