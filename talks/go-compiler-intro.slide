@@ -163,7 +163,7 @@ Go语言重新实现如下人肉编译器:
 - [Facebook/Move](https://github.com/diem/diem/tree/main/language) 16.3K Star: 区块链语言
 - [RustPython](https://github.com/RustPython/RustPython/) 10.3K Star
 - [solang](https://github.com/hyperledger-labs/solang) 500 Star: Solidity 编译器
-- [ulisp](https://github.com/jolisper/ulisp) 30 Star
+- [ulisp](https://github.com/OlegTheCat/unlisp-llvm) 50 Star
 
 ---
 
