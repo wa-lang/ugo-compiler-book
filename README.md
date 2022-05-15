@@ -2,11 +2,6 @@
 
 ----
 
-- [蚂蚁 - 可信原生技术部 - 云原生运维专家(杭州P7-8)](https://github.com/chai2010/chai2010/blob/master/jobs.md)
-- [蚂蚁 - 可信原生技术部 - 专用编程语言设计研发(杭州P7-8)](https://github.com/chai2010/chai2010/blob/master/jobs.md)
-
-----
-
 本书尝试以实现 µGo 编译器为线索，以边学习边完善的自举方式实现一个玩具语言。
 
 ![](cover.png)
