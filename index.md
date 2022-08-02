@@ -1,7 +1,7 @@
 # µGo语言实现——从头开发一个迷你Go语言编译器
 
-- *KusonStack一站式可编程配置技术栈: https://github.com/KusionStack/kusion*
-- *KCL配置编程语言: https://github.com/KusionStack/KCLVM*
+- *KusonStack一站式可编程配置技术栈: [https://github.com/KusionStack/kusion](https://github.com/KusionStack/kusion)*
+- *凹语言™: [https://github.com/wa-lang/wa](https://github.com/wa-lang/wa)*
 
 ---
 
