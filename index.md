@@ -1,10 +1,5 @@
 # µGo语言实现——从头开发一个迷你Go语言编译器
 
-- *KusonStack一站式可编程配置技术栈: [https://github.com/KusionStack/kusion](https://github.com/KusionStack/kusion)*
-- *凹语言™: [https://github.com/wa-lang/wa](https://github.com/wa-lang/wa)*
-
----
-
 本书尝试以实现 µGo 编译器为线索，以边学习边完善的自举方式实现一个玩具语言。
 
 ![](cover.png)
