@@ -1,6 +1,6 @@
 # Summary
 
-[µGo语言实现](book.md)
+[µGo语言实现](index.md)
 [前言](preface.md)
 
 - [基础](./ch1-basic/readme.md)
