@@ -1,0 +1,514 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using https://github.com/wa-lang/mnbook -->
+        <meta charset="UTF-8">
+        <title>return语句 - µGo语言实现</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../static/mnbook/css/variables.css">
+        <link rel="stylesheet" href="../static/mnbook/css/general.css">
+        <link rel="stylesheet" href="../static/mnbook/css/chrome.css">
+        <link rel="stylesheet" href="../static/mnbook/css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../static/mnbook/FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../static/mnbook/fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../static/mnbook/highlight.css">
+        <link rel="stylesheet" href="../static/mnbook/tomorrow-night.css">
+        <link rel="stylesheet" href="../static/mnbook/ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mnbook-theme');
+                var sidebar = localStorage.getItem('mnbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mnbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mnbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mnbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mnbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter">
+  <li class="chapter-item expanded ">
+    <a href="../index.html" >µGo语言实现</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../preface.html" >前言</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch1-basic/readme.html" ><strong aria-hidden="true">1.</strong> 基础</a>
+  </li>
+  <ol class="section">
+    <li class="chapter-item expanded ">
+      <a href="../ch1-basic/ch1-01-ugo.html" ><strong aria-hidden="true">1.1.</strong> µGo简介</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch1-basic/ch1-02-mini-compiler.html" ><strong aria-hidden="true">1.2.</strong> 最小编译器</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch1-basic/ch1-03-llvm-ir.html" ><strong aria-hidden="true">1.3.</strong> LLVM汇编简介</a>
+    </li>
+  </ol>
+  <li class="chapter-item expanded ">
+    <a href="../ch2-expr/readme.html" ><strong aria-hidden="true">2.</strong> 表达式</a>
+  </li>
+  <ol class="section">
+    <li class="chapter-item expanded ">
+      <a href="../ch2-expr/ch2-01-add-sub.html" ><strong aria-hidden="true">2.1.</strong> 加减法表达式</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch2-expr/ch2-02-mul-div.html" ><strong aria-hidden="true">2.2.</strong> 乘除法表达式</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch2-expr/ch2-03-parser.html" ><strong aria-hidden="true">2.3.</strong> 解析表达式语法树</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch2-expr/ch2-04-parser-v2.html" ><strong aria-hidden="true">2.4.</strong> 重构解析器</a>
+    </li>
+  </ol>
+  <li class="chapter-item expanded ">
+    <a href="../ch3-hello-ugo/readme.html" ><strong aria-hidden="true">3.</strong> 最小µGo程序</a>
+  </li>
+  <ol class="section">
+    <li class="chapter-item expanded ">
+      <a href="../ch3-hello-ugo/ch3-01.html" ><strong aria-hidden="true">3.1.</strong> AST视角的µGo程序</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch3-hello-ugo/ch3-02.html" ><strong aria-hidden="true">3.2.</strong> AST到LLVM汇编</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch3-hello-ugo/ch3-03.html" ><strong aria-hidden="true">3.3.</strong> 完善词法解析器</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch3-hello-ugo/ch3-04.html" ><strong aria-hidden="true">3.4.</strong> 完善语法解析器</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch3-hello-ugo/ch3-05.html" ><strong aria-hidden="true">3.5.</strong> 打印AST语法树</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch3-hello-ugo/ch3-06.html" ><strong aria-hidden="true">3.6.</strong> 命令行界面</a>
+    </li>
+  </ol>
+  <li class="chapter-item expanded ">
+    <a href="../ch4-block-and-var/readme.html" ><strong aria-hidden="true">4.</strong> 变量和作用域</a>
+  </li>
+  <ol class="section">
+    <li class="chapter-item expanded ">
+      <a href="../ch4-block-and-var/ch4-01.html" ><strong aria-hidden="true">4.1.</strong> 完善token包</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch4-block-and-var/ch4-02.html" ><strong aria-hidden="true">4.2.</strong> 完善AST和解析器</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch4-block-and-var/ch4-03.html" ><strong aria-hidden="true">4.3.</strong> 完善LLIR输出</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch4-block-and-var/ch4-04.html" ><strong aria-hidden="true">4.4.</strong> 输出WASM模块</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch4-block-and-var/ch4-05.html" ><strong aria-hidden="true">4.5.</strong> 简短定义和多赋值</a>
+    </li>
+  </ol>
+  <li class="chapter-item expanded ">
+    <a href="../ch5-if-for/readme.html" ><strong aria-hidden="true">5.</strong> if分支和for循环</a>
+  </li>
+  <ol class="section">
+    <li class="chapter-item expanded ">
+      <a href="../ch5-if-for/ch5-01.html" ><strong aria-hidden="true">5.1.</strong> 完善token包和lex包</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch5-if-for/ch5-02.html" ><strong aria-hidden="true">5.2.</strong> 完善AST和解析器</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch5-if-for/ch5-03.html" ><strong aria-hidden="true">5.3.</strong> if和for到LLIR汇编</a>
+    </li>
+  </ol>
+  <li class="chapter-item expanded ">
+    <a href="../ch6-func/readme.html" ><strong aria-hidden="true">6.</strong> 函数和递归</a>
+  </li>
+  <ol class="section">
+    <li class="chapter-item expanded ">
+      <a href="../ch6-func/ch6-01.html" class="active"><strong aria-hidden="true">6.1.</strong> return语句</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch6-func/ch6-02.html" ><strong aria-hidden="true">6.2.</strong> 递归调用µGo函数</a>
+    </li>
+  </ol>
+  <li class="chapter-item expanded ">
+    <a href="../ch7-pkgs-files/readme.html" ><strong aria-hidden="true">7.</strong> 多文件和多包支持</a>
+  </li>
+  <ol class="section">
+    <li class="chapter-item expanded ">
+      <a href="../ch7-pkgs-files/ch7-01.html" ><strong aria-hidden="true">7.1.</strong> import语句</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch7-pkgs-files/ch7-02.html" ><strong aria-hidden="true">7.2.</strong> 多文件和包依赖</a>
+    </li>
+    <li class="chapter-item expanded ">
+      <a href="../ch7-pkgs-files/ch7-03.html" ><strong aria-hidden="true">7.3.</strong> ugopath配置信息</a>
+    </li>
+  </ol>
+  <li class="chapter-item expanded ">
+    <a href="../ch8-string/readme.html" ><strong aria-hidden="true">8.</strong> 字符串</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch9-array/readme.html" ><strong aria-hidden="true">9.</strong> 数组</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch10-map/readme.html" ><strong aria-hidden="true">10.</strong> map</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch11-struct/readme.html" ><strong aria-hidden="true">11.</strong> 结构体</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch12-method/readme.html" ><strong aria-hidden="true">12.</strong> 方法</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch13-closure/readme.html" ><strong aria-hidden="true">13.</strong> 闭包</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch14-interface/readme.html" ><strong aria-hidden="true">14.</strong> 接口</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch15-panic/readme.html" ><strong aria-hidden="true">15.</strong> 异常</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch16-reflect/readme.html" ><strong aria-hidden="true">16.</strong> 反射</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch17-cgo/readme.html" ><strong aria-hidden="true">17.</strong> CGO</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch18-wasm/readme.html" ><strong aria-hidden="true">18.</strong> WASM</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch19-type-system/readme.html" ><strong aria-hidden="true">19.</strong> 类型系统</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch20-bootstrap/readme.html" ><strong aria-hidden="true">20.</strong> 自举</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../ch21-lsp/readme.html" ><strong aria-hidden="true">21.</strong> LSP服务</a>
+  </li>
+  <li class="chapter-item expanded ">
+    <a href="../appendix/readme.html" ><strong aria-hidden="true">22.</strong> 附录</a>
+  </li>
+</ol>
+
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                    </div>
+
+                    <h1 class="menu-title"><a href="../index.html">µGo语言实现</a></h1>
+
+                    <div class="right-buttons">
+                        <a href="https://github.com/wa-lang/ugo-compiler-book" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/wa-lang/ugo-compiler-book/edit/master/ch6-func/ch6-01.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <!-- Page table of contents -->
+                    <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                    <main>
+                        <ul dir="auto"><li><em>凹语言: <a href="https://github.com/wa-lang/wa">https://github.com/wa-lang/wa</a></em></li></ul><hr>
+
+                        <h1>6.1 return语句</h1>
+<p>µGo的后端是LLVM-IR，天然支持了递归函数调用。但是因为我们目前只实现了变量定义、分支和循环等基本特性，函数甚至缺少返回语句。在还没有指针和数组等高级数据结构等前提下，如果想要展示递归函数调用的能力，我们需要先实现一个带返回值的return语句。</p>
+<h2>6.1.1 添加 <code>token.RETURN</code> 记号</h2>
+<p>首先是为return添加一个新记号类型：</p>
+<pre><code class="language-go">package token
+
+// 记号类型
+type TokenType int
+
+// ch3中 µGo程序用到的记号类型
+const (
+	EOF TokenType = iota // = 0
+
+	...
+	RETURN // return
+	...
+)
+</code></pre>
+<p>更新每个记号类型对应的字符串（方便打印）：</p>
+<pre><code class="language-go">var tokens = [...]string{
+	RETURN: &quot;return&quot;,
+}
+</code></pre>
+<p>注册关键字：</p>
+<pre><code class="language-go">var keywords = map[string]TokenType{
+	&quot;return&quot;: RETURN,
+}
+</code></pre>
+<p>token包添加关键字的套路几乎是一样的。</p>
+<h2>6.1.2 完善 lexer 的分号处理</h2>
+<p>token包添加return关键字之后，词法解析部分其实已经可以正常解析了。不过在return语句之后可能遇到省略的情况，添加return的处理：</p>
+<pre><code class="language-go">func (p *Lexer) run() (tokens []token.Token) {
+	...
+	for {
+		r := p.src.Read()
+		...
+		switch {
+		case r == '\n':
+			p.src.IgnoreToken()
+			if len(p.tokens) &gt; 0 {
+				switch p.tokens[len(p.tokens)-1].Type {
+				case token.RPAREN, token.IDENT, token.NUMBER, token.RETURN:
+					p.emit(token.SEMICOLON)
+				}
+			}
+		...
+		}
+	...
+}
+</code></pre>
+<h2>6.1.3 AST 添加 ReturnStmt 节点</h2>
+<p>为语法树添加表示 return 语句的节点：</p>
+<pre><code class="language-go">type ReturnStmt struct {
+	Return token.Pos
+	Result Expr
+}
+</code></pre>
+<p>uGo为了简化，目前只支持可选的单个返回值。</p>
+<h2>6.1.4 解析 return 语句</h2>
+<p>修改 <code>parser</code> 包解析语句的 <code>Parser.parseStmt</code> 方法：</p>
+<pre><code class="language-go">func (p *Parser) parseStmt() ast.Stmt {
+	switch tok := p.PeekToken(); tok.Type {
+	...
+	case token.RETURN:
+		return p.parseStmt_return()
+	case token.VAR:
+	...
+	}
+}
+</code></pre>
+<p>return 语言通过新加的 <code>Parser.parseStmt_return</code> 方法解析：</p>
+<pre><code class="language-go">func (p *Parser) parseStmt_return() *ast.ReturnStmt {
+	tokReturn := p.MustAcceptToken(token.RETURN)
+
+	retStmt := &amp;ast.ReturnStmt{
+		Return: tokReturn.Pos,
+	}
+	if _, ok := p.AcceptToken(
+		token.SEMICOLON, // ;
+		token.LBRACE,    // {
+		token.RBRACE,    // }
+	); !ok {
+		retStmt.Result = p.parseExpr()
+	} else {
+		p.UnreadToken()
+	}
+
+	return retStmt
+}
+</code></pre>
+<p>在 return 关键字之后如果不是表达式则没有返回值，否则通过 <code>p.parseExpr()</code> 解析返回值。</p>
+<h2>6.1.5 翻译 return 语句</h2>
+<p>改在 <code>compiler</code> 包的 <code>Compiler.compileStmt</code> 方法，增加 return 语句的翻译：</p>
+<pre><code class="language-go">func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
+	switch stmt := stmt.(type) {
+	case *ast.ReturnStmt:
+		p.compileStmt_return(w, stmt)
+
+	case *ast.IfStmt:
+	...
+	}
+}
+</code></pre>
+<p>输出 LLVM-IR 汇编语言返回语句在 <code>Compiler.compileStmt_return</code> 方法实现：</p>
+<pre><code class="language-go">func (p *Compiler) compileStmt_return(w io.Writer, stmt *ast.ReturnStmt) {
+	if stmt.Result != nil {
+		fmt.Fprintf(w, &quot;\tret i32 %v\n&quot;, p.compileExpr(w, stmt.Result))
+	} else {
+		fmt.Fprintf(w, &quot;\tret i32 0\n&quot;)
+	}
+}
+</code></pre>
+<p>如果有返回值，则通过 <code>p.compileExpr(w, stmt.Result)</code> 编译返回值表达式并返回。如果没有返回值则默认返回<code>int32</code>类型的<code>0</code>。</p>
+<h2>6.1.6 测试迭代版的斐波那契</h2>
+<p>基于分支和循环构造一个迭代版的斐波那契：</p>
+<pre><code class="language-go">package main
+
+func main() {
+	var n1 = 0
+	var n2 = 1
+	var n3 = 1
+
+	println(n3)
+	for i := 1; i &lt; 20; i = i + 1 {
+		n3 = n1 + n2
+		n1 = n2
+		n2 = n3
+
+		if n3 &gt; 100 {
+			return
+		}
+
+		println(n3)
+	}
+}
+</code></pre>
+<p>并通过if语句判断数列的值大于100时，通过return语句退出main函数。执行如下：</p>
+<pre><code>$ go run main.go -debug run ./_examples/fib1.ugo
+1
+1
+2
+3
+5
+8
+13
+21
+34
+55
+89
+</code></pre>
+<p>结果正常。</p>
+
+
+                        
+
+                        
+                            <div id="giscus-container"></div>
+                        
+
+                        
+                            <footer class="page-footer">
+                                <span>© 2021-2022 | <a href="https://github.com/chai2010">柴树杉</a> 保留所有权利</span>
+                            </footer>
+                        
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../ch6-func/readme.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+                        
+                            <!-- ../ch6-func/ch6-02.html -->
+                            <a rel="next" href="../ch6-func/ch6-02.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="../ch6-func/readme.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+                
+                    <a rel="next" href="../ch6-func/ch6-02.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../static/mnbook/mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../static/mnbook/clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../static/mnbook/highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../static/mnbook/book.js" type="text/javascript" charset="utf-8"></script>
+        
+        <script type="text/javascript" charset="utf-8">
+            var pagePath = "ch6-func/ch6-01.md"
+        </script>
+
+        <!-- Custom JS scripts -->
+        
+            <script src="../static/mnbook/giscus.js" type="text/javascript" charset="utf-8"></script>
+        
+
+    </body>
+</html>

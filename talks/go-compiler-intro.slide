@@ -1,0 +1,385 @@
+
+# Go编译器定制简介
+
+chai2010
+chaishushan@gmail.com
+https://github.com/wa-lang/ugo-compiler-book
+
+// 感谢 Go+ 社区的支持
+
+// -----------------------------------------------------------------------------
+
+## 自我介绍(chai2010)
+
+- Go代码贡献者([golang](https://github.com/golang/go/commits?author=chai2010), [go.image](https://github.com/golang/image/commits?author=chai2010))
+- 蚂蚁集团从事云原生、蚂蚁链DSL语言设计和研发工作([招贤纳士](https://github.com/wa-lang/ugo-compiler-book/blob/master/jobs.md))
+- [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/wa-lang/ugo-compiler-book) 作者
+- [《Go语法树入门(出版名:Go语言定制指南)》](https://github.com/chai2010/go-ast-book) 作者
+- [《Go语言高级编程》](https://github.com/chai2010/advanced-go-programming-book) 作者
+
+.image go-compiler-intro/images/chai2010.png
+
+## 我的图书(原创)
+
+.image go-compiler-intro/images/mybooks-01.png 580 800
+
+## 我的图书(翻译)
+
+.image go-compiler-intro/images/mybooks-02.png
+
+
+// -----------------------------------------------------------------------------
+## 主题大纲
+// -----------------------------------------------------------------------------
+
+## 主题大纲
+
+- 最简编译器
+- 编译器后门八卦
+- Go和Rust的选择
+- Go衍生的语言
+- Go语法树
+- Go类型系统
+- SSA和LLVM
+- µGo案例
+- 参考链接
+
+// -----------------------------------------------------------------------------
+## 最简编译器
+// -----------------------------------------------------------------------------
+
+## 编译器是什么
+
+- 编译器是一种精确的翻译程序
+- 编译器输入的是数据序列, 输出的也是数据序列
+- 编译器作为可执行程序可用于 AOT 翻译, 类似 `gcc` 命令
+- 编译器也可以是一个函数, 用于 JIT 运行时翻译, 或者包装为 AOT 翻译命令
+- 编译器一般是某种编程语言的翻译程序, 因此也就包含了编程语言的外延
+- 现代编程语言不仅仅是翻译, 还有内置的运行时调度
+- 编译器可以很复杂, 甚至可以内置 OS ...
+- 编译器也可以很简单...
+
+## 人肉编译器
+
+将一个整数编译为一个程序, 程序的返回值返回这个整数值
+
+比如 `42` 翻译为以下的 C 语言程序:
+
+.code go-compiler-intro/code/01-1/main.c /int/,/}/
+
+也可以翻译为以下的 X86 汇编程序:
+
+.code go-compiler-intro/code/01-1/_main.s
+
+也可以翻译为 LLVM 跨平台的汇编程序:
+
+.code go-compiler-intro/code/01-1/main.ll
+
+## Go程序替代人肉编译器
+
+Go语言重新实现如下人肉编译器:
+
+.code go-compiler-intro/code/01-2/main.go /func main/,
+
+编译 `echo 123 | go run main.go`, 执行 `./a.out`, 看结果 `echo $?`
+
+## 挑战: 继续前进一小步
+
+- 输入的数字变为支持加/减/乘/除法和小括弧的表达式(词法+语法解析)
+- 输出 X86 汇编时如何处理多个中间结果?
+- 如何简化优先级的处理?
+
+// -----------------------------------------------------------------------------
+## 编译器后门八卦
+// -----------------------------------------------------------------------------
+
+## Reflections on Trusting Trust - 01 - 自重写程序
+
+.image go-compiler-intro/images/02-trust1.jpg 500 850
+
+.caption `s` 是从最后一个 `0` 到结尾的内容, 第1个 printf 打印 `s` 数组, 第2个打印后面部分
+
+## Reflections on Trusting Trust - 02 - 鸡和蛋问题
+
+.image go-compiler-intro/images/02-trust2.jpg 500 850
+
+.caption C编译器为了支持转义的自举过程
+
+## Reflections on Trusting Trust - 03 - 潜伏的后门
+
+.image go-compiler-intro/images/02-trust3.jpg 500 850
+
+.caption Ken 在C编译器植入后门后擦除记录, 同时在UNIX保留伪装的后门代码
+
+## 更多的自重写代码
+
+可能是最短的C自重写代码:
+
+.code go-compiler-intro/code/02-04/_quine.c
+
+[rsc](https://research.swtch.com/zip) 给了Go的版本(Go已经自举, 大家可以放心用了):
+
+.code go-compiler-intro/code/02-04/main.go
+
+
+// -----------------------------------------------------------------------------
+## Go和Rust的选择
+// -----------------------------------------------------------------------------
+
+## Go 开发的编译器
+
+- [https://github.com/topics/compiler?l=Go](https://github.com/topics/compiler?l=Go)
+
+---
+
+- Go语法衍生: [TinyGo 9.1K](https://github.com/tinygo-org/tinygo), [Go+ 7.9K](https://github.com/goplus/gop), [CUE 3.2K](https://github.com/cuelang/cue)
+
+---
+
+- [Terraform](https://github.com/hashicorp/terraform) 30.6K Star
+- [esbuild](https://github.com/evanw/esbuild) 29.5K Star
+
+---
+
+- [Google/Grumpy](https://github.com/google/grumpy) 10.4K Star: Python 翻译到 Go
+- [Google/SkyLark](https://github.com/google/skylark) 1.2K Star: Python 子集
+- [Google/Jsonnet](https://github.com/google/go-jsonnet) 1.1K Star
+- [Google/CEL](https://github.com/google/cel-go) 1K Star: 表达式语言
+
+---
+
+- [OPA/Rego](https://github.com/open-policy-agent/opa) 6K Star: 策略语言
+- [GopherLua](https://github.com/yuin/gopher-lua) 4.5K Star: Lua实现
+
+
+## Rust 开发的编译器
+
+- [https://github.com/topics/compiler?l=rust](https://github.com/topics/compiler?l=rust)
+
+---
+
+- [SWC](https://github.com/swc-project/swc) 19K Star: TypeScript 编译器
+- [Facebook/Move](https://github.com/diem/diem/tree/main/language) 16.3K Star: 区块链语言
+- [RustPython](https://github.com/RustPython/RustPython/) 10.3K Star
+- [solang](https://github.com/hyperledger-labs/solang) 500 Star: Solidity 编译器
+- [ulisp](https://github.com/OlegTheCat/unlisp-llvm) 50 Star
+
+---
+
+- 目前 Rust 社区对 VM 和 Compiler 的开发比较活跃
+
+
+## Go和Rust的选择
+
+- Go编译快, GC简化开发, 运行较快, 非常适合写编译器
+- Rust编译慢, 开发繁琐, 运行时稍快(但过早释放内存影响性能), 不是编译器的最佳选择
+- 如果真有死磕 Rust 语言的毅力/能力/精力, 建议去写 Rust 编译器本身
+
+---
+
+- Rust 比较适合开发长时间稳定运行的 VM 系统, 比如各种 WASM 虚拟机
+- Go 比较适合开发快速迭代, 一次完成 AOT 编译的编译器, GC 一次回收效率更高
+
+---
+
+- [esbuild为什么不用Rust，而使用了Go?](https://www.zhihu.com/question/439945314)
+- [写Rust的我们丢掉了什么](https://zhuanlan.zhihu.com/p/405160594)
+
+// -----------------------------------------------------------------------------
+## Go衍生的语言
+// -----------------------------------------------------------------------------
+
+## Go衍生的语言
+
+- [TinyGo](https://github.com/tinygo-org/tinygo) 9.1K Star: 单片机环境的Go
+- [Go+](https://github.com/goplus/gop) 7.9K Star: Go之上增加了新的特性
+- [CUE](https://github.com/cuelang/cue) 3.2K Star: 配置语言
+- [Tengo](https://github.com/d5/tengo) 2.5K Star: Go类似语法的脚本语言
+- [Emgo](https://github.com/ziutek/emgo) 950 Star: 面向嵌入式环境的Go
+- [µGo](https://github.com/wa-lang/ugo-compiler-book) 700 Star: 如何从头定制Go子集
+
+---
+
+- CUE 在配置语言领域已经形成影响力, 作者是Go团队成员, 前BCL成员
+- 阿里开源的 [KubeVela](https://github.com/oam-dev/kubevela) 基于 CUE 构建
+
+## TinyGo的编译器架构
+
+.image go-compiler-intro/images/tinygo-01.drawio.png 500 800
+
+// -----------------------------------------------------------------------------
+## Go语法树
+// -----------------------------------------------------------------------------
+
+## FileSet 文件集模型
+
+.image go-compiler-intro/images/ch1-file-set-01.ditaa.png
+
+1. 全部Go文件根据文件名排序
+2. 全部Go文件映射到连续的抽象内存, 每个文件对应一个区间
+3. `token.Pos` 表示一个指针, 0 对应 `token.NoPos` 空指针
+4. 这样设计的目的是为了压缩和性能, 通过一个 uint32 可以映射到文件位置
+
+
+## 全部的 Token 类型
+
+.image go-compiler-intro/images/ch1-token-01.png 500 900
+
+## 表达式的语法树
+
+.image go-compiler-intro/images/ch3-expr-01.png 500 900
+
+.caption 1+2*3
+
+## 语法解析器接口
+
+.image go-compiler-intro/images/ch4-file-struct-01.png 500 900
+
+.caption parser.ParseDir, parser.ParseFile
+
+## 方法声明的语法树结构
+
+.image go-compiler-intro/images/ch6-func-decl-01.png 500 900
+
+.caption func (p *xType) Hello(arg1, arg2 int) (bool, error)
+
+// -----------------------------------------------------------------------------
+## Go类型系统
+// -----------------------------------------------------------------------------
+
+## Scope 词法域 - 01
+
+.image go-compiler-intro/images/ch12-go-types-scope-01.uml.png 500 900
+
+.caption builtin -> package -> file -> func
+
+## Scope 词法域 - 02
+
+.image go-compiler-intro/images/ch12-go-types-scope-02.uml.png 500 900
+
+.caption func -> args -> block
+
+## Scope 词法域 - 03
+
+.image go-compiler-intro/images/ch12-scope-01.png 500 900
+
+.caption 特殊的地方: Pkg 内 File 之间的命名实体可见(但不包含 import)
+
+
+## Go类型检查
+
+- bool/int/float/string/slice/struct/interface 排序
+- 遍历AST, 判断 赋值/函数参数/返回值/表达式 类型匹配
+
+.code go-compiler-intro/code/check-type-01/main.go /func main/,
+
+## Go类型信息
+
+- `go/types.Config.Check` 可为 AST 每个表达式节点标注类型信息
+
+.code go-compiler-intro/code/check-type-02/main.go /func main/,/^}/
+
+// -----------------------------------------------------------------------------
+## SSA和LLVM
+// -----------------------------------------------------------------------------
+
+## SSA 基本结构
+
+.image go-compiler-intro/images/ssa-arch-01.png 300 1000
+
+- 模块内部有全局变量和全局函数
+- 函数内部有单层的 Block 列表组成(由一个Label定义)
+- 每个 Block 内由单层的 指令列表组成
+- 每个 Block 结尾必须跳转到其他 Block, 最后一个 Block 返回
+- 每个虚拟寄存器只能被初始化一次
+
+
+
+## Go AST 到 Go SSA - 01
+
+- Go SSA 和  LLVM-IR 并不完全等价
+- Go SSA 抽象层次更高, 同时 SSA 只涉及语句, 不含类型和结构拆分
+
+.code go-compiler-intro/code/ssa-01/main.go /func main/,/^}/
+
+## Go AST 到 Go SSA - 02
+
+.code go-compiler-intro/code/ssa-01/main.go /const src/,
+
+## Go AST 到 Go SSA - 03
+
+.code go-compiler-intro/code/ssa-01/main-ssa.txt
+
+## Go SSA 的执行和再编译
+
+- SSA 可以被解释执行: [go/ssa/interp/interp.go](https://github.com/golang/tools/blob/master/go/ssa/interp/interp.go)
+- SSA 可以被翻译到 LLVM-IR: [tinygo/compiler/compiler.go](https://github.com/tinygo-org/tinygo/blob/release/compiler/compiler.go)
+
+
+// -----------------------------------------------------------------------------
+## µGo案例
+// -----------------------------------------------------------------------------
+
+## 为什么是 Go ?
+
+- 有人曾说 Shell 也能开发 Docker, 因此 Go 语言也不怎么样...
+
+---
+
+- Go 语言够简单, 25 个关键字
+- Go 语言的 `go/*` 包太好用
+- 少是指数级的多 (Less is exponentially more)
+- 因此 Go 社区诞生了很多衍生的定制语言
+
+---
+
+- 未来 10 年, 国内的 Gopher 可以 Go 的更远
+
+## µGo 例子
+
+µGo 是 Go 语言的子集(不含标准库部分), 可以直接作为Go代码编译执行.
+
+.code go-compiler-intro/code/ugo-01/hello.ugo /func main/,/^}/
+
+- 安装: `go get github.com/wa-lang/ugo`
+- 执行: `ugo run hello.ugo`
+
+## µGo 架构
+
+.image go-compiler-intro/images/ugo-arch.drawio.png 500 900
+
+// -----------------------------------------------------------------------------
+## 参考链接
+// -----------------------------------------------------------------------------
+
+## 参考链接
+
+- [https://www.sigbus.info/compilerbook](https://www.sigbus.info/compilerbook)
+- [Reflections on Trusting Trust - by Ken Thompson](http://cm.bell-labs.co/who/ken/trust.html)
+
+---
+
+- [《µGo语言实现(从头开发一个迷你Go语言编译器)》](https://github.com/wa-lang/ugo-compiler-book)
+- [《Go语法树入门——开启自制编程语言和编译器之旅》](https://github.com/chai2010/go-ast-book)
+
+
+.image go-compiler-intro/images/mybooks-03.drawio.png 350 600
+
+## 感谢 Ian 推荐序
+
+.image go-compiler-intro/images/go-talks-2014-compiling-ian.jpg
+
+## 感谢 Ian 推荐序
+
+.image go-compiler-intro/images/preface-ian.png
+
+## 感谢 许大 (Go 和 Go+ 的全部工作)
+
+.image go-compiler-intro/images/xu-gobook.jpg 500 900
+
+// -----------------------------------------------------------------------------
+
+## Q&A
+
+// -----------------------------------------------------------------------------
+// by chaishushan{TA}gmail.com

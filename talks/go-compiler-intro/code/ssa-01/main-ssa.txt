@@ -1,0 +1,20 @@
+package hello.go:
+  func  init       func() // HL
+  var   init$guard bool
+  func  main       func() // HL
+# Name: hello.go.main
+# Package: hello.go
+# Location: hello.go:4:6
+func main(): // HL
+0:                                                                entry P:0 S:1
+        jump 3 // HL
+1:                                                             for.body P:1 S:1
+        t0 = println("hello ssa -- chai...":string)                          ()
+        t1 = t2 + 1:int                                                     int
+        jump 3 // HL
+2:                                                             for.done P:1 S:0
+        return // HL
+3:                                                             for.loop P:2 S:2
+        t2 = phi [0: 0:int, 1: t1] #i                                       int
+        t3 = t2 < 3:int                                                    bool
+        if t3 goto 1 else 2 // HL
