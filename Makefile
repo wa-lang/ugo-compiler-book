@@ -1,9 +1,18 @@
+# Copyright 2022 <chaishushan{AT}gmail.com>. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+#
+# MnBook: Mini Markdown Book
+# https://github.com/wa-lang/mnbook
+#
+
 default:
-	mdbook serve
+	mnbook serve
 
 build:
 	-rm book
-	mdbook build
+	mnbook build
 	-rm book/.gitignore
 	-rm book/.nojekyll
 	-rm -rf book/.git
